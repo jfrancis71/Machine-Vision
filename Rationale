@@ -1,0 +1,16 @@
+In[207]:= 
+Sqrt[(positives[[1]]^2 + positives[[2]]^2)] // Image; // AbsoluteTiming
+
+Out[207]= {0.0340020, Null}
+
+In[209]:= 
+ImageApply[Sqrt, 
+   ImageAdd[ImageApply[#^2 &, im1], 
+    ImageApply[#^2 &, im2]]]; // AbsoluteTiming
+
+Out[209]= {0.0760043, Null}
+
+Note the speed discrepancy above. Hence we are not using complicated heads.
+
+Decision on matrix/raster coordinates. Note MatrixPlot/ArrayPlot/Image incompatible with Raster. We have gone for Raster
+coordinates. Better consistancy with image processing community.
