@@ -54,17 +54,26 @@ SobelFilter[pyramid_?PyramidImageQ,func_]:=
    Map[SobelFilter[#,func]&,pyramid]
 
 
-BoundingRectangles[image_?MatrixQ,threshold_Real,filterSize_?VectorQ]:=
-   Map[Rectangle[#-filterSize,#+filterSize]&,Reverse/@Position[image,x_/;x>=threshold]];
+BoundingRectangles[coords_?MatrixQ,filterSize_?VectorQ]:=
+   Map[Rectangle[#-filterSize,#+filterSize]&,coords]
+
+BoundingRectangles[imgPyramid_?PyramidImageQ,coords_?MatrixQ,filterSize_?VectorQ]:=
+   Map[Scale[BoundingRectangles[{#[[2;;3]]//Reverse},filterSize],Length[imgPyramid[[1]]]/Length[imgPyramid[[#[[1]]]]],{0,0}]&,coords]
 
 (* Pyramid is assumed to be of some filter type which has already been applied. Positives are values above the threshold *)
 BoundingRectangles[pyramid_?PyramidImageQ,threshold_Real,filterSize_?VectorQ]:=
-   Map[
-      Scale[BoundingRectangles[#,threshold,filterSize],
-      Dimensions[pyramid[[1]]][[1]]/Dimensions[#][[1]],{0,0}]&,
-      pyramid];
+   BoundingRectangles[pyramid,Position[pyramid,x_/;x>=threshold],filterSize]
 
 OutlineGraphics[grObjects_]:=Graphics[{Opacity[0],Green,EdgeForm[Directive[Green,Thick]],grObjects}]
+
+
+PyramidExplorer[pyramid_?PyramidImageQ]:=Manipulate[(
+   y=Min[Max[9,1+Floor[-.00001+ry*Length[pyramid[[l]]]]],1+Length[pyramid[[l]]]-9];x=Min[Max[9,x=1+Floor[-.00001+rx*Length[pyramid[[l,1]]]]],1+Length[pyramid[[l,1]]]-9]);
+   {
+   Show[pyramid[[1]]//DispImage,OutlineGraphics[BoundingRectangles[pyramid,{{l,y,x}},{8,8}]]],
+   {rx,ry},{x,y},
+   pyramid[[l,y-8;;y+8,x-8;;x+8]]//DispImage
+   },{l,1,Length[pyramid],1},{ry,0,1},{rx,0,1}]
 
 
 On[Assert];
