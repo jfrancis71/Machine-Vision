@@ -67,13 +67,25 @@ BoundingRectangles[pyramid_?PyramidImageQ,threshold_Real,filterSize_?VectorQ]:=
 OutlineGraphics[grObjects_]:=Graphics[{Opacity[0],Green,EdgeForm[Directive[Green,Thick]],grObjects}]
 
 
-PyramidExplorer[pyramid_?PyramidImageQ]:=Manipulate[(
-   y=Min[Max[9,1+Floor[-.00001+ry*Length[pyramid[[l]]]]],1+Length[pyramid[[l]]]-9];x=Min[Max[9,x=1+Floor[-.00001+rx*Length[pyramid[[l,1]]]]],1+Length[pyramid[[l,1]]]-9]);
+(* image is the background image, not necessarily level 1 of pyramid, esp if pyramid is edge pyramid
+   displayFunc is the function to display the extracted subwindow in the pyramid *)
+
+(* len,dims implementation issue, seems to not like evaluating length inside the manipulate expression *)
+PyramidExplorer[image_?MatrixQ,pyramid_?PyramidImageQ,displayFunc_]:=(len=Length[pyramid];dims=Table[Dimensions[pyramid[[l]]],{l,1,len}];Manipulate[(
+   y=Min[Max[9,1+Floor[-.00001+ry*dims[[l,1]]]],1+dims[[l,1]]-9];x=Min[Max[9,x=1+Floor[-.00001+rx*dims[[l,2]]]],1+dims[[l,2]]-9]);
    {
-   Show[pyramid[[1]]//DispImage,OutlineGraphics[BoundingRectangles[pyramid,{{l,y,x}},{8,8}]]],
+   Show[image//DispImage,OutlineGraphics[BoundingRectangles[pyramid,{{l,y,x}},{8,8}]]],
    {rx,ry},{x,y},
-   pyramid[[l,y-8;;y+8,x-8;;x+8]]//DispImage
-   },{l,1,Length[pyramid],1},{ry,0,1},{rx,0,1}]
+   pyramid[[l,y-8;;y+8,x-8;;x+8]]//displayFunc
+   },{l,1,len,1},{ry,0,1},{rx,0,1}])
+
+PyramidExplorer[pyramid_?PyramidImageQ]:=PyramidExplorer[pyramid[[1]],pyramid,DispImage]
+
+DrawSurfDirCell[centre_?VectorQ,value_]:=
+Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]
+
+SurfDirPlot[patch_]:=Graphics[Flatten[Table[DrawSurfDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]
+
 
 
 On[Assert];
