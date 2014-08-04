@@ -31,6 +31,13 @@ MVCorrelateImage[image_?MatrixQ,kernel_?MatrixQ]:=ImageData[ImageCorrelate[Image
 MVCorrelatePyramid[pyramid_?PyramidImageQ,kernel_?MatrixQ]:=Map[MVCorrelateImage[#,kernel]&,pyramid]
 
 
+(* Von Mises Distribution
+   kernel is a masking kernel to indicate some angle not relevant. *)
+EdgeDirConv[edgePyramid_,kernel_,angles_]:=
+   MVCorrelatePyramid[Cos[edgePyramid], kernel*Cos[angles]] +
+      MVCorrelatePyramid[Sin[edgePyramid],kernel*Sin[angles]]
+
+
 sobelX = {{-1, 0, +1}, {-2, 0, +2}, {-1, 0, +1}}; sobelY = 
  Transpose[sobelX];
 EdgeMag[dx_,dy_]=Sqrt[dx^2+dy^2];SetAttributes[EdgeMag,Listable];
@@ -71,21 +78,29 @@ OutlineGraphics[grObjects_]:=Graphics[{Opacity[0],Green,EdgeForm[Directive[Green
    displayFunc is the function to display the extracted subwindow in the pyramid *)
 
 (* len,dims implementation issue, seems to not like evaluating length inside the manipulate expression *)
-PyramidExplorer[image_?MatrixQ,pyramid_?PyramidImageQ,displayFunc_]:=(len=Length[pyramid];dims=Table[Dimensions[pyramid[[l]]],{l,1,len}];Manipulate[(
-   y=Min[Max[9,1+Floor[-.00001+ry*dims[[l,1]]]],1+dims[[l,1]]-9];x=Min[Max[9,x=1+Floor[-.00001+rx*dims[[l,2]]]],1+dims[[l,2]]-9]);
-   {
-   Show[image//DispImage,OutlineGraphics[BoundingRectangles[pyramid,{{l,y,x}},{8,8}]]],
-   {rx,ry},{x,y},
-   pyramid[[l,y-8;;y+8,x-8;;x+8]]//displayFunc
-   },{l,1,len,1},{ry,0,1},{rx,0,1}])
+PyramidExplorer[image_?MatrixQ,pyramid_?PyramidImageQ,displayFunc_,startPoint_:{7,100,100}]:=(
+   len=Length[pyramid];dims=Table[Dimensions[pyramid[[l]]],{l,1,len}];
+   Manipulate[(
+      y=Min[Max[9,1+Floor[-.00001+ry*dims[[l,1]]]],1+dims[[l,1]]-9];x=Min[Max[9,x=1+Floor[-.00001+rx*dims[[l,2]]]],1+dims[[l,2]]-9]);
+      {
+      Show[image//DispImage,OutlineGraphics[BoundingRectangles[pyramid,{{l,y,x}},{8,8}]]],
+      {rx,ry},{x,y},
+      pyramid[[l,y-8;;y+8,x-8;;x+8]]//displayFunc
+      },{{l,startPoint[[1]]},1,len,1},{{ry,startPoint[[2]]/dims[[startPoint[[1]],1]]//N},0,1},{{rx,startPoint[[3]]/dims[[startPoint[[1]],2]]//N},0,1}])
 
-PyramidExplorer[pyramid_?PyramidImageQ]:=PyramidExplorer[pyramid[[1]],pyramid,DispImage]
+PyramidExplorer[pyramid_?PyramidImageQ,startPoint_:{7,100,100}]:=PyramidExplorer[pyramid[[1]],pyramid,DispImage,startPoint]
 
 DrawSurfDirCell[centre_?VectorQ,value_]:=
-Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]
+   Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]
 
 SurfDirPlot[patch_]:=Graphics[Flatten[Table[DrawSurfDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]
 
+DrawEdgeDirCell[centre_?VectorQ,value_]:={
+   Black,Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}],
+   Blue,Point[{centre+0.5*{Cos[value],Sin[value]}}] }
+
+
+EdgeDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawEdgeDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
 
 
 On[Assert];
