@@ -93,9 +93,9 @@ PyramidExplorer[image_?MatrixQ,pyramid_?PyramidImageQ,displayFunc_,startPoint_:{
 PyramidExplorer[pyramid_?PyramidImageQ,startPoint_:{7,100,100}]:=PyramidExplorer[pyramid[[1]],pyramid,DispImage,startPoint]
 
 DrawSurfDirCell[centre_?VectorQ,value_]:=
-   Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]
+   {Black,Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]}
 
-SurfDirPlot[patch_]:=Graphics[Flatten[Table[DrawSurfDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]
+SurfDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawSurfDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
 
 DrawEdgeDirCell[centre_?VectorQ,value_]:={
    Black,Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}],
@@ -103,6 +103,14 @@ DrawEdgeDirCell[centre_?VectorQ,value_]:={
 
 
 EdgeDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawEdgeDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
+
+
+FilterAnalyse[filterPyramid_?PyramidImageQ,patchFilterF_,ChannelDrawF_,coords_?VectorQ]:=
+   {Show[circleKernel//DispImage,filterPyramid[[coords[[1]],coords[[2]]-8;;coords[[2]]+8,coords[[3]]-8;;coords[[3]]+8]]//ChannelDrawF],filterPyramid[[coords[[1]],coords[[2]]-8;;coords[[2]]+8,coords[[3]]-8;;coords[[3]]+8]]//SurfCirclePatchH//Reverse//MatrixPlot}
+
+(* Example Use:
+   FilterAnalyse[surfPyr,SurfCirclePatchH,SurfDirPlot,{7,130,183}]
+*)
 
 
 On[Assert];
