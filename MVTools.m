@@ -67,6 +67,8 @@ BoundingRectangles[coords_?MatrixQ,filterSize_?VectorQ]:=
 BoundingRectangles[imgPyramid_?PyramidImageQ,coords_?MatrixQ,filterSize_?VectorQ]:=
    Map[Scale[BoundingRectangles[{#[[2;;3]]//Reverse},filterSize],Length[imgPyramid[[1]]]/Length[imgPyramid[[#[[1]]]]],{0,0}]&,coords]
 
+BoundingRectangles[imgPyramid_?PyramidImageQ,{},filterSize_?VectorQ]:={}
+
 (* Pyramid is assumed to be of some filter type which has already been applied. Positives are values above the threshold *)
 BoundingRectangles[pyramid_?PyramidImageQ,threshold_Real,filterSize_?VectorQ]:=
    BoundingRectangles[pyramid,Position[pyramid,x_/;x>=threshold],filterSize]

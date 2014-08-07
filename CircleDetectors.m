@@ -9,27 +9,33 @@ Mod[ArcTan[x,y]+\[Pi]/2,\[Pi]]//N],{y,-8,+8},{x,-8,+8}];
 
 (* This assumes interior is dark and surrounded
    by brighter disk, eg No Entry traffic sign *)
-edgeAngle=Table[If[x==0&&y==0,0.0,
+darkInteriorCircleEdgeAngle=Table[If[x==0&&y==0,0.0,
 ArcTan[x,y]//N],{y,-8,+8},{x,-8,+8}];
 
 
 circleKernel=Table[If[(5<=Sqrt[(y-9)^2+(x-9)^2]<=7),1.0,0.0],{y,1,17},{x,1,17}];
 
 
+SurfCircleToP[x_]:=1/(1+E^-(-20+ .5 *x)); SetAttributes[SurfCircleToP,Listable];
 SurfCircleConv[surfPyramid_]:=
-   MVCorrelatePyramid[Cos[2.0*surfPyr], circleKernel*Cos[2.0*surfAngle]] +
-      MVCorrelatePyramid[Sin[2.0*surfPyr],circleKernel*Sin[2.0*surfAngle]]
+   (MVCorrelatePyramid[Cos[2.0*surfPyramid], circleKernel*Cos[2.0*surfAngle]] +
+      MVCorrelatePyramid[Sin[2.0*surfPyramid],circleKernel*Sin[2.0*surfAngle]])//SurfCircleToP
 
 
 EdgeCircleConv[edgePyramid_]:=
-   EdgeDirConv[edgePyr, circleKernel, edgeAngle]
+   EdgeDirConv[edgePyramid, circleKernel, darkInteriorCircleEdgeAngle]
 
 
 EdgeMagCircleConv[edgeMagPyramid_]:=
    MVCorrelatePyramid[edgeMagPyramid,circleKernel]
 
 
-EdgeCirclePatch[patch_]:=Cos[patch]*circleKernel*Cos[edgeAngle]+Sin[patch]*circleKernel*Sin[edgeAngle]
+EdgeCirclePatchH[patch_]:=Cos[patch]*circleKernel*Cos[edgeAngle]+Sin[patch]*circleKernel*Sin[edgeAngle];
+EdgeCirclePatch[patch_]:=Total[EdgeCirclePatchH[patch],2]
+
+
+SurfCirclePatchH[patch_]:=Cos[2.0*(patch-surfAngle)]*circleKernel;
+SurfCirclePatch[patch_]:=Total[SurfCirclePatchH[patch],2]//SurfCircleToP
 
 
 Analysis[]:={
@@ -40,8 +46,20 @@ Analysis[]:={
 ]}
 
 
+On[Assert]
+
 Assert[surfAngle[[9,17]]==\[Pi]/2];
 
-Assert[edgeAngle[[9,17]]==0];
-Assert[edgeAngle[[9,1]]==\[Pi]];
-Assert[edgeAngle[[5,5]]==-3 \[Pi]/4];
+Assert[darkInteriorCircleEdgeAngle[[9,17]]==0];
+Assert[darkInteriorCircleEdgeAngle[[9,1]]==\[Pi]];
+Assert[darkInteriorCircleEdgeAngle[[5,5]]==-3 \[Pi]/4];
+
+(
+   testImage=StandardiseImage["c:/users/julian/my documents/github/Machine-Vision/coin3.jpg"];
+   testSurfPyr=SobelFilter[BuildPyramid[testImage,{8,8}],SurfDir];
+   testSurfConv=SurfCircleConv[testSurfPyr];
+   Assert[ 0.95 < testSurfConv[[1,39,76]] < 1.01 ];
+   testFiltOut=SurfCirclePatch[testSurfPyr[[1,39-8;;39+8,76-8;;76+8]]];
+   Assert[ 0.95 < testFiltOut < 1.01];
+   Assert[ Abs[testSurfConv[[1,39,76]] - testFiltOut ] < 0.01 ];
+)

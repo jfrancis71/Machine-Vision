@@ -25,13 +25,10 @@ barKernel=Table[
 ,{y,-8,+8},{x,-8,+8}];
 
 
-mylog1[x_]:=1/(1+E^-(-20+ .5 *x))
-
-
 mylog2[x_]:=1/(1+E^-(-20+ x))
 
 
-SetAttributes[mylog1,Listable];SetAttributes[mylog2,Listable]
+SetAttributes[mylog2,Listable]
 
 
 NoEntryRecognition[image_?MatrixQ]:= (
@@ -47,18 +44,20 @@ NoEntryRecognition[image_?MatrixQ]:= (
 *)
    barOutput=EdgeDirConv[edgeDirPyr,barKernel,barAngle];
 
-   mylog1[circleFilterOutput]*mylog2[barOutput]
+   circleFilterOutput*mylog2[barOutput];
+
+   pl1=mylog2[barOutput];
+   pr1=circleFilterOutput'
+
+   pl2 = 0.02*pl1 + 10^-7*(1-pl1);
+   pr2 = 0.0002*pr1 + 10^-7*(1-pr1);
+
+   pf=10^-6;
+  (pf*(1-pf))/(pl2*pr2*(1-pf) + (1-pl2)*(1-pr2)*pf)*(pl2*pr2)/pf]]
+
 )
 
 
-NoEntryRecognition1[image_?MatrixQ]:= (
-   imgPyramid=BuildPyramid[image,{8,8}];
-   edgeMagPyr=SobelFilter[imgPyramid,EdgeMag];
-   circleFilterOutput=EdgeMagCircleConv[edgeMagPyr]
-)
-
-
-NoEntryRecognitionOutput[image_?MatrixQ,maxNo_:100]:= (
+NoEntryRecognitionOutput[image_?MatrixQ,threshold_:.2]:= (
    output=NoEntryRecognition[image];
-   threshold = RankedMax[Flatten[output],maxNo];
    Show[image//DispImage,BoundingRectangles[output,threshold,{8,8}]//OutlineGraphics] )
