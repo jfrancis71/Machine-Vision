@@ -31,6 +31,10 @@ mylog2[x_]:=1/(1+E^-(-20+ x))
 SetAttributes[mylog2,Listable]
 
 
+BrightBarPatchH[patch_]:=Cos[(patch-barAngle)]*barKernel;
+BrightBarPatch[patch_]:=Total[BrightBarPatchH[patch],2]//mylog2
+
+
 NoEntryRecognition[image_?MatrixQ]:= (
    imgPyramid=BuildPyramid[image,{8,8}];
    surfPyr=SobelFilter[imgPyramid,SurfDir];
@@ -46,8 +50,8 @@ NoEntryRecognition[image_?MatrixQ]:= (
 
    circleFilterOutput*mylog2[barOutput];
 
-   pl1=mylog2[barOutput];
-   pr1=circleFilterOutput;
+   pl1=circleFilterOutput;
+   pr1=mylog2[barOutput];
 
    pl2 = 0.02*pl1 + 10^-7*(1-pl1);
    pr2 = 0.0002*pr1 + 10^-7*(1-pr1);
