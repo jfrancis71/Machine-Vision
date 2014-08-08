@@ -47,13 +47,13 @@ NoEntryRecognition[image_?MatrixQ]:= (
    circleFilterOutput*mylog2[barOutput];
 
    pl1=mylog2[barOutput];
-   pr1=circleFilterOutput'
+   pr1=circleFilterOutput;
 
    pl2 = 0.02*pl1 + 10^-7*(1-pl1);
    pr2 = 0.0002*pr1 + 10^-7*(1-pr1);
 
    pf=10^-6;
-  (pf*(1-pf))/(pl2*pr2*(1-pf) + (1-pl2)*(1-pr2)*pf)*(pl2*pr2)/pf]]
+  (pf*(1-pf))/(pl2*pr2*(1-pf) + (1-pl2)*(1-pr2)*pf)*(pl2*pr2)/pf
 
 )
 
