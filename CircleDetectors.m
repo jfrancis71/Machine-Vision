@@ -34,8 +34,8 @@ EdgeCirclePatchH[patch_]:=Cos[patch]*circleKernel*Cos[edgeAngle]+Sin[patch]*circ
 EdgeCirclePatch[patch_]:=Total[EdgeCirclePatchH[patch],2]
 
 
-SurfCirclePatchH[patch_]:=Cos[2.0*(patch-surfAngle)]*circleKernel;
-SurfCirclePatch[patch_]:=Total[SurfCirclePatchH[patch],2]//SurfCircleToP
+SurfCirclePatchH[patch_]:=0.5*Cos[2.0*(patch-surfAngle)]*circleKernel;
+SurfCirclePatch[patch_]:=1.0/(1.0+E^(-Total[SurfCirclePatchH[patch],2]+20.0));
 
 
 Analysis[]:={
