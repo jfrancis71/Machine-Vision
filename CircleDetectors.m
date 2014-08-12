@@ -13,7 +13,10 @@ darkInteriorCircleEdgeAngle=Table[If[x==0&&y==0,0.0,
 ArcTan[x,y]//N],{y,-8,+8},{x,-8,+8}];
 
 
-circleKernel=Table[If[(5<=Sqrt[(y-9)^2+(x-9)^2]<=7),1.0,0.0],{y,1,17},{x,1,17}];
+circleKernel=Table[If[(5<=Sqrt[y^2+x^2]<=7),1.0,0.0],{y,-8,+8},{x,-8,+8}];
+
+
+highResCircleKernel=Table[If[(10<=Sqrt[y^2+x^2]<=11),1.0,0.0],{y,-12,+12},{x,-12,+12}];
 
 
 SurfCircleToP[x_]:=1/(1+E^-(-20+ .5 *x)); SetAttributes[SurfCircleToP,Listable];
@@ -44,6 +47,29 @@ Analysis[]:={
    circleKernel//Raster//Graphics,
    ptcht//EdgeDirPlot
 ]}
+
+
+HNDist[x_,s_]=FullSimplify[PDF[HalfNormalDistribution[s],x],Assumptions->{x>0}]
+
+
+BesI0s5=1/(\[Pi] BesselI[0,5])//N
+
+
+CircleSurfMagDirPatchH[patch_]:=
+Log[2,((* This is the e = 0 case *)
+(0.57*HNDist[patch[[All,All,1]],11.1]+(1.0-.57)*HNDist[patch[[All,All,1]],1.6]) (*p[Edge Mag|E=0]*)
+*
+1/\[Pi](*p[edge dir|E=0*)
+*(1-circleKernel)(*p[E=0]*)
+)+
+(* This is the e = 1 case *)
+HNDist[patch[[All,All,1]],1.6](*p[Edge Mag|E=1*)*
+(0.57*BesI0s5*E^(05.0 Cos[2.0*(patch[[All,All,2]]-surfAngle)])+(1.0-0.57)*1/\[Pi]) * (*p[Edge dir|E=1*)
+circleKernel (*p[E=1]*)]-
+Log[2,1/\[Pi]*(0.57*HNDist[patch[[All,All,1]],11.1]+(1-.57)*HNDist[patch[[All,All,1]],1.6])]
+
+
+CircleSurfMagDirPatch[patch_]:=Total[CircleSurfMagDirPatchH[patch],2]
 
 
 On[Assert]
