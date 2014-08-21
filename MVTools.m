@@ -105,13 +105,9 @@ PyramidExplorer[pyramid_?PyramidImageQ,startPoint_:{7,100,100}]:=PyramidExplorer
 DrawSurfDirCell[centre_?VectorQ,value_]:=
    {Black,Line[{centre-0.5*{Cos[value],Sin[value]},centre+0.5*{Cos[value],Sin[value]}}]}
 
-SurfDirPlot[patch_]:=Module[{s=(Length[patch]-1)/2},Graphics[Join[{Red,Point[{s,s}+{0.5,0.5}]},Flatten[Table[DrawSurfDirCell[{x+s+0.5,y+s+0.5},patch[[y+s+1,x+s+1]]],{y,-s,+s},{x,-s,+s}],1]]]]
-
 DrawEdgeDirCell[centre_?VectorQ,value_]:={
    Black,Line[{centre-0.4*{Cos[value],Sin[value]},centre+0.4*{Cos[value],Sin[value]}}],
    Blue,Point[{centre+0.4*{Cos[value],Sin[value]}}] }
-
-EdgeDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawEdgeDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
 
 
 DrawEdgeMagDirCell[centre_?VectorQ,{mag_,dir_}]:={
@@ -119,14 +115,14 @@ DrawEdgeMagDirCell[centre_?VectorQ,{mag_,dir_}]:={
    Blue,Point[{centre+0.4*{Cos[dir],Sin[dir]}}] };
 
 
-EdgeMagDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawEdgeMagDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
-
-
 DrawSurfMagDirCell[centre_?VectorQ,{mag_,dir_}]:={
    RGBColor[0,mag,0],Line[{centre-0.4*{Cos[dir],Sin[dir]},centre+0.4*{Cos[dir],Sin[dir]}}] };
 
 
-SurfMagDirPlot[patch_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[DrawSurfMagDirCell[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
+(* Used for plotting grid of cell values
+   eg. CellPlot[patch,DrawEdgeMagDirCell]
+*)
+CellPlot[patch_,cellPlotF_]:=Graphics[Join[{Red,Point[{8.5,8.5}]},Flatten[Table[cellPlotF[{x+8+0.5,y+8+0.5},patch[[y+9,x+9]]],{y,-8,+8},{x,-8,+8}],1]]]
 
 
 FilterAnalyse[filterPyramid_?PyramidImageQ,patchFilterF_,kernel_,ChannelDrawF_,coords_?VectorQ]:=
