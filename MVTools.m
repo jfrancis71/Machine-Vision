@@ -26,8 +26,10 @@ BuildPyramid[image_?MatrixQ,filterSize_List]:=
 
 PyramidImageQ[pyramid_List]:=MatrixQ[pyramid[[1]]]
 
+PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//ImageData)&,pyr]
 
-Patch[image_,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
+
+Patch[image_?MatrixQ,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
 Patch[pyr_,level_,y_,x_,filterSize_:8]:=Patch[pyr[[level]],y,x,filterSize]
 
 
