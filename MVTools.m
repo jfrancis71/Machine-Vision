@@ -5,14 +5,17 @@
    So do not use directly in Array/MatrixPlot
 *)
 StandardiseImage[image_Image,size_Integer]:=ImageResize[ColorConvert[image,"GrayScale"],size]//ImageData//Reverse
+StandardiseImage[image_Image,{sy_Integer,sx_Integer}]:=ImageResize[ColorConvert[image,"GrayScale"],{sy,sx}]//ImageData//Reverse
 StandardiseImage[image_Image]:=StandardiseImage[image,128]
-StandardiseImage[image_String, size_Integer] := 
-   StandardiseImage[Import[image],size]
+StandardiseImage[image_String, size_Integer] := StandardiseImage[Import[image],size]
+StandardiseImage[image_String, {sy_Integer,sx_Integer}] := StandardiseImage[Import[image],{sy,sx}]
 StandardiseImage[image_String] := 
    StandardiseImage[Import[image]]
 
 
 DispImage[image_?MatrixQ]:=image//Raster//Graphics
+
+MVImageFilter[f_,image_?MatrixQ,kernelSize_]:=ImageFilter[f,image//Image,kernelSize]//ImageData
 
 
 (* Builds an image pyramid.
