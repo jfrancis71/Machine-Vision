@@ -3,6 +3,10 @@
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
 
 
+(* ::Text:: *)
+(*Note Surf and EdgeDir both refer to edge directions, but EdgeDir is signed, whereas Surf is not.*)
+
+
 surfAngle=Table[If[x==0&&y==0,0.0,
 Mod[ArcTan[x,y]+\[Pi]/2,\[Pi]]//N],{y,-8,+8},{x,-8,+8}];
 
@@ -14,6 +18,9 @@ ArcTan[x,y]//N],{y,-8,+8},{x,-8,+8}];
 
 
 circleKernel=Table[If[(5<=Sqrt[y^2+x^2]<=7),1.0,0.0],{y,-8,+8},{x,-8,+8}];
+
+
+circleInsideKernel=Table[If[(Sqrt[y^2+x^2]<=5),1.0,0.0],{y,-8,+8},{x,-8,+8}];
 
 
 highResCircleKernel=Table[If[(10<=Sqrt[y^2+x^2]<=11),1.0,0.0],{y,-12,+12},{x,-12,+12}];
@@ -49,10 +56,10 @@ Analysis[]:={
 ]}
 
 
-HNDist[x_,s_]=FullSimplify[PDF[HalfNormalDistribution[s],x],Assumptions->{x>0}]
+HNDist[x_,s_]=FullSimplify[PDF[HalfNormalDistribution[s],x],Assumptions->{x>0}];
 
 
-BesI0s5=1/(\[Pi] BesselI[0,5])//N
+BesI0s5=1/(\[Pi] BesselI[0,5])//N;
 
 
 CircleSurfMagDirPatchH[patch_]:=
@@ -70,6 +77,32 @@ Log[2,1/\[Pi]*(0.57*HNDist[patch[[All,All,1]],11.1]+(1-.57)*HNDist[patch[[All,Al
 
 
 CircleSurfMagDirPatch[patch_]:=Total[CircleSurfMagDirPatchH[patch],2]
+
+
+ShapeCircleConv[edgeMagPyr_]:=
+   MVCorrelatePyramid[
+HNDist[edgeMagPyr,1.6]/(HNDist[edgeMagPyr,1.6]+HNDist[edgeMagPyr,11.6]),circleKernel]
+
+
+AppearanceCircleConv[pyr_]:=Log[Sum[Exp[-MVCorrelatePyramid[
+(pyr-a)^2,circleInsideKernel]/(2*0.1)],{a,0,1,0.05}]*0.5];
+
+AppearanceCircleConvFast[pyr_]:=(
+   S = MVCorrelatePyramid[pyr,circleInsideKernel];
+   NC = Position[circleInsideKernel,1.]//Length;
+   -1+Log[Exp[-MVCorrelatePyramid[pyr^2,circleInsideKernel]] Exp[S^2/NC] ( Erf[(NC+S)/Sqrt[NC]] + Erf[S/Sqrt[NC]] )]
+)
+
+
+CirclesRecognitionOutput[img_]:=
+(
+   pyr = BuildPyramid[img,{8,8}]; (* 010 *)
+   rawShape=ShapeCircleConv[SobelFilter[pyr,EdgeMag]]; (* 130 *)
+   shape=1/(1+Exp[-(rawShape-70)*10]);
+   rawApp=AppearanceCircleConvFast[pyr]; (* 120 *)
+   appearance=1/(1+Exp[-(rawApp+0.25)*10]);
+   Show[img//DispImage,OutlineGraphics[BoundingRectangles[shape*appearance,0.10,{8,8}]] (* 070 *)
+]) (* 350 *)
 
 
 On[Assert]

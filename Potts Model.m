@@ -12,7 +12,10 @@ DispState[PottsModel[_,labels_,space_]]:=Show[(space/labels)//DispImage,ImageSiz
 CreatePottsModel[J_,labels_,{sy_,sx_}]:=PottsModel[J,labels,Table[RandomInteger[labels-1],{j,1,sy},{i,1,sx}]]
 
 
-LocalEnergyFunction[PottsModel[_,_,space_],j_,i_]:=-Sum[Boole[space[[j,i]]==space[[nj,ni]]],{nj,Max[1,j-1],Min[Length[space],j+1]},{ni,Max[1,i-1],Min[Length[space[[1]]],i+1]}]+1
+PottsEnergyModel[PottsModel[_,_,space_],j_,i_]:=-Sum[Boole[space[[j,i]]==space[[nj,ni]]],{nj,Max[1,j-1],Min[Length[space],j+1]},{ni,Max[1,i-1],Min[Length[space[[1]]],i+1]}]+1
+
+
+PottsPotential[PottsModel[J_,labels_,space_?MatrixQ]]:=Sum[PottsEnergyModel[PottsModel[J,labels,space],j,i],{j,1,Length[space]},{i,1,Length[space[[1]]]}]
 
 
 GibbsSampleOnLattice[PottsModel[J_,labels_,space_?MatrixQ],LocalEnergyFunction_]:=(
@@ -27,7 +30,7 @@ GibbsSampleOnLattice[PottsModel[J_,labels_,space_?MatrixQ],LocalEnergyFunction_]
    ]];PottsModel[J,labels,sp])
 
 
-GibbsSampleOnLattice[space_,labels_]:=GibbsSampleOnLattice[space,labels,LocalEnergyFunction]
+(*GibbsSampleOnLattice[space_,labels_]:=GibbsSampleOnLattice[space,labels,PottsEnergyModel]*)
 
 
 (*out=NestList[GibbsSampleOnLattice[#,10]&,CreateSpace[10],250];//AbsoluteTiming*)

@@ -33,7 +33,9 @@ PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//Ima
 
 
 Patch[image_?MatrixQ,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
-Patch[pyr_,level_,y_,x_,filterSize_:8]:=Patch[pyr[[level]],y,x,filterSize]
+Patch[pyr_,level_,y_,x_,filterSize_:8]:=Patch[pyr[[level]],y,x,filterSize];
+
+DrawKernelOnPatch[patch_,kernel_]:=Show[patch//DispImage,Graphics[{Red,Map[Point[#-{.5,.5}]&,Position[kernel,1.]]}]]
 
 
 MVCorrelateImage[image_?MatrixQ,kernel_?MatrixQ]:=ImageData[ImageCorrelate[Image[image],kernel]];
@@ -49,7 +51,7 @@ EdgeDirConv[edgePyramid_,kernel_,angles_]:=
 
 sobelX = {{-1, 0, +1}, {-2, 0, +2}, {-1, 0, +1}}; sobelY = 
  Transpose[sobelX];
-EdgeMag[dx_,dy_]=Sqrt[dx^2+dy^2];SetAttributes[EdgeMag,Listable];
+EdgeMag[dx_,dy_]:=Sqrt[dx^2+dy^2];(*SetAttributes[EdgeMag,Listable];*)
 
 (* Returns direction of maximum light increase *)
 EdgeDir[dx_,dy_]=ArcTan[dx,dy];
@@ -137,6 +139,12 @@ FilterAnalyse[filterPyramid_?PyramidImageQ,patchFilterF_,kernel_,ChannelDrawF_,c
 (* Example Use:
    FilterAnalyse[surfPyr,SurfCirclePatchH,circleKernel,SurfDirPlot,{7,130,183}]
 *)
+
+
+CameraRecognitionUI[]:=Dynamic[out]
+
+
+CameraRecognition[program_]:=While[True,out=program[currentImg=StandardiseImage[CurrentImage[]]];Pause[0.1]]
 
 
 On[Assert];
