@@ -15,7 +15,8 @@ StandardiseImage[image_String] :=
 
 DispImage[image_?MatrixQ]:=image//Raster//Graphics
 
-MVImageFilter[f_,image_?MatrixQ,kernelSize_]:=ImageFilter[f,image//Image,kernelSize]//ImageData
+MVImageFilter[f_,image_?MatrixQ,kernelSize_]:=ImageFilter[f,image//Image,kernelSize]//ImageData;
+MVPyramidFilter[f_,pyr_?PyramidImageQ,kernelSize_]:=Map[MVImageFilter[f,#,kernelSize]&,pyr];
 
 
 (* Builds an image pyramid.
