@@ -88,9 +88,11 @@ AppearanceCircleConv[pyr_]:=Log[Sum[Exp[-MVCorrelatePyramid[
 (pyr-a)^2,circleInsideKernel]/(2*0.1)],{a,0,1,0.05}]*0.5];
 
 AppearanceCircleConvFast[pyr_]:=(
-   S = MVCorrelatePyramid[pyr,circleInsideKernel];
-   NC = Position[circleInsideKernel,1.]//Length;
-   -1+Log[Exp[-MVCorrelatePyramid[pyr^2,circleInsideKernel]] Exp[S^2/NC] ( Erf[(NC+S)/Sqrt[NC]] + Erf[S/Sqrt[NC]] )]
+   S1 = MVCorrelatePyramid[pyr^2,circleInsideKernel];
+   S2 = MVCorrelatePyramid[pyr,circleInsideKernel];
+   S3 = Position[circleInsideKernel,1.]//Length;
+
+   -1+Log[Exp[-S1] Exp[S2^2/S3] ( Erf[(S3-S2)/Sqrt[S3]] + Erf[S2/Sqrt[S3]] )]
 )
 
 
@@ -100,7 +102,7 @@ CirclesRecognitionOutput[img_]:=
    rawShape=ShapeCircleConv[SobelFilter[pyr,EdgeMag]]; (* 130 *)
    shape=1/(1+Exp[-(rawShape-70)*10]);
    rawApp=AppearanceCircleConvFast[pyr]; (* 120 *)
-   appearance=1/(1+Exp[-(rawApp+0.25)*10]);
+   appearance=1/(1+Exp[-(rawApp+0.3)*10]);
    Show[img//DispImage,OutlineGraphics[BoundingRectangles[shape*appearance,0.10,{8,8}]] (* 070 *)
 ]) (* 350 *)
 
