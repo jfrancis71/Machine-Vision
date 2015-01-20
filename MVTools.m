@@ -36,7 +36,7 @@ PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//Ima
 Patch[image_?MatrixQ,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
 Patch[pyr_,level_,y_,x_,filterSize_:8]:=Patch[pyr[[level]],y,x,filterSize];
 
-DrawKernelOnPatch[patch_,kernel_]:=Show[patch//DispImage,Graphics[{Red,Map[Point[#-{.5,.5}]&,Position[kernel,1.]]}]]
+DrawKernelOnPatch[patch_,kernel_]:=Show[patch//DispImage,Graphics[{Red,Map[Point[Reverse[#-{.5,.5}]]&,Position[kernel,1.]]}]]
 
 
 MVCorrelateImage[image_?MatrixQ,kernel_?MatrixQ]:=ImageData[ImageCorrelate[Image[image],kernel]];
