@@ -43,4 +43,41 @@ CirclesRecognitionOutput[img_] := (
 ]) (* 350 *)
 
 
+circleExtKernel=Table[If[(6<Sqrt[y^2+x^2]<=7),1.0,0.0],{y,-8,+8},{x,-8,+8}];
+
+
+CircleExt=Position[circleExtKernel,1.];
+CircleInt=Map[Function[c,SortBy[Position[circleInsideKernel,1.],EuclideanDistance[#,c]&]//First],CircleExt];
+
+
+(* ::Text:: *)
+(*PDF[StudentTDistribution[0,.02,1],d]  =  15.9155/(1+2500. d^2)*)
+
+
+ShapeCirclePatch1[patch_]:=54-Total[Log[
+   0.3*(15.9/(1.+(2500.*(Extract[patch,CircleExt]-Extract[patch,CircleInt])^2 ))) + 0.7
+   ]]
+
+
+AppearanceCircleConvOpt1[pyr_]:=(
+   S1 = (1./(2. .0025))MVCorrelatePyramid[pyr^2,circleInsideKernel];
+   S2 = (1./(2. .0025))MVCorrelatePyramid[pyr,circleInsideKernel];
+   S3 = (1./(2. .0025)) (Position[circleInsideKernel,1.]//Length);
+
+   Log[1/(Sqrt[2 \[Pi]] .05)^81 .886 * Exp[-S1] Exp[S2^2/S3] ( Erf[(S3-S2)/Sqrt[S3]] + Erf[S2/Sqrt[S3]] )]- 81 Log[3]
+)
+
+
+CirclesRecognition1[image_]:=(
+   pyr=BuildPyramid[image,{8,8}];
+   app=AppearanceCircleConvOpt1[pyr];
+   shape=PyramidFilter[ShapeCirclePatch1, pyr, {8,8}];
+   res=shape+Clip[app,{-\[Infinity],20}]
+)
+
+
+CirclesRecognitionOutput1[image_]:=
+Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],80.,{8,8}]]]
+
+
 On[Assert]
