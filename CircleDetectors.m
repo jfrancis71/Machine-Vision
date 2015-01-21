@@ -101,7 +101,7 @@ ShapeCircleConv1[pyr_]:=(
    vertDiff=MVCorrelatePyramid[pyr,Transpose[{{1,0,-1}}]]^2;
    diag1Diff=MVCorrelatePyramid[pyr,{{0,0,1},{0,0,0},{-1,0,0}}//Reverse]^2;
    diag2Diff=MVCorrelatePyramid[pyr,{{0,0,1},{0,0,0},{-1,0,0}}]^2;
-   54-(
+   -(
     MVCorrelatePyramid[Log[0.3*15.9/(1+horizDiff*2500)+0.7],circleEdgeHKernel]+
     MVCorrelatePyramid[Log[0.3*15.9/(1+vertDiff*2500)+0.7],circleEdgeVKernel]+
     MVCorrelatePyramid[Log[0.3*15.9/(1+diag1Diff*2500)+0.7],circleEdgeDiag1Kernel]+
@@ -133,7 +133,7 @@ CirclesRecognition1[image_]:=(
 
 
 CirclesRecognitionOutput1[image_]:=
-Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],80.,{8,8}]]]
+Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],24.,{8,8}]]]
 
 
 On[Assert]
