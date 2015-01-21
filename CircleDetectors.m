@@ -133,7 +133,7 @@ CirclesRecognition1[image_]:=(
 
 
 CirclesRecognitionOutput1[image_]:=
-Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],24.,{8,8}]]]
+Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],26.,{8,8}]]]
 
 
 On[Assert]
