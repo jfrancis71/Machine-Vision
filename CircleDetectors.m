@@ -137,7 +137,7 @@ ShapePrior[shape]+Clip[app,{-\[Infinity],20}]+shapeOut)
 
 DeformableCircleRecognition[patch_]:=Table[
 shp=baseShape+{s1,s2,s3,s4,s5,s6};
-DeformableCircleRecognition[patch,shp],{s1,0,1},{s2,0,+1},{s3,0,1},{s4,0,2},{s5,0,2},{s6,0,2}]
+DeformableCircleRecognition[patch,shp],{s1,0,1},{s2,0,+1},{s3,0,1},{s4,0,1},{s5,0,1},{s6,0,1}]
 
 
 GradientShape[patch_,shape_]:=
@@ -168,7 +168,8 @@ res=CirclesRecognition[image];
 res1 = res;
 If[Max[res1]<26,
 ptchLoc=Position[res1,Max[res1]]//First;
-res1[[ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]] = DeformableCircleRecognitionMax[Patch[pyr,ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]]+7.8,0];
+If[InBoundsQ[pyr,ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]],
+   res1[[ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]] = DeformableCircleRecognitionMax[Patch[pyr,ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]]+7.8,0],0];
 res1
 )
 
