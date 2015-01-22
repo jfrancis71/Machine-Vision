@@ -89,4 +89,92 @@ CirclesRecognitionOutput[image_]:=
    Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition[image],26.,{8,8}]]]
 
 
+covar = Table[3 Exp[-2.7 Sin[\[Pi] (x1-x2)^1]^2],{x1,0,1-(1/6),1/6},{x2,0,1-(1/6),1/6}];
+
+
+ShapeFunc[x3_,shape_]:=Table[3 Exp[-2.7 Sin[\[Pi] (x3-x1)]^2],{x1,0,1-(1/6),1/6}].Inverse[covar].shape;
+
+
+baseShape=ConstantArray[0,6]
+
+
+{0,0,0,0,0,0}
+
+
+ShapePrior[shap_]:=Evaluate[Log[PDF[MultinormalDistribution[baseShape,covar],shap]]]
+
+
+radius[x_,y_,shape_]:=If[x==0&&y==0,100,5+ShapeFunc[ArcTan[x,y]/(2*3.141),shape]]
+
+
+App[patch_,shape_]:=
+(kern=Table[If[(x1^2+x2^2)<=radius[x1,x2,shape]^2,1,0],{x2,-8,+8},{x1,-8,+8}];
+(*
+S1 = (1./(2. .0025))Sum[If[(x1^2+x2^2)<=radius[x1,x2,shape]^2,patch[[x2+9,x1+9]]^2,0],{x2,-8,+8},{x1,-8,+8}];
+   S2 = (1./(2. .0025))Sum[If[(x1^2+x2^2)<=radius[x1,x2,shape]^2,patch[[x2+9,x1+9]],0],{x2,-8,+8},{x1,-8,+8}];
+   S3 = (1./(2. .0025)) Sum[If[(x1^2+x2^2)<=radius[x1,x2,shape]^2,1.,0.],{x2,-8,+8},{x1,-8,+8}];
+countP = Sum[If[(x1^2+x2^2)<=radius[x1,x2,shape]^2,1.,0.],{x2,-8,+8},{x1,-8,+8}];*)
+countP = Total[kern,2];
+S1 = (1./(2. .0025)) Total[patch^2*kern,2];
+S2 = (1./(2. .0025)) Total[patch*kern,2];
+S3 = (1./(2. .0025)) countP;
+
+   Log[1/(Sqrt[2 \[Pi]] .05)^countP .886 * Exp[-S1] Exp[S2^2/S3] ( Erf[(S3-S2)/Sqrt[S3]] + Erf[S2/Sqrt[S3]] )]- countP Log[3]
+)
+
+
+MVShapeCircleFilt[patch_,shape_]:=-Sum[
+If[(radius[x1,x2,shape]+1)^2<(x1^2+x2^2)<(radius[x1,x2,shape]+2)^2,Log[
+0.3*(15.9/(1.+(2500.*(patch[[x2+9,x1+9]]-Extract[patch,{9,9}+{x2,x1}-Round[2*Normalize[{x2,x1}]]])^2 ))) + 0.7],0],
+{x2,-8,+8},{x1,-8,+8}]
+
+
+DeformableCircleRecognition[patch_,shape_]:=(
+app=App[patch,shape];
+shapeOut=MVShapeCircleFilt[patch,shape];
+ShapePrior[shape]+Clip[app,{-\[Infinity],20}]+shapeOut)
+
+
+DeformableCircleRecognition[patch_]:=Table[
+shp=baseShape+{s1,s2,s3,s4,s5,s6};
+DeformableCircleRecognition[patch,shp],{s1,0,1},{s2,0,+1},{s3,0,1},{s4,0,2},{s5,0,2},{s6,0,2}]
+
+
+GradientShape[patch_,shape_]:=
+{
+DeformableCircleRecognition[patch,shape+{1,0,0,0,0,0}],
+DeformableCircleRecognition[patch,shape+{0,1,0,0,0,0}],
+DeformableCircleRecognition[patch,shape+{0,0,1,0,0,0}],
+DeformableCircleRecognition[patch,shape+{0,0,0,1,0,0}],
+DeformableCircleRecognition[patch,shape+{0,0,0,0,1,0}],
+DeformableCircleRecognition[patch,shape+{0,0,0,0,0,1}]
+}-DeformableCircleRecognition[patch,shape]
+
+
+GradientDescent[patch_,shape_,path_]:=(
+g=GradientShape[patch,shape];
+If[Length[path]<10,GradientDescent[patch,shape+ReplacePart[ConstantArray[0,6],Last[Ordering[g]]->1],Append[path,{DeformableCircleRecognition[patch,shape],shape}]],path]
+)
+
+
+CircleShapePlot[shape_,ptch_]:=Show[{ptch//DispImage,ParametricPlot[{9,9}+{(5+ShapeFunc[x3,shape])*Cos[x3 2 \[Pi]],(5+ShapeFunc[x3,shape])*Sin[x3 2 \[Pi]]},{x3,0,1},PlotStyle->{Thick,Red}]}]
+
+
+DeformableCircleRecognitionMax[patch_]:=GradientDescent[patch,ConstantArray[0,6],{}][[All,1]]//Max
+
+
+CirclesRecognition1[image_]:=(
+res=CirclesRecognition[image];
+res1 = res;
+If[Max[res1]<26,
+ptchLoc=Position[res1,Max[res1]]//First;
+res1[[ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]] = DeformableCircleRecognitionMax[Patch[pyr,ptchLoc[[1]],ptchLoc[[2]],ptchLoc[[3]]]]+7.8,0];
+res1
+)
+
+
+CirclesRecognitionOutput1[image_]:=
+   Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],26.,{8,8}]]]
+
+
 On[Assert]
