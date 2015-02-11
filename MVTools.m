@@ -24,7 +24,7 @@ MVPyramidFilter[f_,pyr_?PyramidImageQ,kernelSize_]:=Map[MVImageFilter[f,#,kernel
    Note filterSize is given in {r,c} pixels extending from the centre
    so filterDims=filterSize*2 + {1,1}
 *)
-BuildPyramid[image_?MatrixQ,filterSize_List]:=
+BuildPyramid[image_?MatrixQ,filterSize_List:{8,8}]:=
    Table[ImageResize[Image[image],Round[Dimensions[image][[2]]*(1-.1)^n]]//ImageData,{n,0,-Log[Dimensions[image][[2]]/(2*filterSize[[2]]+1)]/Log[1-.1]}]
    PyramidImageQ[image_]:=ArrayQ[image,3]
 
@@ -32,7 +32,7 @@ PyramidImageQ[pyramid_List]:=MatrixQ[pyramid[[1]]]
 
 PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//ImageData)&,pyr];
 
-InBoundsQ[pyr_?PyramidImageQ,level_,y_,x_,filterSize_:8] := (level>0&&Length[pyr]>level&&y>8&&x>8&&y<Length[pyr[[level]]]-8&&x<Length[pyr[[level,1]]])
+InBoundsQ[pyr_?PyramidImageQ,level_,y_,x_,filterSize_:8] := (level>0&&Length[pyr]>level&&y>8&&x>8&&y<Length[pyr[[level]]]-8&&x<Length[pyr[[level,1]]]-8)
 
 
 Patch[image_?MatrixQ,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
