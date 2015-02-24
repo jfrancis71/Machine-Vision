@@ -8,6 +8,9 @@
 (*rands=Table[{Random[],Random[]},{100}];*)
 
 
+covar=Table[3 Exp[-2.7 Sin[\[Pi] (x1-x2)]^2],{x1,0,1-(1/6),1/6},{x2,0,1-(1/6),1/6}];
+
+
 (* ::Input:: *)
 (*ShapeFunc[x3_,shape_]=Table[3 Exp[-2.7 Sin[\[Pi] (x3-x1)]^2],{x1,0,1-(1/6),1/6}].Inverse[covar].shape;*)
 
