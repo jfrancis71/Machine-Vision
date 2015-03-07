@@ -10,10 +10,17 @@ StandardiseImage[image_Image]:=StandardiseImage[image,128]
 StandardiseImage[image_String, size_Integer] := StandardiseImage[Import[image],size]
 StandardiseImage[image_String, {sy_Integer,sx_Integer}] := StandardiseImage[Import[image],{sy,sx}]
 StandardiseImage[image_String] := 
-   StandardiseImage[Import[image]]
+   StandardiseImage[Import[image]];
+
+ReadImagesFromDirectory[directory_String,size_:128]:=
+Map[StandardiseImage[#,size]&,
+FileNames[StringJoin[directory,"\\*.jpg"]]
+]
 
 
-DispImage[image_?MatrixQ]:=image//Raster//Graphics
+DispImage[image_?MatrixQ]:={image//Raster,Red,If[Length[image]<32,Point[{8.5,8.5}],{}]}//Graphics;
+
+ColDispImage[image_]:=Raster[Map[List@@Blend[{Blue,Red},#/2+.5]&,image,{2}]]//Graphics;
 
 MVImageFilter[f_,image_?MatrixQ,kernelSize_]:=ImageFilter[f,image//Image,kernelSize]//ImageData;
 MVPyramidFilter[f_,pyr_?PyramidImageQ,kernelSize_]:=Map[MVImageFilter[f,#,kernelSize]&,pyr];
@@ -32,6 +39,10 @@ PyramidImageQ[pyramid_List]:=MatrixQ[pyramid[[1]]]
 
 PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//ImageData)&,pyr];
 
+(* Note this doesn't assume filter *)
+InBoundsQ[image_?MatrixQ,y_,x_] := (y>0&&x>0&&y<Length[image]&&x<Length[image[[1]]])
+
+(* Note this does assume filter *)
 InBoundsQ[pyr_?PyramidImageQ,level_,y_,x_,filterSize_:8] := (level>0&&Length[pyr]>level&&y>8&&x>8&&y<Length[pyr[[level]]]-8&&x<Length[pyr[[level,1]]]-8)
 
 
