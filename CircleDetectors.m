@@ -178,4 +178,43 @@ CirclesRecognitionOutput1[image_]:=
    Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],26.,{8,8}]]]
 
 
+NeighbourProb[x1_,x2_]=0.3*(15.9/(1.+(2500.*(x1-x2)^2)))+0.7;
+
+
+JArcTan[x_,y_]=If[ArcTan[x,y]<0,2 \[Pi] + ArcTan[x,y],ArcTan[x,y]];
+
+
+ToPolar[{x_,y_}]={Sqrt[x^2+y^2],ArcTan[x,y]};
+
+
+ToCartesian[{r_,\[Theta]_}]={Cos[\[Theta]],Sin[\[Theta]]}*r;
+
+
+JExtract[patch_,coords_]:=If[InBoundsQ[patch,coords[[2]],coords[[1]]],patch[[coords[[2]],coords[[1]]]],-100]
+
+
+LRF[patch_,fieldNo_,shape_,b_]:=(
+kernel=Table[If[y==0&&x==0,0,If[(fieldNo-1)*2*\[Pi]/6<=JArcTan[x,y]<(fieldNo)*2*\[Pi]/6,If[Norm[{x,y}]<shape,1,0],0]],{y,-8,+8},{x,-8,+8}];
+appTrue=Table[If[kernel[[y+9,x+9]]==1,Log[1/(Sqrt[2 \[Pi]] 0.1)] - ((patch[[y+9,x+9]]-b)^2/(2 0.1^2)),0],{y,-8,+8},{x,-8,+8}];
+appFalse=Total[kernel,2];
+edgeKernel=Table[If[y==0&&x==0,0,If[(fieldNo-1)*2*\[Pi]/6<=JArcTan[x,y]<(fieldNo)*2*\[Pi]/6,If[shape<Norm[{x,y}]<shape+2,1,0],0]],{y,-8,+8},{x,-8,+8}];
+shapeTab=Log[Table[If[edgeKernel[[y+9,x+9]]==1,NeighbourProb[
+JExtract[patch,Round[{9,9}+ToCartesian[ToPolar[{x,y}]-{1,0}]]],JExtract[patch,Round[{9,9}+ToCartesian[ToPolar[{x,y}]+{1,0}]]]],1],{y,-8,+8},{x,-8,+8}]];
+ans=Total[appTrue,2]-appFalse-Total[shapeTab,2]
+)
+
+
+IRFGenerator[patch_,fieldNo_,previousS_,b_]:=Sum[
+If[fieldNo==1,PDF[NormalDistribution[5,1],currentS],PDF[NormalDistribution[previousS,1],currentS]]*
+Exp[LRF[patch,fieldNo,currentS,b]]*
+If[fieldNo<6,IRF[fieldNo+1][[Round[currentS]+1]],1]
+,{currentS,0,6}]
+
+
+Eval[patch_,b_]:=(Clear[IRF];For[f=6,f>0,f--,IRF[f]=Table[IRFGenerator[patch,f,previousS,b],{previousS,0,6}]];)
+
+
+bEval[patch_]:=(Clear[bTable];bTable=Table[Eval[patch,b];IRF[1][[1]],{b,0,1,.1}];)
+
+
 On[Assert]
