@@ -40,14 +40,13 @@ candList=Select[Import["C:\\Users\\Julian\\secure\\Shape Recognition\\Stop Sign\
 patches=Map[Patch[pyrs[[#[[1]]]],#[[2]],#[[3]],#[[4]]]&,candList];
 
 
-w=Integrate[PDF[UniformDistribution[{0,f1}],x-z] PDF[NormalDistribution[.3 f2 b1+ .95 f3 b1,Sqrt[.1^2 f2^2 + .1^2 f3^2]],z],
-{z,-\[Infinity],+\[Infinity]}]
+(* ::Input:: *)
+(*wn=Integrate[PDF[UniformDistribution[{0,f1}],z] PDF[NormalDistribution[m2,v2],v-z],*)
+(*{z,-\[Infinity],+\[Infinity]},Assumptions->{f1>0}]*)
 
 
-probDens[v_,{f1_,f2_,f3_}]:=(1/f1)0.5` (-1.` Erf[(0.7071067811865475` (8. f2+19. f3-20. v))/Sqrt[f2^2+f3^2]]+Erf[1/(Sqrt[f2^2+f3^2])0.7071067811865475` (20. f1+8.f2+19.` f3-20.v)])
-
-
-probDens[v_,{f1_,f2_,f3_},br_]=(w /. x->v /. b1->br);
+(* ::Input:: *)
+(*probDens[ v_,{f1_,f2_,f3_},b_]=(wn /. m2->(0.3 b f2 + 0.95 b f3) /. v2->Sqrt[.1^2 f2^2 + .1^2 f3^2])*)
 
 
 LogSum[l1_,l2_]:=Max[l1,l2]+Log[Exp[l1-Max[l1,l2]]+Exp[l2-Max[l1,l2]]]
@@ -85,6 +84,21 @@ NoEntrySignPatch[patch_,b_,{s_,mx_,my_}]:=
    }/40,{3,1,2}];
    ntab=Table[Log[Max[probDens[patch[[y+9,x+9]],shp2[[y+9,x+9]]+{1,1,1}*.01,b],.001]],{y,-8,+8},{x,-8,8}];
    (numer=(ntab//Flatten//Total))-(denom=LogSum[\[Pi] (7.8*s)^2,(denomDisk=Table[Log[Max[probDens[patch[[y+9,x+9]],toDisk.shp2[[y+9,x+9]]+{1,1,1}*.01,b],.001]],{y,-8,+8},{x,-8,8}])//Flatten//Total]))
+
+
+shp3=Table[
+   def1=Table[(pointCloud[[y+9,x+9]]-ConstantArray[{mx,my},40])/s,{y,-8,+8},{x,-8,+8}];
+   Transpose[{
+      40-Total[InsideNoEntrySign[def1],{3}],
+      Total[InsideInnerSign[def1],{3}],
+      Total[InsideOuterRing[def1]+InsideBar[def1],{3}]
+   }/40,{3,1,2}],{s,0.9,1.2,.1},{my,-1,1,.1},{mx,-1,1,.1}];
+
+
+NoEntrySignPatch1[patch_,b_,{s_,mx_,my_}]:=
+( shpt=shp3[[s,my,mx]];
+   ntab=Table[Log[Max[probDens[patch[[y+9,x+9]],shpt[[y+9,x+9]]+{1,1,1}*.01,b],.001]],{y,-8,+8},{x,-8,8}];
+   (numer=(ntab//Flatten//Total))-(denom=LogSum[\[Pi] (7.8*(0.9+(s-1)*.1))^2,(denomDisk=Table[Log[Max[probDens[patch[[y+9,x+9]],toDisk.shpt[[y+9,x+9]]+{1,1,1}*.01,b],.001]],{y,-8,+8},{x,-8,8}])//Flatten//Total]))
 
 
 NoEntrySignPatch[patch_]:=.1*Sum[NoEntrySignPatch[patch,b,{s,mx,my}],{b,0.1,1,.1},{s,0.8,1.2,0.1},{mx,-2,2,0.5},{my,-.5,+.5,0.5}]
