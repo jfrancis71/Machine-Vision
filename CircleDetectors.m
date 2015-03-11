@@ -85,8 +85,8 @@ CirclesRecognition[image_]:=(
 )
 
 
-CirclesRecognitionOutput[image_]:=
-   Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition[image],26.,{8,8}]]]
+CirclesRecognitionOutput[image_,threshold_:26]:=
+   Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition[image],threshold,{8,8}]]]
 
 
 covar = Table[3 Exp[-2.7 Sin[\[Pi] (x1-x2)^1]^2],{x1,0,1-(1/6),1/6},{x2,0,1-(1/6),1/6}];
@@ -214,7 +214,7 @@ If[fieldNo<6,IRF[fieldNo+1][[Round[currentS]+1]],1]
 Eval[patch_,b_]:=(Clear[IRF];For[f=6,f>0,f--,IRF[f]=Table[IRFGenerator[patch,f,previousS,b],{previousS,0,6}]];)
 
 
-bEval[patch_]:=(Clear[bTable];bTable=Table[Eval[patch,b];IRF[1][[1]],{b,0,1,.1}];)
+bEval[patch_]:=(Clear[bTable];bTable=Table[Eval[patch,b];IRF[1][[1]],{b,0,1,.05}];)
 
 
 On[Assert]
