@@ -214,7 +214,7 @@ If[fieldNo<6,IRF[fieldNo+1][[Round[currentS]+1]],1]
 Eval[patch_,b_]:=(Clear[IRF];For[f=6,f>0,f--,IRF[f]=Table[IRFGenerator[patch,f,previousS,b],{previousS,0,6}]];)
 
 
-bEval[patch_]:=(Clear[bTable];bTable=Table[Eval[patch,b];IRF[1][[1]],{b,0,1,.05}];)
+bEval[patch_]:=(Eval[patch,Mean[patch[[8;;10,8;;10]]//Flatten]];IRF[1][[1]])
 
 
 On[Assert]
