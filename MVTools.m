@@ -18,7 +18,7 @@ FileNames[StringJoin[directory,"\\*.jpg"]]
 ]
 
 
-DispImage[image_?MatrixQ]:={image//Raster,Red,If[Length[image]<32,Point[{8.5,8.5}],{}]}//Graphics;
+DispImage[image_?MatrixQ]:={image//Raster,Red,If[Length[image]<32,Point[{Length[image],Length[image]}/2],{}]}//Graphics;
 
 ColDispImage[image_]:=Raster[Map[List@@Blend[{Blue,Red},#/2+.5]&,image,{2}]]//Graphics;
 
@@ -153,6 +153,15 @@ FilterAnalyse[filterPyramid_?PyramidImageQ,patchFilterF_,kernel_,ChannelDrawF_,c
 (* Example Use:
    FilterAnalyse[surfPyr,SurfCirclePatchH,circleKernel,SurfDirPlot,{7,130,183}]
 *)
+
+
+(* ::Input:: *)
+(*MVProfile[f_,expon_]:=Print["Timings: ",AbsoluteTiming[*)
+(*Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"]*)
+
+
+(* ::Input:: *)
+(*SetAttributes[MVProfile,HoldFirst]*)
 
 
 CameraRecognitionUI[]:=Dynamic[out]
