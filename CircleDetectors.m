@@ -1,6 +1,7 @@
 (* ::Package:: *)
 
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
+<<"C:/users/julian/documents/github/Machine-Vision/FeatureDetectors.m"
 
 
 circleInsideKernel=Table[If[(Sqrt[y^2+x^2]<=5),1.0,0.0],{y,-8,+8},{x,-8,+8}];
@@ -176,9 +177,6 @@ res1
 
 CirclesRecognitionOutput1[image_]:=
    Show[image//DispImage,OutlineGraphics[BoundingRectangles[CirclesRecognition1[image],26.,{8,8}]]]
-
-
-NeighbourProb[x1_,x2_]=0.3*(15.9/(1.+(2500.*(x1-x2)^2)))+0.7;
 
 
 JArcTan[x_,y_]=If[ArcTan[x,y]<0,2 \[Pi] + ArcTan[x,y],ArcTan[x,y]];
