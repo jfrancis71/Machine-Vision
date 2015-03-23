@@ -52,8 +52,14 @@ myMax[a_,b_]:=Max[a,b]
 SetAttributes[myMax,Listable]
 
 
+c11Kernel=ConstantArray[0,{21,21}];c11Kernel[[18;;19,6]]=1;
+
+
+c12Kernel=ConstantArray[0,{21,21}];c12Kernel[[17;;18,6]]=1;
+
+
 NoEntryRecognition[images_?ImagesQ]:=(
-   pyrs=Map[BuildPyramid,positives[[1;;9]]];
+   pyrs=Map[BuildPyramid,images];
    \[Lambda]=Map[MVCorrelatePyramid[#,{{1,1,1}}]/3.&,pyrs];
    \[Nu]=Map[MVCorrelatePyramid[#,{{0,0,0},{0,0,0},{0,0,0},{1,1,1}}]/3.&,pyrs];
    centre=Table[TemplateDetector[pyrs[[w]],CentreKernel,CentreMask,\[Lambda][[w]]],{w,1,Length[images]}];
@@ -70,16 +76,22 @@ NoEntryRecognition[images_?ImagesQ]:=(
    app=centre+extBar;
    alt2=myMax[alt,app+Log[.00001]];
    tot=(Log[.001]+app)-Map[Max[#,115]&,(alt2 + Log[.999]),{4}]-lEdgeBar-rEdgeBar;
-   tot=tot*UnitStep[\[Lambda]-.25])
+   tot=tot*UnitStep[\[Lambda]-.25];
+   c11=Table[MVCorrelatePyramid[pyrs[[p]],c11Kernel],{p,1,Length[pyrs]}];
+   c12=Table[MVCorrelatePyramid[pyrs[[p]],c12Kernel],{p,1,Length[pyrs]}];
+   nt1=(c11/\[Lambda])-.8;nt2=(c12/\[Lambda])-.8;
+   uc1=UnitStep[UnitStep[nt1]+UnitStep[nt2]-.001];
+   tot=tot+uc1
+)
 
 
 
-   disp[p_]:=Show[positives[[p]]//DispImage,BoundingRectangles[tot[[p]],4.,{10,10}]//OutlineGraphics] 
+disp[p_Integer,images_?ImagesQ]:=Show[images[[p]]//DispImage,BoundingRectangles[tot[[p]],5.,{10,10}]//OutlineGraphics] 
 
 
 NoEntryRecognitionOutput[images_?ImagesQ]:=(
    NoEntryRecognition[images];
-   Table[disp[p],{p,1,9}])
+   Table[disp[p,images],{p,1,Length[images]}])
 
 
 NoEntryRecognition[image_?MatrixQ]:=(
