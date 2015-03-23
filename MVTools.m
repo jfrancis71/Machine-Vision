@@ -43,7 +43,7 @@ PyramidFilter[f_,pyr_?PyramidImageQ,r_List]:=Map[(ImageFilter[f,#//Image,r]//Ima
 InBoundsQ[image_?MatrixQ,y_,x_] := (y>0&&x>0&&y<Length[image]&&x<Length[image[[1]]])
 
 (* Note this does assume filter *)
-InBoundsQ[pyr_?PyramidImageQ,level_,y_,x_,filterSize_:8] := (level>0&&Length[pyr]>level&&y>8&&x>8&&y<Length[pyr[[level]]]-8&&x<Length[pyr[[level,1]]]-8)
+InBoundsQ[pyr_?PyramidImageQ,level_,y_,x_,filterSize_:8] := (level>0&&Length[pyr]>level&&y>filterSize&&x>filterSize&&y<Length[pyr[[level]]]-filterSize&&x<Length[pyr[[level,1]]]-filterSize)
 
 
 Patch[image_?MatrixQ,y_,x_,filterSize_:8]:=image[[y-filterSize;;y+filterSize,x-filterSize;;x+filterSize]];
@@ -155,13 +155,14 @@ FilterAnalyse[filterPyramid_?PyramidImageQ,patchFilterF_,kernel_,ChannelDrawF_,c
 *)
 
 
-(* ::Input:: *)
-(*MVProfile[f_,expon_]:=Print["Timings: ",AbsoluteTiming[*)
-(*Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"]*)
+LogSum[a_,b_]:=Max[a,b]+Log[Exp[a-Max[a,b]]+Exp[b-Max[a,b]]]
 
 
-(* ::Input:: *)
-(*SetAttributes[MVProfile,HoldFirst]*)
+MVProfile[f_,expon_]:=Print["Timings: ",AbsoluteTiming[
+Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"]
+
+
+SetAttributes[MVProfile,HoldFirst]
 
 
 CameraRecognitionUI[]:=Dynamic[out]
