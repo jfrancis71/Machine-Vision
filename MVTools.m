@@ -13,8 +13,8 @@ StandardiseImage[image_String] :=
    StandardiseImage[Import[image]];
 
 ReadImagesFromDirectory[directory_String,size_:128]:=
-Map[StandardiseImage[#,size]&,
-FileNames[StringJoin[directory,"\\*.jpg"]]
+   Map[StandardiseImage[#,size]&,
+   FileNames[StringJoin[directory,"\\*.jpg"]]
 ]
 
 
@@ -168,7 +168,7 @@ SetAttributes[MVProfile,HoldFirst]
 CameraRecognitionUI[]:=Dynamic[out]
 
 
-CameraRecognition[program_]:=While[True,out=program[currentImg=StandardiseImage[CurrentImage[]]];Pause[0.1]]
+CameraRecognition[program_,imageWidth_:128]:=While[True,out=program[currentImg=StandardiseImage[CurrentImage[],imageWidth]];Pause[0.1]]
 
 
 On[Assert];
