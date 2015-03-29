@@ -99,9 +99,9 @@ NoEntryRecognition[image_?MatrixQ]:=(
 );
 
 
-NoEntryRecognitionOutput[image_?MatrixQ,threshold_:4.]:= (
+NoEntryRecognitionOutput[image_?MatrixQ,threshold_:5.]:= (
    output=NoEntryRecognition[{image}];
-   Show[image//DispImage,BoundingRectangles[output,threshold,{8,8}]//OutlineGraphics] );
+   Show[image//DispImage,BoundingRectangles[output[[1]],threshold,{10,10}]//OutlineGraphics] );
 
 
 DisplayPatches[]:=(
