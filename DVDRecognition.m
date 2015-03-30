@@ -13,7 +13,7 @@ objects=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\DVDImage.j
 
 
 DVDRecognition[image_]:=(
-   corrMuppets=ImageCorrespondingPoints[muppets//Image,image//Image];
+   corrMuppets=ImageCorrespondingPoints[muppets//Reverse//Image,image//Reverse//Image];
    corrAlien=ImageCorrespondingPoints[aliens//Image,image//Image];
    If[(Length[corrMuppets[[1]]]+Length[corrAlien[[1]]])>=1,
       If[Length[corrMuppets[[1]]]>Length[corrAlien[[1]]],"Muppets","Alien!"],""])
