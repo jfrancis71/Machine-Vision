@@ -52,8 +52,8 @@ Patch[pyr_,level_,y_,x_,filterSize_:8]:=Patch[pyr[[level]],y,x,filterSize];
 DrawKernelOnPatch[patch_,kernel_]:=Show[patch//DispImage,Graphics[{Red,Map[Point[Reverse[#-{.5,.5}]]&,Position[kernel,1.]]}]]
 
 
-MVCorrelateImage[image_?MatrixQ,kernel_?MatrixQ]:=ImageData[ImageCorrelate[Image[image],kernel]];
-MVCorrelatePyramid[pyramid_?PyramidImageQ,kernel_?MatrixQ]:=Map[MVCorrelateImage[#,kernel]&,pyramid]
+MVCorrelateImage[image_?MatrixQ,kernel_?MatrixQ,f_:Dot]:=ImageData[ImageCorrelate[Image[image],kernel,f]];
+MVCorrelatePyramid[pyramid_?PyramidImageQ,kernel_?MatrixQ,f_:Dot]:=Map[MVCorrelateImage[#,kernel,f]&,pyramid]
 
 
 (* Von Mises Distribution
