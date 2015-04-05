@@ -165,10 +165,7 @@ Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"]
 SetAttributes[MVProfile,HoldFirst]
 
 
-CameraRecognitionUI[]:=Dynamic[out]
-
-
-CameraRecognition[program_,imageWidth_:128]:=While[True,out=program[currentImg=StandardiseImage[CurrentImage[],imageWidth]];Pause[0.1]]
+CameraRecognition[program_,imageWidth_:128]:=(Print[Dynamic[out]];While[True,out=program[currentImg=StandardiseImage[CurrentImage[],imageWidth]];Pause[0.1]])
 
 
 On[Assert];
