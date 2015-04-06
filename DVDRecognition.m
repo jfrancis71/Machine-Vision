@@ -1,5 +1,9 @@
 (* ::Package:: *)
 
+(* ::Text:: *)
+(*Uses Mathematica SIFT/SURF Interest Point Operators*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
 
 
