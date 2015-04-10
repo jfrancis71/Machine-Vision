@@ -11,6 +11,7 @@ StandardiseImage[image_String, size_Integer] := StandardiseImage[Import[image],s
 StandardiseImage[image_String, {sy_Integer,sx_Integer}] := StandardiseImage[Import[image],{sy,sx}]
 StandardiseImage[image_String] := 
    StandardiseImage[Import[image]];
+StandardiseImage[image_?MatrixQ,size_Integer]:=ImageData[ImageResize[Image[image],size]]
 
 ReadImagesFromDirectory[directory_String,size_:128]:=
    Map[StandardiseImage[#,size]&,
