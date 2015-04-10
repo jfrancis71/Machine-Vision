@@ -35,4 +35,4 @@ AlienRecognition[image_]:=(
 
 AlienRecognitionOutput[image_]:=( 
    AlienRecognition[image];
-   Show[image//DispImage,BoundingRectangles[res,1.0,{10,10}]//OutlineGraphics] );
+   Show[image//DispImage,OutlineGraphics[BoundingRectangles[res,1.0,{10,10}],Red]] );
