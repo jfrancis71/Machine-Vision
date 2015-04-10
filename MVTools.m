@@ -106,7 +106,7 @@ BoundingRectangles[imgPyramid_?PyramidImageQ,{},filterSize_?VectorQ]:={}
 BoundingRectangles[pyramid_?PyramidImageQ,threshold_Real,filterSize_?VectorQ]:=
    BoundingRectangles[pyramid,Position[pyramid,x_/;x>=threshold],filterSize]
 
-OutlineGraphics[grObjects_]:=Graphics[{Opacity[0],Green,EdgeForm[Directive[Green,Thick]],grObjects}]
+OutlineGraphics[grObjects_,Colour_:Green]:=Graphics[{Opacity[0],Colour,EdgeForm[Directive[Colour,Thick]],grObjects}]
 
 
 (* image is the background image, not necessarily level 1 of pyramid, esp if pyramid is edge pyramid
