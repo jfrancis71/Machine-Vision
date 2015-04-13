@@ -19,6 +19,10 @@ ReadImagesFromDirectory[directory_String,size_:128]:=
 ]
 
 
+ReadMovie[fileName_String,startFrame_Integer,endFrame_Integer,width_Integer:128]:=
+   Table[StandardiseImage[Import[fileName,{"Frames",{t}}],width],{t,startFrame,endFrame}]
+
+
 DispImage[image_?MatrixQ]:={image//Raster,Red,If[Length[image]<32,Point[{Length[image],Length[image]}/2],{}]}//Graphics;
 
 ColDispImage[image_]:=Raster[Map[List@@Blend[{Blue,Red},#/2+.5]&,image,{2}]]//Graphics;
