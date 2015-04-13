@@ -33,7 +33,7 @@ MVPyramidFilter[f_,pyr_?PyramidImageQ,kernelSize_]:=Map[MVImageFilter[f,#,kernel
    so filterDims=filterSize*2 + {1,1}
 *)
 BuildPyramid[image_?MatrixQ,filterSize_List:{8,8}]:=
-   Table[ImageResize[Image[image],Round[Dimensions[image][[2]]*(1-.1)^n]]//ImageData,{n,0,-Log[Dimensions[image][[2]]/(2*filterSize[[2]]+1)]/Log[1-.1]}]
+   Table[ImageResize[Image[image],Round[Dimensions[image][[2]]*(1-.1)^n]]//ImageData,{n,0,-Log[Min[Dimensions[image]]/(2*filterSize[[2]]+1)]/Log[1-.1]}]
    PyramidImageQ[image_]:=ArrayQ[image,3]
 
 PyramidImageQ[pyramid_List]:=MatrixQ[pyramid[[1]]]
