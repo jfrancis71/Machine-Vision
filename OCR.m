@@ -53,60 +53,60 @@ letterConditionalProbs=Table[1,{12},{12}];
 
 
 DispText[y_,letters_,image_]:=Show[
-image//DispImage,
-Graphics[
-{Red,Map[Text[StyleForm[letterTemplates[[#[[1]],1]],FontSize->34],{#[[2]],y}]&,letters]}]]
+   image//DispImage,
+   Graphics[
+   {Red,Map[Text[StyleForm[letterTemplates[[#[[1]],1]],FontSize->34],{#[[2]],y}]&,letters]}]]
 
 
 Backtrack3[]:=(
-{yb,l3b,x3b}=Position[\[Phi]3,Max[\[Phi]3]]//First;
-backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
-,{l2,1,12},{x2,1,15}];
-{l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
-backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
-,{l1,1,12},{x1,1,15}];
-{l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
-{{l3b,x3b},{l2b,x2b},{l1b,x1b}}
+   {yb,l3b,x3b}=Position[\[Phi]3,Max[\[Phi]3]]//First;
+   backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
+      ,{l2,1,12},{x2,1,15}];
+   {l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
+   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
+      ,{l1,1,12},{x1,1,15}];
+   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {{l3b,x3b},{l2b,x2b},{l1b,x1b}}
 )
 
 
 TextRecognition[image_]:=(
-letterMaps=Chop[Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates]];
-letterMaps=Map[ImageData[MaxFilter[Image[#],{2,0}]]&,letterMaps];
-{width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
+   letterMaps=Chop[Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates]];
+   letterMaps=Map[ImageData[MaxFilter[Image[#],{2,0}]]&,letterMaps];
+   {width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
 
-\[Tau]1=Table[If[x1>width,0.,letterMaps[[l1,y,x1]]],{y,1,height},{l1,1,12},{x1,1,width+20}];
-\[Psi]1=Table[
-Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]]*letterConditionalProbs[[l2,l1]]
-,{l1,1,12}]]
-,{y,1,height},{l2,1,12},{x2,1,width}];
-\[Phi]1=Table[\[Tau]1[[y,l1,x1]]*letterFrequencies[[l1]],{y,1,height},{l1,1,12},{x1,1,width}];
+   \[Tau]1=Table[If[x1>width,0.,letterMaps[[l1,y,x1]]],{y,1,height},{l1,1,12},{x1,1,width+20}];
+   \[Psi]1=Table[
+   Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]]*letterConditionalProbs[[l2,l1]]
+      ,{l1,1,12}]]
+      ,{y,1,height},{l2,1,12},{x2,1,width}];
+   \[Phi]1=Table[\[Tau]1[[y,l1,x1]]*letterFrequencies[[l1]],{y,1,height},{l1,1,12},{x1,1,width}];
 
-\[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[y,l2,x2]]],{y,1,height},{l2,1,12},{x2,1,width+20}];
-\[Psi]2=Table[
-Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*letterConditionalProbs[[l3,l2]]
-,{l2,1,12}]]
-,{y,1,height},{l3,1,12},{x3,1,width}];
-\[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,12},{x2,1,width}];
+   \[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[y,l2,x2]]],{y,1,height},{l2,1,12},{x2,1,width+20}];
+   \[Psi]2=Table[
+      Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*letterConditionalProbs[[l3,l2]]
+      ,{l2,1,12}]]
+      ,{y,1,height},{l3,1,12},{x3,1,width}];
+   \[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,12},{x2,1,width}];
 
-\[Tau]3[y_,l3_,x3_]:=If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]];
-\[Phi]3=Table[\[Tau]3[y,l3,x3]*letterFrequencies[[l3]],{y,1,height},{l3,1,12},{x3,1,width}];
+   \[Tau]3[y_,l3_,x3_]:=If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]];
+   \[Phi]3=Table[\[Tau]3[y,l3,x3]*letterFrequencies[[l3]],{y,1,height},{l3,1,12},{x3,1,width}];
 
-NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3]},-1]//First)-1;
-letters=Switch[NumberOfLetters,
-0,{},
-3,Backtrack3[],
-_,Assert[1==2]]
+   NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3]},-1]//First)-1;
+   letters=Switch[NumberOfLetters,
+      0,{},
+      3,Backtrack3[],
+      _,Assert[1==2]]
 )
 
 
 TextRecognitionOutput[image_]:=(
-letters=TextRecognition[image];
-DispText[yb,letters,image]
+   letters=TextRecognition[image];
+   DispText[yb,letters,image]
 )
 
 
 RandomImageLine[]:=(
-lineY=RandomInteger[{26,1496-26}];
-lineX=RandomInteger[{1,2048-101}];
-article[[lineY-25;;lineY+25,lineX;;lineX+100]])
+   lineY=RandomInteger[{26,1496-26}];
+   lineX=RandomInteger[{1,2048-101}];
+   article[[lineY-25;;lineY+25,lineX;;lineX+100]])
