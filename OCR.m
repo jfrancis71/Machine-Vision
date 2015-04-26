@@ -38,59 +38,75 @@ letterConditionalProbs=Table[(1+freq[[l1,l2]])/(12+Total[freq[[l1]]]),{l1,1,12},
 probF[z_]=FullSimplify[PDF[HalfNormalDistribution[15],z],Assumptions->z>0];
 
 
-letterWidths=Map[Dimensions[#[[2]]][[2]]&,letterTemplates]
+letterWidths=Map[Dimensions[#[[2]]][[2]]&,letterTemplates];
 
 
-MaxUnigram[image_]:=(
-   letterFeatures=Map[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]&,letterTemplates];
-   letterMaps=Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates];
-   {width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
-   \[Psi]1=Table[
-      letterMaps[[l1,y,x1]],
-      {l1,1,12},{y,1,height},{x1,1,width}];
-   yb=Ordering[Table[Max[Table[\[Psi]1[[l1,y,x1]]*letterFrequencies[[l1]],{l1,1,12},{x1,1,width}]],
-      {y,1,height}],-1]//First;
-   x1b=Ordering[Table[Max[Table[\[Psi]1[[l1,yb,x1]]*letterFrequencies[[l1]],{l1,1,12}]],
-      {x1,1,width}],-1]//First;
-   l1b=Ordering[
-      Table[\[Psi]1[[l1,yb,x1b]]*letterFrequencies[[l1]],{l1,1,12}],-1]//First;
-   pTrue=Table[Max[Table[\[Psi]1[[l1,y,x1]]*letterFrequencies[[l1]],{l1,1,12},{x1,1,width}]],
-      {y,1,height}]//Max;
-   pFalse=PDF[NormalDistribution[0.5,0.15],letterFeatures[[l1b,yb,x1b]]];
-   pTrue/(pTrue+pFalse)
+letterFrequencies=Table[1,{12}];
+
+
+letterConditionalProbs=Table[1,{12},{12}];
+
+
+(* ::Text:: *)
+(**)
+(*\[Tau] Represents the probability distribution over that state excluding whether we are dealing with a conditional or a prior distribution*)
+
+
+DispText[y_,letters_,image_]:=Show[
+image//DispImage,
+Graphics[
+{Red,Map[Text[StyleForm[letterTemplates[[#[[1]],1]],FontSize->34],{#[[2]],y}]&,letters]}]]
+
+
+Backtrack3[]:=(
+{yb,l3b,x3b}=Position[\[Phi]3,Max[\[Phi]3]]//First;
+backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
+,{l2,1,12},{x2,1,15}];
+{l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
+backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
+,{l1,1,12},{x1,1,15}];
+{l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+{{l3b,x3b},{l2b,x2b},{l1b,x1b}}
 )
 
 
-MaxDigram[image_]:=(
-   letterFeatures=Map[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]&,letterTemplates];
-   letterMaps=Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates];
-   {width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
-   \[Psi]1=Table[
-      letterMaps[[l1,y,x1]],
-      {l1,1,12},{y,1,height},{x1,1,width}];
-   \[Psi]2=Table[
-      letterMaps[[l2,y,x2]]*
-      Max[Table[letterConditionalProbs[[l2,l1]]*
-      Exp[-((x1-x2)-(letterWidths[[l2]]+letterWidths[[l1]])/2)^2]*
-      \[Psi]1[[l1,y,x1]]*If[x2>x1,0,1],{l1,1,12},{x1,x2,Min[width,x2+15]}]],
-      {l2,1,12},{y,1,height},{x2,1,width}];
-   yb=Ordering[Table[Max[Table[\[Psi]2[[l2,y,x2]]*letterFrequencies[[l2]],{l2,1,12},{x2,1,width}]],
-      {y,1,height}],-1]//First;
-   x2b=Ordering[Table[Max[Table[\[Psi]2[[l2,yb,x2]]*letterFrequencies[[l2]],{l2,1,12}]],
-      {x2,1,width}],-1]//First;
-   l2b=Ordering[
-      Table[\[Psi]2[[l2,yb,x2b]]*letterFrequencies[[l2]],{l2,1,12}],-1]//First;
-   l1b=Ordering[Table[
-      Max[Table[letterConditionalProbs[[l2b,l1]]*
-      Exp[-((x1-x2b)-(letterWidths[[l2b]]+letterWidths[[l1]])/2)^2]*
-      \[Psi]1[[l1,yb,x1]]*If[x2b>x1,0,1],{x1,1,width}]],
-      {l1,1,12}],-1]//First;
-   x1b=Ordering[Table[letterConditionalProbs[[l2b,l1b]]*
-      Exp[-((x1-x2b)-(letterWidths[[l2b]]+letterWidths[[l1b]])/2)^2]*
-      \[Psi]1[[l1b,yb,x1]]*If[x2b>x1,0,1],{x1,1,width}],-1]//First;
-   pTrue=Table[Max[Table[\[Psi]2[[l2,y,x2]]*letterFrequencies[[l2]],{l2,1,12},{x2,1,width}]],
-      {y,1,height}]//Max;
-   pFalse=PDF[NormalDistribution[0.5,0.15],letterFeatures[[l1b,yb,x1b]]]*
-      PDF[NormalDistribution[0.5,0.15],letterFeatures[[l2b,yb,x2b]]];
-   pTrue/(pTrue+pFalse)
+TextRecognition[image_]:=(
+letterMaps=Chop[Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates]];
+letterMaps=Map[ImageData[MaxFilter[Image[#],{2,0}]]&,letterMaps];
+{width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
+
+\[Tau]1=Table[If[x1>width,0.,letterMaps[[l1,y,x1]]],{y,1,height},{l1,1,12},{x1,1,width+20}];
+\[Psi]1=Table[
+Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]]*letterConditionalProbs[[l2,l1]]
+,{l1,1,12}]]
+,{y,1,height},{l2,1,12},{x2,1,width}];
+\[Phi]1=Table[\[Tau]1[[y,l1,x1]]*letterFrequencies[[l1]],{y,1,height},{l1,1,12},{x1,1,width}];
+
+\[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[y,l2,x2]]],{y,1,height},{l2,1,12},{x2,1,width+20}];
+\[Psi]2=Table[
+Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*letterConditionalProbs[[l3,l2]]
+,{l2,1,12}]]
+,{y,1,height},{l3,1,12},{x3,1,width}];
+\[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,12},{x2,1,width}];
+
+\[Tau]3[y_,l3_,x3_]:=If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]];
+\[Phi]3=Table[\[Tau]3[y,l3,x3]*letterFrequencies[[l3]],{y,1,height},{l3,1,12},{x3,1,width}];
+
+NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3]},-1]//First)-1;
+letters=Switch[NumberOfLetters,
+0,{},
+3,Backtrack3[],
+_,Assert[1==2]]
 )
+
+
+TextRecognitionOutput[image_]:=(
+letters=TextRecognition[image];
+DispText[yb,letters,image]
+)
+
+
+RandomImageLine[]:=(
+lineY=RandomInteger[{26,1496-26}];
+lineX=RandomInteger[{1,2048-101}];
+article[[lineY-25;;lineY+25,lineX;;lineX+100]])
