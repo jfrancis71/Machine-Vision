@@ -22,17 +22,17 @@ letterTemplates={
 };
 
 
-sourceText=Take[Characters[ExampleData[{"Text","OriginOfSpecies"}]],200];
+sourceText=Take[Characters[ExampleData[{"Text","OriginOfSpecies"}]],2000];
 
 
 (*Note I' m using the Laplacian adjustment*)
-letterFrequencies=Table[(1+Count[sourceText,letterTemplates[[l,1]]])/(13+Sum[Count[sourceText,letterTemplates[[l,1]]],{l,1,12}]),{l,1,12}]//N;
+aletterFrequencies=Table[(1+Count[sourceText,letterTemplates[[l,1]]])/(13+Sum[Count[sourceText,letterTemplates[[l,1]]],{l,1,12}]),{l,1,12}]//N;
 
 
 freq=Table[Count[Map[#[[2]]&,Select[Partition[sourceText,2],#[[1]]==l1&]],l2],{l1,letterTemplates[[All,1]]},{l2,letterTemplates[[All,1]]}];
 
 
-letterConditionalProbs=Table[(1+freq[[l1,l2]])/(12+Total[freq[[l1]]]),{l1,1,12},{l2,1,12}]//N;
+aletterConditionalProbs=Table[(1+freq[[l1,l2]])/(12+Total[freq[[l1]]]),{l1,1,12},{l2,1,12}]//N;
 
 
 probF[z_]=FullSimplify[PDF[HalfNormalDistribution[15],z]/PDF[NormalDistribution[0.5,0.15],z],Assumptions->z>0];
@@ -143,6 +143,20 @@ TextRecognition[image_]:=(
 TextRecognitionOutput[image_]:=(
    letters=TextRecognition[image];
    DispText[yb,letters,image]
+)
+
+
+TextRecognitionOutput1[image_]:=(
+   letterFrequencies[[All]]=1;
+   letterConditionalProbs[[All,All]]=1.;
+   TextRecognitionOutput[image]
+)
+
+
+TextRecognitionOutput2[image_]:=(
+   letterFrequencies=aletterFrequencies;
+   letterConditionalProbs=aletterConditionalProbs;
+   TextRecognitionOutput[image]
 )
 
 
