@@ -70,6 +70,21 @@ Backtrack3[]:=(
 )
 
 
+Backtrack4[]:=(
+   {yb,l4b,x4b}=Position[\[Phi]4,Max[\[Phi]4]]//First;
+   backTrack3=Table[\[Tau]3[[yb,l3,x4b+x3+5]]*letterConditionalProbs[[l4b,l3]]
+      ,{l3,1,12},{x3,1,15}];
+   {l3b,x3b}=(Position[backTrack3,Max[backTrack3]]//First)+{0,x4b+5};
+   backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
+      ,{l2,1,12},{x2,1,15}];
+   {l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
+   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
+      ,{l1,1,12},{x1,1,15}];
+   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {{l4b,x4b},{l3b,x3b},{l2b,x2b},{l1b,x1b}}
+)
+
+
 TextRecognition[image_]:=(
    letterMaps=Chop[Map[probF[MVCorrelateImage[image,#[[2]],NormalizedSquaredEuclideanDistance]]&,letterTemplates]];
    letterMaps=Map[ImageData[MaxFilter[Image[#],{2,0}]]&,letterMaps];
@@ -89,13 +104,20 @@ TextRecognition[image_]:=(
       ,{y,1,height},{l3,1,12},{x3,1,width}];
    \[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,12},{x2,1,width}];
 
-   \[Tau]3[y_,l3_,x3_]:=If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]];
-   \[Phi]3=Table[\[Tau]3[y,l3,x3]*letterFrequencies[[l3]],{y,1,height},{l3,1,12},{x3,1,width}];
+   \[Tau]3=Table[If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]],{y,1,height},{l3,1,12},{x3,1,width+20}];
+   \[Psi]3=Table[
+      Max[Table[Max[\[Tau]3[[y,l3,x4+5;;x4+20]]]*letterConditionalProbs[[l4,l3]]
+      ,{l3,1,12}]]
+      ,{y,1,height},{l4,1,12},{x4,1,width}];
+   \[Phi]3=Table[\[Tau]3[[y,l3,x3]]*letterFrequencies[[l3]],{y,1,height},{l3,1,12},{x3,1,width}];
 
-   NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3]},-1]//First)-1;
+   \[Tau]4[y_,l4_,x4_]:=If[x4>width,0,letterMaps[[l4,y,x4]]*\[Psi]3[[y,l4,x4]]];
+   \[Phi]4=Table[\[Tau]4[y,l4,x4]*letterFrequencies[[l4]],{y,1,height},{l4,1,12},{x4,1,width}];
+
+   NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3],Max[\[Phi]4]},-1]//First)-1;
    letters=Switch[NumberOfLetters,
       0,{},
-      3,Backtrack3[],
+      4,Backtrack4[],
       _,Assert[1==2]]
 )
 
