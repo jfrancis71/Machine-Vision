@@ -35,7 +35,7 @@ freq=Table[Count[Map[#[[2]]&,Select[Partition[sourceText,2],#[[1]]==l1&]],l2],{l
 letterConditionalProbs=Table[(1+freq[[l1,l2]])/(12+Total[freq[[l1]]]),{l1,1,12},{l2,1,12}]//N;
 
 
-probF[z_]=FullSimplify[PDF[HalfNormalDistribution[15],z],Assumptions->z>0];
+probF[z_]=FullSimplify[PDF[HalfNormalDistribution[15],z]/PDF[NormalDistribution[0.5,0.15],z],Assumptions->z>0];
 
 
 letterWidths=Map[Dimensions[#[[2]]][[2]]&,letterTemplates];
@@ -56,6 +56,21 @@ DispText[y_,letters_,image_]:=Show[
    image//DispImage,
    Graphics[
    {Red,Map[Text[StyleForm[letterTemplates[[#[[1]],1]],FontSize->34],{#[[2]],y}]&,letters]}]]
+
+
+Backtrack1[]:=(
+   {yb,l1b,x1b}=Position[\[Phi]1,Max[\[Phi]1]]//First;
+   {{l1b,x1b}}
+)
+
+
+Backtrack2[]:=(
+   {yb,l2b,x2b}=Position[\[Phi]2,Max[\[Phi]2]]//First;
+   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
+      ,{l1,1,12},{x1,1,15}];
+   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {{l2b,x2b},{l1b,x1b}}
+)
 
 
 Backtrack3[]:=(
@@ -117,6 +132,9 @@ TextRecognition[image_]:=(
    NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3],Max[\[Phi]4]},-1]//First)-1;
    letters=Switch[NumberOfLetters,
       0,{},
+      1,Backtrack1[],
+      2,Backtrack2[],
+      3,Backtrack3[],
       4,Backtrack4[],
       _,Assert[1==2]]
 )
