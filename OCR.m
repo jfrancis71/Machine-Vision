@@ -16,7 +16,9 @@ letterTemplates={
    {"g",article[[1016-7;;1016+10,346-4;;346+5]]},
    {"h",article[[993-7;;993+10,151-4;;151+5]]},
    {"i",article[[1018-7;;1018+10,224-4;;224+5]]},
+   {"k",article[[240-5;;240+12,153-3;;153+8]]},
    {"l",article[[850+125-5;;850+125+7,328-4;;328+4]]},
+   {"m",article[[655-7;;655+6,260-10;;260+9]]},
    {"n",article[[945-9;;945+5,146-5;;146+6]]},
    {"o",article[[1019-6;;1019+5,245-5;;245+5]]},
    {"p",article[[850+26-15;;850+26+5,238-5;;238+5]]},
@@ -33,11 +35,13 @@ letterTemplates={
 LettersLength=Length[letterTemplates];
 
 
-sourceText=Take[Characters[ExampleData[{"Text","OriginOfSpecies"}]],2000];
+sourceText=Take[Characters[ExampleData[{"Text","OriginOfSpecies"}]],20000];
 
 
-(*Note I' m using the Laplacian adjustment*)
-aletterFrequencies=Table[(1+Count[sourceText,letterTemplates[[l,1]]])/(21+1+Sum[Count[sourceText,letterTemplates[[l,1]]],{l,1,21}]),{l,1,21}]//N;
+(*Note I' m using the Laplacian adjustment
+Also not quite applicable to letter in a word sequence as this method straddles word bounaries *)
+
+aletterFrequencies=Table[(1+Count[sourceText,letterTemplates[[l,1]]])/(21+1+Sum[Count[sourceText,letterTemplates[[l,1]]],{l,1,LettersLength}]),{l,1,LettersLength}]//N;
 
 
 freq=Table[Count[Map[#[[2]]&,Select[Partition[sourceText,2],#[[1]]==l1&]],l2],{l1,letterTemplates[[All,1]]},{l2,letterTemplates[[All,1]]}];
@@ -56,6 +60,11 @@ letterFrequencies=Table[1,{LettersLength}];
 
 
 letterConditionalProbs=Table[1,{LettersLength},{LettersLength}];
+
+
+posLetterConditionalProbs = Table[aletterConditionalProbs[[l2,l1]]*
+   Table[If[Abs[((letterWidths[[l1]]+letterWidths[[l2]])/2-(d+5))]<3,1,0],{d,1,16}]
+      ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
 
 
 (* ::Text:: *)
@@ -97,14 +106,14 @@ Backtrack3[]:=(
 
 Backtrack4[]:=(
    {yb,l4b,x4b}=Position[\[Phi]4,Max[\[Phi]4]]//First;
-   backTrack3=Table[\[Tau]3[[yb,l3,x4b+x3+5]]*letterConditionalProbs[[l4b,l3]]
-      ,{l3,1,LettersLength},{x3,1,15}];
+   backTrack3=Table[\[Tau]3[[yb,l3,x4b+5;;x4b+20]]*posLetterConditionalProbs[[l4b,l3]]
+      ,{l3,1,LettersLength}];
    {l3b,x3b}=(Position[backTrack3,Max[backTrack3]]//First)+{0,x4b+5};
-   backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
-      ,{l2,1,LettersLength},{x2,1,15}];
+   backTrack2=Table[\[Tau]2[[yb,l2,x3b+5;;x3b+20]]*posLetterConditionalProbs[[l3b,l2]]
+      ,{l2,1,LettersLength}];
    {l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
-   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
-      ,{l1,1,LettersLength},{x1,1,15}];
+   backTrack1=Table[\[Tau]1[[yb,l1,x2b+5;;x2b+20]]*posLetterConditionalProbs[[l2b,l1]]
+      ,{l1,1,LettersLength}];
    {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
    {{l4b,x4b},{l3b,x3b},{l2b,x2b},{l1b,x1b}}
 )
@@ -116,22 +125,23 @@ TextRecognition[image_]:=(
    {width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
 
    \[Tau]1=Table[If[x1>width,0.,letterMaps[[l1,y,x1]]],{y,1,height},{l1,1,LettersLength},{x1,1,width+20}];
+   
    \[Psi]1=Table[
-   Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]]*letterConditionalProbs[[l2,l1]]
-      ,{l1,1,LettersLength}]]
-      ,{y,1,height},{l2,1,LettersLength},{x2,1,width}];
+      Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]*posLetterConditionalProbs[[l2,l1]]]
+         ,{l1,1,LettersLength}]]
+         ,{y,1,height},{l2,1,LettersLength},{x2,1,width}];
    \[Phi]1=Table[\[Tau]1[[y,l1,x1]]*letterFrequencies[[l1]],{y,1,height},{l1,1,LettersLength},{x1,1,width}];
 
    \[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[y,l2,x2]]],{y,1,height},{l2,1,LettersLength},{x2,1,width+20}];
    \[Psi]2=Table[
-      Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*letterConditionalProbs[[l3,l2]]
+      Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*posLetterConditionalProbs[[l3,l2]]
       ,{l2,1,LettersLength}]]
       ,{y,1,height},{l3,1,LettersLength},{x3,1,width}];
    \[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,LettersLength},{x2,1,width}];
 
    \[Tau]3=Table[If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]],{y,1,height},{l3,1,LettersLength},{x3,1,width+20}];
    \[Psi]3=Table[
-      Max[Table[Max[\[Tau]3[[y,l3,x4+5;;x4+20]]]*letterConditionalProbs[[l4,l3]]
+      Max[Table[Max[\[Tau]3[[y,l3,x4+5;;x4+20]]]*posLetterConditionalProbs[[l4,l3]]
       ,{l3,1,LettersLength}]]
       ,{y,1,height},{l4,1,LettersLength},{x4,1,width}];
    \[Phi]3=Table[\[Tau]3[[y,l3,x3]]*letterFrequencies[[l3]],{y,1,height},{l3,1,LettersLength},{x3,1,width}];
