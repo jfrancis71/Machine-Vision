@@ -63,7 +63,7 @@ letterConditionalProbs=Table[1,{LettersLength},{LettersLength}];
 
 
 posLetterConditionalProbs = Table[aletterConditionalProbs[[l2,l1]]*
-   Table[If[Abs[((letterWidths[[l1]]+letterWidths[[l2]])/2-(d+5))]<3,1,0],{d,1,16}]
+   Table[If[Abs[((letterWidths[[l1]]+letterWidths[[l2]])/2-d)]<3,1,0],{d,5,20}]
       ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
 
 
