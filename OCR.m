@@ -67,6 +67,13 @@ posLetterConditionalProbs = Table[aletterConditionalProbs[[l2,l1]]*
       ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
 
 
+letterKernels = Table[Table[If[Abs[((letterWidths[[l1]]+letterWidths[[l2]])/2-x)]<3,1,0],{x,-20,+20}]
+      ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
+(* Note this is the crude equivelant of previous algo *)
+letterKernels=Table[Table[If[x>=5,1,0],{x,-20,+20}]
+      ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
+
+
 (* ::Text:: *)
 (*\[Tau] Represents the probability distribution over that state excluding whether we are dealing with a conditional or a prior distribution*)
 
@@ -85,38 +92,46 @@ Backtrack1[]:=(
 
 Backtrack2[]:=(
    {yb,l2b,x2b}=Position[\[Phi]2,Max[\[Phi]2]]//First;
-   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
-      ,{l1,1,LettersLength},{x1,1,15}];
-   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
+
    {{l2b,x2b},{l1b,x1b}}
 )
 
 
 Backtrack3[]:=(
    {yb,l3b,x3b}=Position[\[Phi]3,Max[\[Phi]3]]//First;
-   backTrack2=Table[\[Tau]2[[yb,l2,x3b+x2+5]]*letterConditionalProbs[[l3b,l2]]
-      ,{l2,1,LettersLength},{x2,1,15}];
-   {l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
-   backTrack1=Table[\[Tau]1[[yb,l1,x2b+x1+5]]*letterConditionalProbs[[l2b,l1]]
-      ,{l1,1,LettersLength},{x1,1,15}];
-   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {l2b,x2b}=\[Psi]ArgMax[\[Tau]2,l3b,yb,x3b];
+   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
+
    {{l3b,x3b},{l2b,x2b},{l1b,x1b}}
 )
 
 
 Backtrack4[]:=(
    {yb,l4b,x4b}=Position[\[Phi]4,Max[\[Phi]4]]//First;
-   backTrack3=Table[\[Tau]3[[yb,l3,x4b+5;;x4b+20]]*posLetterConditionalProbs[[l4b,l3]]
-      ,{l3,1,LettersLength}];
-   {l3b,x3b}=(Position[backTrack3,Max[backTrack3]]//First)+{0,x4b+5};
-   backTrack2=Table[\[Tau]2[[yb,l2,x3b+5;;x3b+20]]*posLetterConditionalProbs[[l3b,l2]]
-      ,{l2,1,LettersLength}];
-   {l2b,x2b}=(Position[backTrack2,Max[backTrack2]]//First)+{0,x3b+5};
-   backTrack1=Table[\[Tau]1[[yb,l1,x2b+5;;x2b+20]]*posLetterConditionalProbs[[l2b,l1]]
-      ,{l1,1,LettersLength}];
-   {l1b,x1b}=(Position[backTrack1,Max[backTrack1]]//First)+{0,x2b+5};
+   {l3b,x3b}=\[Psi]ArgMax[\[Tau]3,l4b,yb,x4b];
+   {l2b,x2b}=\[Psi]ArgMax[\[Tau]2,l3b,yb,x3b];
+   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
+
    {{l4b,x4b},{l3b,x3b},{l2b,x2b},{l1b,x1b}}
 )
+
+
+(*
+Returns the max probability configuration conditioned on a letter at a particular position,
+ie is a map
+*)
+\[Psi]Max[\[Tau]_]:=Map[Max,Transpose[Table[(Dilation[\[Tau][[All,l1,All]]//Image,{letterKernels[[l2,l1]]//Reverse}]//ImageData)*letterConditionalProbs[[l2,l1]],
+   {l2,1,LettersLength},
+   {l1,1,LettersLength}
+   ]
+   ,{1,4,2,3}],{3}];
+
+(*
+Returns the actual next letter configuration that was actually selected to maximise joint probability conditioned on the previous letter *)
+\[Psi]ArgMax[\[Tau]_,cl_,cy_,cx_]:=
+   (tab=Table[letterKernels[[cl,l,x+21]]*\[Tau][[cy,l,cx+x]]*letterConditionalProbs[[cl,l]],{l,1,LettersLength},{x,-20,+20}];
+   Position[tab,Max[tab]]//First)+{0,cx-21}
 
 
 TextRecognition[image_]:=(
@@ -125,28 +140,18 @@ TextRecognition[image_]:=(
    {width,height}={Length[letterMaps[[1,1]]],Length[letterMaps[[1]]]};
 
    \[Tau]1=Table[If[x1>width,0.,letterMaps[[l1,y,x1]]],{y,1,height},{l1,1,LettersLength},{x1,1,width+20}];
-   
-   \[Psi]1=Table[
-      Max[Table[Max[\[Tau]1[[y,l1,x2+5;;x2+20]]*posLetterConditionalProbs[[l2,l1]]]
-         ,{l1,1,LettersLength}]]
-         ,{y,1,height},{l2,1,LettersLength},{x2,1,width}];
+   \[Psi]1=\[Psi]Max[\[Tau]1];
    \[Phi]1=Table[\[Tau]1[[y,l1,x1]]*letterFrequencies[[l1]],{y,1,height},{l1,1,LettersLength},{x1,1,width}];
 
-   \[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[y,l2,x2]]],{y,1,height},{l2,1,LettersLength},{x2,1,width+20}];
-   \[Psi]2=Table[
-      Max[Table[Max[\[Tau]2[[y,l2,x3+5;;x3+20]]]*posLetterConditionalProbs[[l3,l2]]
-      ,{l2,1,LettersLength}]]
-      ,{y,1,height},{l3,1,LettersLength},{x3,1,width}];
+   \[Tau]2=Table[If[x2>width,0,letterMaps[[l2,y,x2]]*\[Psi]1[[l2,y,x2]]],{y,1,height},{l2,1,LettersLength},{x2,1,width+20}];
+   \[Psi]2=\[Psi]Max[\[Tau]2];
    \[Phi]2=Table[\[Tau]2[[y,l2,x2]]*letterFrequencies[[l2]],{y,1,height},{l2,1,LettersLength},{x2,1,width}];
 
-   \[Tau]3=Table[If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[y,l3,x3]]],{y,1,height},{l3,1,LettersLength},{x3,1,width+20}];
-   \[Psi]3=Table[
-      Max[Table[Max[\[Tau]3[[y,l3,x4+5;;x4+20]]]*posLetterConditionalProbs[[l4,l3]]
-      ,{l3,1,LettersLength}]]
-      ,{y,1,height},{l4,1,LettersLength},{x4,1,width}];
+   \[Tau]3=Table[If[x3>width,0,letterMaps[[l3,y,x3]]*\[Psi]2[[l3,y,x3]]],{y,1,height},{l3,1,LettersLength},{x3,1,width+20}];
+   \[Psi]3=\[Psi]Max[\[Tau]3];
    \[Phi]3=Table[\[Tau]3[[y,l3,x3]]*letterFrequencies[[l3]],{y,1,height},{l3,1,LettersLength},{x3,1,width}];
 
-   \[Tau]4[y_,l4_,x4_]:=If[x4>width,0,letterMaps[[l4,y,x4]]*\[Psi]3[[y,l4,x4]]];
+   \[Tau]4[y_,l4_,x4_]:=If[x4>width,0,letterMaps[[l4,y,x4]]*\[Psi]3[[l4,y,x4]]];
    \[Phi]4=Table[\[Tau]4[y,l4,x4]*letterFrequencies[[l4]],{y,1,height},{l4,1,LettersLength},{x4,1,width}];
 
    NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3],Max[\[Phi]4]},-1]//First)-1;
@@ -184,3 +189,10 @@ RandomImageLine[]:=(
    lineY=RandomInteger[{26,1496-26}];
    lineX=RandomInteger[{1,2048-101}];
    article[[lineY-25;;lineY+25,lineX;;lineX+100]])
+
+
+(* ::Input:: *)
+(*Comp[image_]:={TextRecognitionOutput1[image],TextRecognitionOutput2[image]}*)
+
+
+lines=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\TextFragments.wdx"];
