@@ -70,8 +70,8 @@ posLetterConditionalProbs = Table[aletterConditionalProbs[[l2,l1]]*
 letterKernels = Table[Table[If[Abs[((letterWidths[[l1]]+letterWidths[[l2]])/2-x)]<3,1,0],{x,-20,+20}]
       ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
 (* Note this is the crude equivelant of previous algo *)
-letterKernels=Table[Table[If[x>=5,1,0],{x,-20,+20}]
-      ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];
+(*letterKernels=Table[Table[If[x>=5,1,0],{x,-20,+20}]
+      ,{l2,1,Length[letterTemplates]},{l1,1,Length[letterTemplates]}];*)
 
 
 (* ::Text:: *)
