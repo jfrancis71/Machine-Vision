@@ -228,4 +228,4 @@ Comp[image_]:={TextRecognitionOutput1[image],TextRecognitionOutput2[image]}
 lines=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\TextFragments.wdx"];
 
 
-speak[]:=Speak[StringJoin[Map[letterTemplates[[#,1]]&,{l5b,l4b,l3b,l2b,l1b}]]]
+speak[]:=Speak[StringJoin[Map[letterTemplates[[#,1]]&,letters[[All,1]]]]]
