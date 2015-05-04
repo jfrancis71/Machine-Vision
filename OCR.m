@@ -84,6 +84,31 @@ DispText[y_,letters_,image_]:=Show[
    {Red,Map[Text[StyleForm[letterTemplates[[#[[1]],1]],FontSize->34],{#[[2]],y}]&,letters]}]]
 
 
+CondBacktrack1[l2b_,yb_,x2b_]:=
+   {{l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b]};
+
+
+CondBacktrack2[l3b_,yb_,x3b_]:=
+(
+   {l2b,x2b}=\[Psi]ArgMax[\[Tau]2,l3b,yb,x3b];
+   Prepend[CondBacktrack1[l2b,yb,x2b],{l2b,x2b}]
+);
+
+
+CondBacktrack3[l4b_,yb_,x4b_]:=
+(
+   {l3b,x3b}=\[Psi]ArgMax[\[Tau]2,l4b,yb,x4b];
+   Prepend[CondBacktrack2[l3b,yb,x3b],{l3b,x3b}]
+);
+
+
+CondBacktrack4[l5b_,yb_,x5b_]:=
+(
+   {l4b,x4b}=\[Psi]ArgMax[\[Tau]2,l5b,yb,x5b];
+   Prepend[CondBacktrack3[l4b,yb,x4b],{l4b,x4b}]
+);
+
+
 Backtrack1[]:=(
    {yb,l1b,x1b}=Position[\[Phi]1,Max[\[Phi]1]]//First;
    {{l1b,x1b}}
@@ -92,28 +117,29 @@ Backtrack1[]:=(
 
 Backtrack2[]:=(
    {yb,l2b,x2b}=Position[\[Phi]2,Max[\[Phi]2]]//First;
-   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
 
-   {{l2b,x2b},{l1b,x1b}}
+   Prepend[CondBacktrack1[l2b,yb,x2b],{l2b,x2b}]
 )
 
 
 Backtrack3[]:=(
    {yb,l3b,x3b}=Position[\[Phi]3,Max[\[Phi]3]]//First;
-   {l2b,x2b}=\[Psi]ArgMax[\[Tau]2,l3b,yb,x3b];
-   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
 
-   {{l3b,x3b},{l2b,x2b},{l1b,x1b}}
+   Prepend[CondBacktrack2[l3b,yb,x3b],{l3b,x3b}]
 )
 
 
 Backtrack4[]:=(
    {yb,l4b,x4b}=Position[\[Phi]4,Max[\[Phi]4]]//First;
-   {l3b,x3b}=\[Psi]ArgMax[\[Tau]3,l4b,yb,x4b];
-   {l2b,x2b}=\[Psi]ArgMax[\[Tau]2,l3b,yb,x3b];
-   {l1b,x1b}=\[Psi]ArgMax[\[Tau]1,l2b,yb,x2b];
 
-   {{l4b,x4b},{l3b,x3b},{l2b,x2b},{l1b,x1b}}
+   Prepend[CondBacktrack3[l4b,yb,x4b],{l4b,x4b}]
+)
+
+
+Backtrack5[]:=(
+   {yb,l5b,x5b}=Position[\[Phi]5,Max[\[Phi]5]]//First;
+
+   Prepend[CondBacktrack4[l5b,yb,x5b],{l5b,x5b}]
 )
 
 
@@ -151,16 +177,21 @@ TextRecognition[image_]:=(
    \[Psi]3=\[Psi]Max[\[Tau]3];
    \[Phi]3=Table[\[Tau]3[[y,l3,x3]]*letterFrequencies[[l3]],{y,1,height},{l3,1,LettersLength},{x3,1,width}];
 
-   \[Tau]4[y_,l4_,x4_]:=If[x4>width,0,letterMaps[[l4,y,x4]]*\[Psi]3[[l4,y,x4]]];
-   \[Phi]4=Table[\[Tau]4[y,l4,x4]*letterFrequencies[[l4]],{y,1,height},{l4,1,LettersLength},{x4,1,width}];
+   \[Tau]4=Table[If[x4>width,0,letterMaps[[l4,y,x4]]*\[Psi]3[[l4,y,x4]]],{y,1,height},{l4,1,LettersLength},{x4,1,width+20}];
+   \[Psi]4=\[Psi]Max[\[Tau]4];
+   \[Phi]4=Table[\[Tau]4[[y,l4,x4]]*letterFrequencies[[l4]],{y,1,height},{l4,1,LettersLength},{x4,1,width}];
 
-   NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3],Max[\[Phi]4]},-1]//First)-1;
+   \[Tau]5[y_,l5_,x5_]:=If[x5>width,0,letterMaps[[l5,y,x5]]*\[Psi]4[[l5,y,x5]]];
+   \[Phi]5=Table[\[Tau]5[y,l5,x5]*letterFrequencies[[l5]],{y,1,height},{l5,1,LettersLength},{x5,1,width}];
+
+   NumberOfLetters=(Ordering[{1,Max[\[Phi]1],Max[\[Phi]2],Max[\[Phi]3],Max[\[Phi]4],Max[\[Phi]5]},-1]//First)-1;
    letters=Switch[NumberOfLetters,
       0,{},
       1,Backtrack1[],
       2,Backtrack2[],
       3,Backtrack3[],
       4,Backtrack4[],
+      5,Backtrack5[],
       _,Assert[1==2]]
 )
 
@@ -191,8 +222,7 @@ RandomImageLine[]:=(
    article[[lineY-25;;lineY+25,lineX;;lineX+100]])
 
 
-(* ::Input:: *)
-(*Comp[image_]:={TextRecognitionOutput1[image],TextRecognitionOutput2[image]}*)
+Comp[image_]:={TextRecognitionOutput1[image],TextRecognitionOutput2[image]}
 
 
 lines=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\TextFragments.wdx"];
