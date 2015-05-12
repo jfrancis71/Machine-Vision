@@ -1,0 +1,122 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      3418,        113]
+NotebookOptionsPosition[      2991,         95]
+NotebookOutlinePosition[      3335,        110]
+CellTagsIndexPosition[      3292,        107]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"<<", 
+  "\"\<C:/users/julian/documents/github/Machine-Vision/MVTools.m\>\""}]], \
+"Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"TrainingFilenames", "=", 
+    RowBox[{"Join", "[", 
+     RowBox[{
+      RowBox[{
+      "FileNames", "[", 
+       "\"\<C:\\\\Users\\\\Julian\\\\secure\\\\Shape Recognition\\\\Stop Sign\
+\\\\Training Data\\\\Positives\\\\*\>\"", "]"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+      "FileNames", "[", 
+       "\"\<c:/users/julian/secure/Shape \
+Recognition/huttenlocher/images/faces/Training/image*\>\"", "]"}]}], "]"}]}], 
+   ";"}], "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{
+  3.6401438046273203`*^9, {3.6401438435565104`*^9, 3.640143911540624*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"images", "=", 
+   RowBox[{"Map", "[", 
+    RowBox[{"StandardiseImage", ",", "TrainingFilenames"}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.640143933788927*^9, 3.640143990252199*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"patches", "=", 
+   RowBox[{"Flatten", "[", 
+    RowBox[{
+     RowBox[{"Partition", "[", 
+      RowBox[{
+       RowBox[{"images", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"12", ",", "12"}], "}"}]}], "]"}], ",", "1"}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.6401440944145746`*^9, 3.6401441563010654`*^9}, {
+  3.6401444509156375`*^9, 3.6401444733989367`*^9}, {3.640144512348098*^9, 
+  3.6401445925402656`*^9}, {3.6403203524620852`*^9, 3.6403203540931787`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"NaturalImagePatches", "=", 
+   RowBox[{"Flatten", "[", 
+    RowBox[{
+     RowBox[{"Map", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Flatten", "[", 
+         RowBox[{
+          RowBox[{"Partition", "[", 
+           RowBox[{"#", ",", 
+            RowBox[{"{", 
+             RowBox[{"12", ",", "12"}], "}"}]}], "]"}], ",", "1"}], "]"}], 
+        "&"}], ",", "images"}], "]"}], ",", "1"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.640144625334429*^9, 3.6401446753190594`*^9}, {
+  3.6403203727162437`*^9, 3.6403203738773103`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+   "\"\<c:/users/julian/documents/github/machine-vision/\
+NaturalImagePatches12x12.wdx\>\"", ",", "NaturalImagePatches"}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.6401447026011887`*^9, 3.640144743267568*^9}, {
+  3.6403203776815276`*^9, 3.6403203787625895`*^9}}]
+},
+WindowSize->{1584, 765},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 114, 3, 43, "Input"],
+Cell[674, 25, 611, 16, 98, "Input"],
+Cell[1288, 43, 228, 6, 43, "Input"],
+Cell[1519, 51, 552, 14, 43, "Input"],
+Cell[2074, 67, 578, 16, 43, "Input"],
+Cell[2655, 85, 332, 8, 43, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

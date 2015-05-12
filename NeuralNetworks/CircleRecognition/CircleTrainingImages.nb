@@ -1,0 +1,198 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      7081,        189]
+NotebookOptionsPosition[      6537,        167]
+NotebookOutlinePosition[      6883,        182]
+CellTagsIndexPosition[      6840,        179]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"<<", 
+  "\"\<C:/users/julian/documents/github/Machine-Vision/MVTools.m\>\""}]], \
+"Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"NaturalImagePatches", "=", 
+   RowBox[{
+   "Import", "[", 
+    "\"\<C:\\\\Users\\\\Julian\\\\Documents\\\\GitHub\\\\Machine-Vision\\\\\
+NeuralNetworks\\\\NaturalImagePatches16x16.wdx\>\"", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6401519018753066`*^9, 3.6401519229849453`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TrainingLabels", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"RandomInteger", "[", "]"}], ",", 
+     RowBox[{"{", "1000", "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6401436813665285`*^9, 3.64014368557235*^9}, {
+  3.6401448111074753`*^9, 3.6401448418520174`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TrainingImages", "=", 
+   RowBox[{"Table", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"p", "=", 
+       RowBox[{"RandomInteger", "[", 
+        RowBox[{"Length", "[", "NaturalImagePatches", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"cent", "=", 
+       RowBox[{"Random", "[", "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"TrainingLabels", "[", 
+          RowBox[{"[", "t", "]"}], "]"}], "\[Equal]", "1"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"Table", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"If", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"Sqrt", "[", 
+              RowBox[{
+               SuperscriptBox[
+                RowBox[{"(", 
+                 RowBox[{"x", "-", "8"}], ")"}], "2"], "+", 
+               SuperscriptBox[
+                RowBox[{"(", 
+                 RowBox[{"y", "-", "8"}], ")"}], "2"]}], "]"}], "<=", "6"}], 
+            ",", 
+            RowBox[{"cent", "+", 
+             RowBox[{
+              RowBox[{"Random", "[", "]"}], "/", "10."}]}], ",", 
+            RowBox[{"NaturalImagePatches", "[", 
+             RowBox[{"[", 
+              RowBox[{"p", ",", "y", ",", "x"}], "]"}], "]"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{"y", ",", "1", ",", 
+            RowBox[{"+", "16"}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"x", ",", "1", ",", 
+            RowBox[{"+", "16"}]}], "}"}]}], "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"NaturalImagePatches", "[", 
+         RowBox[{"[", "p", "]"}], "]"}]}], "]"}]}], "\[IndentingNewLine]", 
+     ",", 
+     RowBox[{"{", 
+      RowBox[{"t", ",", "1", ",", 
+       RowBox[{"Length", "[", "TrainingLabels", "]"}]}], "}"}]}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.6401448449094334`*^9, 3.640145179364368*^9}, {
+  3.6401452537567005`*^9, 3.6401452928914843`*^9}, {3.6401453411697025`*^9, 
+  3.6401454013359957`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+   "\"\<C:\\\\Users\\\\Julian\\\\Documents\\\\GitHub\\\\Machine-Vision\\\\\
+NeuralNetworks\\\\CircleRecognition\\\\CircleTrainingImages.wdx\>\"", ",", 
+    "TrainingImages"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.6401520392630153`*^9, 3.640152086654524*^9}, {
+  3.640152311719438*^9, 3.6401523124390397`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+   "\"\<C:\\\\Users\\\\Julian\\\\Documents\\\\GitHub\\\\Machine-Vision\\\\\
+NeuralNetworks\\\\CircleRecognition\\\\CircleTrainingLabels.wdx\>\"", ",", 
+    "TrainingLabels"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.6401523179370513`*^9, 3.640152325757665*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TrainingImages", "[", 
+   RowBox[{"[", "320", "]"}], "]"}], "//", "DispImage"}]], "Input",
+ CellChangeTimes->{{3.640145309935361*^9, 3.640145329034644*^9}, {
+  3.6401453889679327`*^9, 3.6401454123736515`*^9}, {3.640152031931597*^9, 
+  3.6401520322903976`*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[{RasterBox[CompressedData["
+1:eJyFlXtMVEcUxlepFZVYROWllCoYoBrFaK2i8KUElRQ1VCAlda2oCGLwRQvR
+Km2xKiotFeSx8gYBUQm1uNVSXyvyBkFlRcEHhZkBUWq1WAGl2r2XO2PiP/6S
+zcnOnZ1zvjPnfjtpzebl64aqVCpT5fO+TD0OayRuwUzmOibI1MJXRg9bmQYk
+HJK4jNQUiRroG2WU5xfFvqYbMrCSqcZYmctif+N1GfD8PjKNuHZVBulpEnVi
+PeWwRLVyXgkc97lNvvURE/sPxUuUijxpqRK1yvkXYCqjE+u8Lp6fr9vIXBFx
+ffq22C3NFK8aFj71aSUIC/Io++ITgmydfWaLI8Xmx+NVzWqC5kOz7lUfI9it
+nnYwz56JfoyX+U3kT0yQKBN95Lp43fy5MbFd4nqfYmln1J/poyn6+zQxvl4E
+213Ue2KMKah5eVvrTYJgh4sRIVYMLzdFdGoWEUycEfnegXyC7/3nHTgynSrn
+nlL0nMdEmXOiL3EHJXQi9m3cGerbzeA8pjFQ/YCh5/J61c4jFEV5bbFLaTui
+IzwfWq8hyJg/w+xSMMXdUQ/WJPQwJEVVV2h1BDNcn53uSqGITLvjsT2YwLNJ
+U74wjsFSpgpJiRLlMJc5LfSOk9Fi2JTaKKvjDBmRjXcn2lBoQxt0jxoYso+v
+Uhca9LeEZajvZxFMr/Swj/mrHcm5Tur8tQzz9E4zA/wY3tW90i++zXDTqHD4
+6g6CiKD8VKsBiswMiXqhc7APhUodFUo/itB/I9Oz/SeKtZqSrSdjKP7u9/vX
+y4Ti85L+gwN2DBYRK3PyBhji7WpHbN5L4aFVzXTdT5BYdD5vcSqBRWpQkM39
+djRffxpSkUsw5bazPl7FxH3zOeD6+Zw9c9dHt5gRtDo+fW4eQkDHeLt3G/Ku
+i/W22VVK4OMyddJUP4IJv0SXRwy0o7Mh18TU0I9xfS9tjbQEdf0OtmVGFP+4
+7X7kV0Lw5KvauOG7CJb5bw9ra2UI6j16t8swJxYylbCW+UOp56pYH3FlpOqU
+q6H/mPtNkjHDgp/Nc7OLKWxz9PnTjDtgdLbxzBIfhq4lAcmzVhPcGDUiZYth
+HoPtRzo+8WKo9g7YNv9Thg/uxUUX1jPoEl7a2li/vv9BfykV88jvhedfZuZU
+OdmSodJ/Va6zjsLqv9mhdVkUcz/Odjo6h+KW8ZM6oxyK/S01wyoMcfSXP+yt
+mk0xZEui80lDPQ9wTu8VSfB13Ty3nVUEz61PTLgSRxQ/O6vU8bvQz32Mx7Id
+7pajEwgSCl0+yw6n2LHWT2OcThGKwy/CUyk03svrT/RQ7Nn04zva7yj2mRS4
+vFjBEGA3LWaZFUVW+IIVi2sM70FRwZyhixjSul26ah+3K/rOiHvn9XC/5H6b
+nCRRAe9jupVtaorHHoGJIaUUF+rCkh6aEHT0DslscafwNC328jX0N9HtdHz9
+BoJnDgV2DpEUG6NW9vgUG+6ZTOpO3kaFzjEyvwo/4u8b93fuh/FxEpeEP2x9
+NXb/h4Z57rJsDe+8R9DEzO+QKornfSG9TeUE5zt7a1YEMQRerfl2zw6Guae0
+GzpHEvF7rntwzk6KvINzUKzUdU3o5j4+uP66jjf9K8Om1y9rARN95Dr5/wPf
+x9ff7D+PPM/bIvcN7utv1vW2yOvh9fLIfYH7Is/HdfD3hd8Lj/xcfp9cD+8v
+933eZ/6d7+d+9z+BBTg8
+    "]], 
+   {RGBColor[1, 0, 0], PointBox[{8, 8}]}}]], "Output",
+ CellChangeTimes->{{3.6401453156105814`*^9, 3.6401453293284454`*^9}, {
+   3.640145382287099*^9, 3.640145412852454*^9}, 3.640151957501017*^9, {
+   3.64015202593598*^9, 3.6401520328272*^9}, 3.640152347429112*^9}]
+}, Open  ]]
+},
+WindowSize->{1054, 708},
+WindowMargins->{{Automatic, 72}, {Automatic, 28}},
+FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 114, 3, 43, "Input"],
+Cell[674, 25, 319, 7, 125, "Input"],
+Cell[996, 34, 325, 8, 43, "Input"],
+Cell[1324, 44, 2098, 54, 304, "Input"],
+Cell[3425, 100, 380, 8, 71, "Input"],
+Cell[3808, 110, 329, 7, 71, "Input"],
+Cell[CellGroupData[{
+Cell[4162, 121, 295, 6, 43, "Input"],
+Cell[4460, 129, 2061, 35, 561, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
