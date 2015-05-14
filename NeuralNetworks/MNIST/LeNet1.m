@@ -83,3 +83,23 @@ RTrainingImages=Map[ImageData[Binarize[ImageResize[Image[#],{16,16}]]]&,Training
 
 
 RTestImages=Map[ImageData[Binarize[ImageResize[Image[#],{16,16}]]]&,TestImages];
+
+
+(*func is a function which takes an array of size*size and
+returns an output to be displayed *)
+
+DrawingPad4[func_,size_Integer] := (
+  m = Table[0, {i, size}, {j, size}];
+  DynamicModule[{},
+    Row[{Button["Reset", m = Table[0, {i, size}, {j, size}]],
+      EventHandler[
+       Dynamic@ArrayPlot[
+         m], 
+       "MouseDragged" :> (pt = Floor[MousePosition["Graphics"]] + {1, 1};
+         (*pt=Map[Min[size,#]&,pt];*)
+         pt = {Min[size, pt[[1]]], Min[size, pt[[2]]]};
+         (ci = {size - pt[[2]], pt[[1]]});
+         m[[ci[[1]], ci[[2]]]] = 1)
+       ], Dynamic@func[m]}]
+  ]
+)
