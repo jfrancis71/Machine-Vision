@@ -164,7 +164,9 @@ LogSum[a_,b_]:=Max[a,b]+Log[Exp[a-Max[a,b]]+Exp[b-Max[a,b]]]
 
 
 MVProfile[f_,expon_]:=Print["Timings: ",AbsoluteTiming[
-Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"]
+Table[f,{10^expon}];][[1]]*10^(6-expon)," microseconds"];
+
+Timer[message_,expr_]:=If[timers==True,Print[message,Timing[expr;]],expr;]
 
 
 SetAttributes[MVProfile,HoldFirst]
