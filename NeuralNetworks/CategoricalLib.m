@@ -1,14 +1,12 @@
 (* ::Package:: *)
 
-(* Function f takes inputs and returns list of categorical distributions *)
+(* CATDistributions is a list of categorical distributions, eg n*m matrix where n examples and m categories *)
 (* Note there is no single item classification version. That is intentional *)
 (* to encourage vectorised operations and discourage loopy styles of coding *)
 (* note, labels is the index of the correct label into the categorical distribution *)
 
-CATCrossEntropy[ labels_, inputs_, f_ ] := (
-   CATDistributions = f[ inputs ];
+CATCrossEntropy[ labels_, CATDistributions_ ] :=
    -Total[ Log[ 2, MapThread[ #1[[#2]]&, {CATDistributions,labels} ] ] ]
-)
 
 
 (* CATClassify returns a list of the indices of the classification *)
@@ -23,11 +21,13 @@ CATTest[ classificationIndices_, inputs_, f_ ] := (
    Total[ MapThread[ Boole[ #1 == #2 ]&, { classifications, classificationIndices } ] ]/Length[ classificationIndices ] //N
 )
 
-CATTraining[reset_] := (
-  iter = 0; If[reset, w = winitial;energy={}];
+CATTraining[reset_,CrossEntropyFunction_] := (
+  iter = 0;
+  Print[Dynamic[{iter,crossEntropy[[-5;;-1]]}]];
+  If[reset, w = winitial;crossEntropy={}];
   While[True,
    iter++;
-   energy = Append[energy,Energy[w]];
+   crossEntropy = Append[crossEntropy,CrossEntropyFunction[w]];
    w = GradientDescent[w];]
   )
       

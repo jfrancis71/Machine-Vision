@@ -1,6 +1,8 @@
 (* ::Package:: *)
 
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/CategoricalLib.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/CircleRecognition/LeNet1.m"
 
 
 (*
@@ -119,12 +121,6 @@ wret=wret-0.0001*GradE1[wret,TrainingLabels[[s*100+1;;s*100+100]],TrainingImages
 wret )
 
 
-Length[TrainingImages]
-
-
-1000
-
-
 Timer[message_,expr_]:=If[timers==True,Print[message,Timing[expr;]],expr;]
 
 
@@ -142,10 +138,11 @@ Table[Random[]-0.5,{u1,1,2},{in,0,30}]
 myF[w_]:=Function[inputs,Map[SoftMax,ForwardPropogation[inputs,w]]]
 
 
-Energy[w_]:=CATCrossEntropy[TrainingLabels[[1;;100]]+1, RTrainingImages[[1;;100]], myF[w] ]
+Energy[w_]:=CATCrossEntropy[TrainingLabels[[1;;100]]+1, myF[w][TrainingImages[[1;;100]]] ]
 
 
-StartTraining[freshStart_:True]:=(
-Print[Dynamic[{iter,energy[[-5;;-1]]}]];
-CATTraining[freshStart];
+CircleTraining[freshStart_:True]:=(
+   CATTraining[freshStart,Energy];
 )
+
+timers=True;
