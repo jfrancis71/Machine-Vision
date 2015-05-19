@@ -1,12 +1,7 @@
 (* ::Package:: *)
 
-<<"C:/users/julian/documents/github/Machine-Vision/AlienRecognition.m"
-
-
-<<"C:/users/julian/documents/github/Machine-Vision/CokeDetector.m"
-
-
-<<"C:/users/julian/documents/github/Machine-Vision/EngSparkRecognition.m"
+<<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
+<<"C:/users/julian/documents/github/Machine-Vision/ObjectModels.m"
 
 
 ZeroBoundary[pyr_]:=Table[
@@ -18,12 +13,35 @@ ZeroBoundary[pyr_]:=Table[
 c1=Table[ArrayPad[ConstantArray[1.,(pyr[[l]]//Dimensions)-{16,16}],8],{l,1,Length[pyr]}];//AbsoluteTiming
 
 
+probF[z_]=FullSimplify[PDF[HalfNormalDistribution[15],z],Assumptions->z>0];
+
+
+ObjectRecognition[image_,featureKernels_,partRelationKernels_]:=( 
+   pyr=BuildPyramid[image];
+   featureMaps=probF[Map[
+   MVCorrelatePyramid[pyr,#,NormalizedSquaredEuclideanDistance]&,
+     featureKernels]];
+   res=Apply[Times,MapThread[MVCorrelatePyramid,{featureMaps,partRelationKernels}]]
+)
+
+
+ObjectRecognitionOutput[image_,featureKernels_,partRelationKernels_]:=
+(
+   Assert[Length[featureKernels]==Length[partRelationKernels]];
+   ObjectRecognition[image,featureKernels,partRelationKernels];
+   c1=Table[ArrayPad[ConstantArray[1.,(pyr[[l]]//Dimensions)-{16,16}],8],{l,1,Length[pyr]}];
+   o=Show[image//DispImage,
+      OutlineGraphics[BoundingRectangles[res,1.0,{10,10}],Green]]
+)
+
+
 ObjectRecognitionOutput[image_]:=
 (
    c1=Table[ArrayPad[ConstantArray[1.,(pyr[[l]]//Dimensions)-{16,16}],8],{l,1,Length[pyr]}];
-   AlienRecognition[image];AlienMap=res*c1;
-   CokeRecognition[image];CokeMap=res*c1;
-   EngSparkRecognition[image];EngSparkMap=res*c1;
+   AlienMap=ObjectRecognition[image,AlienFeatureKernels,AlienRelationKernels];
+   CokeMap=ObjectRecognition[image,CokeFeatureKernels,CokeRelationKernels];
+   EngSparkMap=ObjectRecognition[image,EngSparkFeatureKernels,EngSparkRelationKernels];
+
    o=Show[image//DispImage,
       OutlineGraphics[BoundingRectangles[AlienMap,1.0,{10,10}],Red],
       OutlineGraphics[BoundingRectangles[CokeMap,1.0,{10,10}],Green],
