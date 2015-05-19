@@ -46,3 +46,17 @@ EngSparkFeature1Kernel=ConstantArray[1,{1,1}];
 EngSparkFeature2Kernel=Table[If[y<=-13&&x>=20,1,0],{y,-15,+15},{x,-23,+23}];
 EngSparkFeature3Kernel=Table[If[y<=-13&&x<=-20,1,0],{y,-15,+15},{x,-23,+23}];
 EngSparkRelationKernels={EngSparkFeature1Kernel,EngSparkFeature2Kernel,EngSparkFeature3Kernel};
+
+
+FaceModel=StandardiseImage[Import["c:/users/julian/secure/Shape Recognition/huttenlocher/images/faces/Training/image_0001.jpg"]
+];
+
+
+leftEye=ImageData[ImageTake[FaceModel//Image,{85,85}-{45,39},{35,45}]];
+rightEye=ImageData[ImageTake[FaceModel//Image,{85,85}-{45,39},{53,63}]];
+FaceFeatureKernels={leftEye,rightEye};
+
+
+leftEyeKernel=Table[0,{1},{21}];leftEyeKernel[[1,1]]=1;leftEyeKernel[[1,2]]=1;leftEyeKernel[[1,3]]=1;
+rightEyeKernel=Table[0,{1},{21}];rightEyeKernel[[1,19]]=1;rightEyeKernel[[1,20]]=1;rightEyeKernel[[1,21]]=1;
+FaceRelationKernels={leftEyeKernel,rightEyeKernel};

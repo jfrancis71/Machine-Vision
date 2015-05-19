@@ -41,10 +41,12 @@ ObjectRecognitionOutput[image_]:=
    AlienMap=ObjectRecognition[image,AlienFeatureKernels,AlienRelationKernels];
    CokeMap=ObjectRecognition[image,CokeFeatureKernels,CokeRelationKernels];
    EngSparkMap=ObjectRecognition[image,EngSparkFeatureKernels,EngSparkRelationKernels];
+   FaceMap=ObjectRecognition[image,FaceFeatureKernels,FaceRelationKernels];
 
    o=Show[image//DispImage,
       OutlineGraphics[BoundingRectangles[AlienMap,1.0,{10,10}],Red],
       OutlineGraphics[BoundingRectangles[CokeMap,1.0,{10,10}],Green],
-      OutlineGraphics[BoundingRectangles[EngSparkMap,1.0,{10,10}],Blue]
+      OutlineGraphics[BoundingRectangles[EngSparkMap,1.0,{10,10}],Blue],
+      OutlineGraphics[BoundingRectangles[FaceMap,1.0,{10,10}],Yellow]
 ] 
 )
