@@ -47,6 +47,7 @@ ObjectRecognitionOutput[image_]:=
       OutlineGraphics[BoundingRectangles[AlienMap,1.0,{10,10}],Red],
       OutlineGraphics[BoundingRectangles[CokeMap,1.0,{10,10}],Green],
       OutlineGraphics[BoundingRectangles[EngSparkMap,1.0,{10,10}],Blue],
-      OutlineGraphics[BoundingRectangles[FaceMap,1.0,{10,10}],Yellow]
+      OutlineGraphics[BoundingRectangles[FaceMap,1.0,{10,10}],Yellow],
+      PlotRange->{{0,(image//Dimensions)[[2]]},{0,(image//Dimensions)[[1]]}}
 ] 
 )
