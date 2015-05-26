@@ -29,7 +29,7 @@ CokeFeatureKernels={CokeFeature1,CokeFeature2};
 
 
 CokeFeature1Kernel=ConstantArray[1,{3,3}];
-CokeFeature2Kernel=Table[If[y<=-22,1,0],{y,-25,+25},{x,-2,+2}];
+CokeFeature2Kernel=Table[If[y>22,1,0],{y,-25,+25},{x,-2,+2}];
 CokeRelationKernels={CokeFeature1Kernel,CokeFeature2Kernel};
 
 
