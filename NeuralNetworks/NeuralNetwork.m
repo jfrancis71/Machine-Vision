@@ -50,7 +50,7 @@ FullyConnectedGrad[currentParameters_,inputs_,targets_]:=(
    DeltaZ1=Transpose[layer2[[2]]].DeltaA2;
    DeltaA1=DeltaZ1*Sech[A1]^2;
 
-   {{Total[DeltaZ1,{2}],DeltaZ1.Transpose[inputs]},{Total[DeltaA2,{2}],DeltaA2.Transpose[Z1]}}
+   {{Total[DeltaA1,{2}],DeltaA1.Transpose[inputs]},{Total[DeltaA2,{2}],DeltaA2.Transpose[Z1]}}
 )
 
 (*This is implicitly a regression loss function*)
@@ -88,3 +88,25 @@ sqInputs={Table[x,{x,0,1,0.1}]};sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
 
 sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,500000];
+
+
+(* ::Input:: *)
+(*XORNetwork={*)
+(*   {{.2,.3,.7},{{2,.3},{3,.2},{1,Random[]-.5}}},*)
+(*   {{.6},{{1,Random[]-.5,Random[]-.5}}}*)
+(*};*)
+(*XORInputs=Transpose[{{0,0},{0,1},{1,0},{1,1}}];XORInputs//MatrixForm;*)
+(*XOROutputs={{0,1,1,0}};XOROutputs//MatrixForm;*)
+(**)
+(*XORTrained:=GradientDescent[XORNetwork,XORInputs,XOROutputs,500000];*)
+
+
+(* ::Input:: *)
+(*MultInputs=Transpose[Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1]];MultInputs//MatrixForm*)
+
+
+(* ::Input:: *)
+(*MultOutputs=Transpose[Map[{#[[1]]*#[[2]]}&,Transpose[MultInputs]]];MultOutputs//MatrixForm*)
+
+
+MultTrained:=GradientDescent[XORNetwork,MultInputs,MultOutputs,5000000];
