@@ -139,7 +139,7 @@ edgeNetwork={{0,Table[Random[],{3},{3}]}};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\secure\\My Pictures\\me3.png"]};
 
 
-edgeOutputs=Convolution2DForwardPropogation[{edgeInputs},{{0,sobelY}}][[1]];
+edgeOutputs=Convolution2DForwardPropogation[edgeInputs,{{0,sobelY}}][[1]];
 
 
 edgeTrained:=GradientDescent[edgeNetwork,{edgeInputs},{edgeOutputs},Convolution2DGrad,ConvLoss,.000001,500000]
