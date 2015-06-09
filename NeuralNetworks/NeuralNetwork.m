@@ -125,10 +125,10 @@ XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
 XORTrained:=GradientDescent[XORNetwork,XORInputs,XOROutputs,FullyConnectedGrad,FullyConnectedLoss,.0001,500000];
 
 
-MultInputs=Transpose[Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1]];MultInputs//MatrixForm;
+MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 
 
-MultOutputs=Transpose[Map[{#[[1]]*#[[2]]}&,Transpose[MultInputs]]];MultOutputs//MatrixForm;
+MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
 
 
 MultTrained:=GradientDescent[XORNetwork,MultInputs,MultOutputs,FullyConnectedGrad,FullyConnectedLoss,.0001,5000000];
@@ -138,7 +138,7 @@ edgeNetwork={{0,Table[Random[],{3},{3}]}};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\secure\\My Pictures\\me3.png"]};
 
 
-edgeOutputs=Convolution2DForwardPropogation[edgeInputs,{{0,sobelY}}][[1]];
+edgeOutputs=Convolution2DForwardPropogation[edgeInputs,{{0,sobelY}}];
 
 
-edgeTrained:=GradientDescent[edgeNetwork,{edgeInputs},{edgeOutputs},Convolution2DGrad,ConvLoss,.000001,500000]
+edgeTrained:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Convolution2DGrad,ConvLoss,.000001,500000]
