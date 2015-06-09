@@ -13,35 +13,34 @@
    Layer L has U units and preceeding layer has P units
    then network layer looks like (U*1,U*P)
 
-   The linear activation layer looks like U*T where T is the
+   The linear activation layer looks like T*U where T is the
    number of inputs or training examples
 
-   inputs has shape I*T where I is the number of inputs
-   output is of shape O*T
+   inputs has shape T*I where I is the number of inputs
+   output is of shape T*O
 *)
 
 FullyConnectedForwardPropogation[inputs_,parameters_]:=(
    Z0 = inputs;
 
    layer1=parameters[[1]];
-   Assert[(layer1[[2,1]]//Length)==(Z0//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
+   Assert[(layer1[[2,1]]//Length)==(Transpose[Z0]//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
    Assert[(layer1[[1]]//Length)==(layer1[[2]]//Length)]; (*Bias on units should match up with number of units from weight layer *)
-   A1=layer1[[2]].Z0 + layer1[[1]];
+   A1=Transpose[layer1[[2]].Transpose[Z0] + layer1[[1]]];
    Z1 = Tanh[A1];
 
    layer2=parameters[[2]];
-   Assert[(layer2[[2,1]]//Length)==(Z1//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
+   Assert[(layer2[[2,1]]//Length)==(Transpose[Z1]//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
    Assert[(layer2[[1]]//Length)==(layer2[[2]]//Length)]; (*Bias on units should match up with number of units from weight layer *)
-   A2=layer2[[2]].Z1 + layer2[[1]];
+   A2=Transpose[layer2[[2]].Transpose[Z1] + layer2[[1]]];
    Z2 = Tanh[A2]
 )
 
-(* INCOMPLETE *)
 (*
-   The linear activation layer has shape U*T 
+   The linear activation layer has shape T*U 
    DeltaXX refers to the partial derivative of the loss function wrt that neurone activation
-      so it has shape U*T
-   targets has shape O*T where O is the number of output units
+      so it has shape T*U
+   targets has shape T*O where O is the number of output units
 *)
 FullyConnectedGrad[currentParameters_,inputs_,targets_]:=(
 
@@ -50,10 +49,10 @@ FullyConnectedGrad[currentParameters_,inputs_,targets_]:=(
    DeltaZ2=2*(Z2-targets); (*We are implicitly assuming a regression loss function*)
    DeltaA2=DeltaZ2*Sech[A2]^2;
 
-   DeltaZ1=Transpose[layer2[[2]]].DeltaA2;
+   DeltaZ1=Transpose[Transpose[layer2[[2]]].Transpose[DeltaA2]];
    DeltaA1=DeltaZ1*Sech[A1]^2;
 
-   {{Total[DeltaA1,{2}],DeltaA1.Transpose[inputs]},{Total[DeltaA2,{2}],DeltaA2.Transpose[Z1]}}
+   {{Total[Transpose[DeltaA1],{2}],Transpose[DeltaA1].inputs},{Total[Transpose[DeltaA2],{2}],Transpose[DeltaA2].Z1}}
 )
 
 (*This is implicitly a regression loss function*)
@@ -110,7 +109,7 @@ sqNetwork={
    {{.2,.3},{{2},{3}}},
    {{.6},{{1,7}}}
 };
-sqInputs={Table[x,{x,0,1,0.1}]};sqInputs//MatrixForm;
+sqInputs=Transpose[{Table[x,{x,0,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
 
 sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,FullyConnectedGrad,FullyConnectedLoss,.0001,500000];
@@ -120,8 +119,8 @@ XORNetwork={
    {{.2,.3,.7},{{2,.3},{3,.2},{1,Random[]-.5}}},
    {{.6},{{1,Random[]-.5,Random[]-.5}}}
 };
-XORInputs=Transpose[{{0,0},{0,1},{1,0},{1,1}}];XORInputs//MatrixForm;
-XOROutputs={{0,1,1,0}};XOROutputs//MatrixForm;
+XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
+XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
 
 XORTrained:=GradientDescent[XORNetwork,XORInputs,XOROutputs,FullyConnectedGrad,FullyConnectedLoss,.0001,500000];
 
