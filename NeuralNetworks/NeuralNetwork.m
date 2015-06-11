@@ -148,7 +148,7 @@ LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
 
    A1=weights.Transpose[inputs,{2,1,3,4}]+bias
 )
-Backprop[FilterBankTo2D[bias_,weights_],inputs_,postLayerDeltaA_]:=Map[#*postLayerDeltaA&,weights]
+Backprop[FilterBankTo2D[bias_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
 LayerGrad[FilterBankTo2D[bias_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Table[Total[DeltaA[layerIndex]*Z[layerIndex-1][[All,w]],3],{w,1,Length[weights]}]}
 
 
@@ -191,3 +191,9 @@ edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}]};
 edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
 edgeFilterBankTo2DOutputs=edgeOutputs;
 edgeFilterBankTo2DTrained:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,Loss2D,.000001,500000]
+
+
+Deep1Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
+Deep1Inputs=edgeInputs;
+Deep1Outputs=edgeOutputs;
+Deep1Trained:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,Loss2D,.000001,500000]
