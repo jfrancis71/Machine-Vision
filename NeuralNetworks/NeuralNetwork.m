@@ -67,6 +67,7 @@ WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad
 WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]]
+WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[lossF[wl,inputs,targets]]];
@@ -141,6 +142,14 @@ LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
 Backprop[Convolve2DToFilterBank[filters_],inputs_,postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerIndex_]:=Table[{Total[DeltaA[layerIndex][[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{DeltaA[layerIndex][[All,filterIndex]],Z[layerIndex-1]}]]},{filterIndex,1,Length[filters]}]
 
+(*FilterBankTo2DLayer*)
+LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
+   Z0 = inputs;
+
+   A1=weights.Transpose[inputs,{2,1,3,4}]+bias
+)
+Backprop[FilterBankTo2D[bias_,weights_],inputs_,postLayerDeltaA_]:=Map[#*postLayerDeltaA&,weights]
+LayerGrad[FilterBankTo2D[bias_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Table[Total[DeltaA[layerIndex]*Z[layerIndex-1][[All,w]],3],{w,1,Length[weights]}]}
 
 
 (* Examples *)
@@ -176,3 +185,9 @@ edgeTrained:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,Loss2D,.000
 edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Convolve2D[0,Table[Random[],{3},{3}]]}]};
 edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}]}];
 edgeFilterBankTrained:=GradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,Loss3D,.000001,500000]
+
+
+edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}]};
+edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
+edgeFilterBankTo2DOutputs=edgeOutputs;
+edgeFilterBankTo2DTrained:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,Loss2D,.000001,500000]
