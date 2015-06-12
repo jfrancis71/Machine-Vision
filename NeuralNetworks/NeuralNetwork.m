@@ -74,6 +74,14 @@ GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
    wl )
 
+AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,maxLoop_:2000]:=(
+   \[Lambda]=.001;
+   Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[lossF[wl,inputs,targets]], " \[Lambda]=",Dynamic[\[Lambda]]];
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[
+   twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
+   If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
+]])
+
 Visualise[parameters_]:=(
 
    Z0 = Table[0,{layer1[[2,1]]//Length}];
@@ -196,4 +204,16 @@ edgeFilterBankTo2DTrained:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterB
 Deep1Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep1Inputs=edgeInputs;
 Deep1Outputs=edgeOutputs;
-Deep1Trained:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,Loss2D,.000001,500000]
+Deep1Trained:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,Loss2D,.000001,500000];
+Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},
+{{-gw[[1,1,2]]//MatrixForm,-gw[[1,2,2]]//MatrixForm},-gw[[2,2]]}
+}]
+
+
+Deep2Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
+Deep2Inputs=edgeInputs;
+Deep2Outputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]+ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])/2;
+Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,Loss2D,500000];
+Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
+{{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
+}]
