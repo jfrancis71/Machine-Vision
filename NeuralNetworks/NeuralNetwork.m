@@ -217,3 +217,15 @@ Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad
 Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
 }]
+
+
+SemNetwork={FullyConnected1DTo1D[
+Table[Random[],{h1,1,6}],
+Table[Random[],{h1,1,6},{i1,1,8}]],
+FullyConnected1DTo1D[
+Table[Random[],{o1,1,6}],
+Table[Random[],{o1,1,6},{i1,1,6}]]
+};
+SemInputs=Select[Tuples[{0,1},8],Count[#,1]==2&];
+SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[in,1]]]],SemInputs];
+SemTrained:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,Loss1D,.0001,500000];
