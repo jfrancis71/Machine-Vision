@@ -220,11 +220,11 @@ Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35
 
 
 SemNetwork={FullyConnected1DTo1D[
-Table[Random[],{h1,1,6}],
-Table[Random[],{h1,1,6},{i1,1,8}]],
+Table[Random[],{h1,1,7}],
+Table[Random[],{h1,1,7},{i1,1,8}]],
 FullyConnected1DTo1D[
 Table[Random[],{o1,1,6}],
-Table[Random[],{o1,1,6},{i1,1,6}]]
+Table[Random[],{o1,1,6},{h1,1,7}]]
 };
 SemInputs=Select[Tuples[{0,1},8],Count[#,1]==2&];
 SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[in,1]]]],SemInputs];
