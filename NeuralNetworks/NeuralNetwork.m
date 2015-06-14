@@ -171,8 +171,8 @@ sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,Loss1D,.0001,500000
 
 
 XORNetwork={
-   FullyConnected1DTo1D[{.2,.3,.7},{{2,.3},{3,.2},{1,Random[]-.5}}],
-   FullyConnected1DTo1D[{.6},{{1,Random[]-.5,Random[]-.5}}]
+   FullyConnected1DTo1D[{.2,.3},{{2,.3},{1,Random[]-.5}}],
+   FullyConnected1DTo1D[{.6},{{1,Random[]-.5}}]
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
