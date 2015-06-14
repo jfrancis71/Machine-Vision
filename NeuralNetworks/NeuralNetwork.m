@@ -32,7 +32,7 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
    For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
-      DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],inputs,DeltaZ[layerIndex+1]];
+      DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],inputs,DeltaA[layerIndex+1]];
       DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2;
    ];
 )
