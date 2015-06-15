@@ -25,7 +25,7 @@ ForwardPropogation[inputs_,network_]:=(
 BackPropogation[currentParameters_,inputs_,targets_]:=(
 
    ForwardPropogation[inputs, currentParameters];
-   Assert[Length[currentParameters]<=2];
+   Assert[Length[currentParameters]<=3];
    networkLayers=Length[currentParameters];
 
    DeltaZ[networkLayers]=2*(Z[networkLayers]-targets); (*We are implicitly assuming a regression loss function*)
@@ -71,6 +71,7 @@ WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[network
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]]
 WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
+WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[lossF[wl,inputs,targets]]];
@@ -158,6 +159,18 @@ LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
 Backprop[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
 LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Table[Total[layerOutputDelta*layerInputs[[All,w]],3],{w,1,Length[weights]}]}
 
+(*FilterBankToFilterBankLayer*)
+(*slices is meant to indicate one slice in the layer (ie a 2D structure) *)
+(*so FilterBankToFilterBank is comprised of a sequence of FilterBankTo2D structures *)
+LayerForwardPropogation[inputs_,FilterBankToFilterBank[biases_,weights_]]:=(
+   Transpose[weights.Transpose[inputs]+biases]
+)
+Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
+   Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
+LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
+   Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
+   Total[Table[Total[layerInputs[[t]][[in]]*layerOutputDelta[[t]][[out]],2],{t,1,Length[layerOutputDelta]},{out,1,Length[layerOutputDelta[[1]]]},{in,1,Length[layerInputs[[1]]]}]]}
+
 
 (* Examples *)
 sqNetwork={
@@ -218,13 +231,23 @@ Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35
 }]
 
 
-SemNetwork={FullyConnected1DTo1D[
-Table[Random[],{h1,1,6}],
-Table[Random[],{h1,1,6},{i1,1,8}]],
-FullyConnected1DTo1D[
-Table[Random[],{o1,1,6}],
-Table[Random[],{o1,1,6},{h1,1,6}]]
+SemNetwork={
+   FullyConnected1DTo1D[
+      Table[Random[],{h1,1,6}],
+      Table[Random[],{h1,1,6},{i1,1,8}]],
+   FullyConnected1DTo1D[
+      Table[Random[],{o1,1,6}],
+      Table[Random[],{o1,1,6},{h1,1,6}]]
 };
 SemInputs=Select[Tuples[{0,1},8],Count[#,1]==2&];
 SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[in,1]]]],SemInputs];
 SemTrained:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,Loss1D,.0001,500000];
+
+
+FTBNetwork={
+   Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]]}],
+   FilterBankToFilterBank[{.4,.7},{{.3},{.7}}],
+   FilterBankTo2D[.3,{.3,.5}]};
+FTBInputs=edgeInputs;
+FTBOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2;
+FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss3D,500000];
