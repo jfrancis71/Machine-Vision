@@ -44,6 +44,9 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
    targets has shape T*O where O is the number of output units
 *)
 Grad[currentParameters_,inputs_,targets_]:=(
+
+   Assert[Length[inputs]==Length[targets]];
+
    BackPropogation[currentParameters,inputs,targets];
 
    Table[
