@@ -114,13 +114,12 @@ Visualise[parameters_]:=(
    output is of shape T*O
 *)
 LayerForwardPropogation[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]]:=(
-   Z0 = inputs;
 
    (*Weight-Activation Consistancy check*)
-   Assert[(layerWeights[[1]]//Length)==(Transpose[Z0]//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
+   Assert[(layerWeights[[1]]//Length)==(Transpose[inputs]//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
    (*Weight-Weight Consistancy checl*)
    Assert[(layerBiases//Length)==(layerWeights//Length)]; (*Bias on units should match up with number of units from weight layer *)
-   A1=Transpose[layerWeights.Transpose[Z0] + layerBiases]
+   Transpose[layerWeights.Transpose[inputs] + layerBiases]
 )
 Backprop[FullyConnected1DTo1D[biases_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
 LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerIndex_]:={Total[Transpose[DeltaA[layerIndex]],{2}],Transpose[DeltaA[layerIndex]].Z[layerIndex-1]}
@@ -130,9 +129,8 @@ LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerIndex_]:={Total[Transpose[
    layer is {bias,weights} where weights is a 2D kernel
 *)
 LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
-   Z0 = inputs;
 
-   A1=Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
+   Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
 )
 Backprop[Convolve2D[biases_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
 LayerGrad[Convolve2D[biases_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Apply[Plus,MapThread[ListCorrelate,{DeltaA[layerIndex],Z[layerIndex-1]}]]}
@@ -143,18 +141,16 @@ LayerGrad[Convolve2D[biases_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3
    Resulting layer is T*F*Y*X
 *)
 LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
-   Z0 = inputs;
 
-   A1=Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
+   Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
 )
 Backprop[Convolve2DToFilterBank[filters_],inputs_,postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerIndex_]:=Table[{Total[DeltaA[layerIndex][[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{DeltaA[layerIndex][[All,filterIndex]],Z[layerIndex-1]}]]},{filterIndex,1,Length[filters]}]
 
 (*FilterBankTo2DLayer*)
 LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
-   Z0 = inputs;
-
-   A1=weights.Transpose[inputs,{2,1,3,4}]+bias
+  
+   weights.Transpose[inputs,{2,1,3,4}]+bias
 )
 Backprop[FilterBankTo2D[bias_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
 LayerGrad[FilterBankTo2D[bias_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Table[Total[DeltaA[layerIndex]*Z[layerIndex-1][[All,w]],3],{w,1,Length[weights]}]}
