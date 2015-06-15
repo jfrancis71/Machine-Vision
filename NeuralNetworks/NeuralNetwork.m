@@ -32,7 +32,7 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
    For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
-      DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],inputs,DeltaA[layerIndex+1]];
+      DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
       DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2;
    ];
 )
@@ -50,7 +50,7 @@ Grad[currentParameters_,inputs_,targets_]:=(
    BackPropogation[currentParameters,inputs,targets];
 
    Table[
-      LayerGrad[currentParameters[[layerIndex]],layerIndex]
+      LayerGrad[currentParameters[[layerIndex]],Z[layerIndex-1],DeltaA[layerIndex]]
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
@@ -124,8 +124,8 @@ LayerForwardPropogation[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]
    Assert[(layerBiases//Length)==(layerWeights//Length)]; (*Bias on units should match up with number of units from weight layer *)
    Transpose[layerWeights.Transpose[inputs] + layerBiases]
 )
-Backprop[FullyConnected1DTo1D[biases_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
-LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerIndex_]:={Total[Transpose[DeltaA[layerIndex]],{2}],Transpose[DeltaA[layerIndex]].Z[layerIndex-1]}
+Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
+LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[Transpose[layerOutputDelta],{2}],Transpose[layerOutputDelta].layerInputs}
 
 (*Convolve2DLayer*)
 (*
@@ -135,8 +135,8 @@ LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
 
    Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
 )
-Backprop[Convolve2D[biases_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
-LayerGrad[Convolve2D[biases_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Apply[Plus,MapThread[ListCorrelate,{DeltaA[layerIndex],Z[layerIndex-1]}]]}
+Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
+LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}
 
 (*Convolve2DToFilterBankLayer*)
 (*
@@ -147,16 +147,16 @@ LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
 
    Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
 )
-Backprop[Convolve2DToFilterBank[filters_],inputs_,postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
-LayerGrad[Convolve2DToFilterBank[filters_],layerIndex_]:=Table[{Total[DeltaA[layerIndex][[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{DeltaA[layerIndex][[All,filterIndex]],Z[layerIndex-1]}]]},{filterIndex,1,Length[filters]}]
+Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
+LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}]
 
 (*FilterBankTo2DLayer*)
 LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
   
    weights.Transpose[inputs,{2,1,3,4}]+bias
 )
-Backprop[FilterBankTo2D[bias_,weights_],inputs_,postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
-LayerGrad[FilterBankTo2D[bias_,weights_],layerIndex_]:={Total[DeltaA[layerIndex],3],Table[Total[DeltaA[layerIndex]*Z[layerIndex-1][[All,w]],3],{w,1,Length[weights]}]}
+Backprop[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
+LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Table[Total[layerOutputDelta*layerInputs[[All,w]],3],{w,1,Length[weights]}]}
 
 
 (* Examples *)
