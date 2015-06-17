@@ -3,6 +3,9 @@
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
 
 
+RandomList=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\RandomList.wdx"];
+
+
 (*
    network is made up of sequence of layers
    layer is made up of biases for each of the units
@@ -14,12 +17,13 @@
 ForwardPropogation[inputs_,network_]:=(
    Z[0] = inputs;
 
+   Module[{layerIndex=1},
    For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
       A[layerIndex]=LayerForwardPropogation[Z[layerIndex-1],network[[layerIndex]]];
       Z[layerIndex]=Tanh[A[layerIndex]];
    ];
 
-   Z[layerIndex-1]
+   Z[layerIndex-1]]
 )
 
 BackPropogation[currentParameters_,inputs_,targets_]:=(
@@ -74,14 +78,15 @@ WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-g
 WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
-   Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[lossF[wl,inputs,targets]]];
-   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
+   Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
    wl )
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,maxLoop_:2000]:=(
    \[Lambda]=.001;
-   Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[lossF[wl,inputs,targets]], " \[Lambda]=",Dynamic[\[Lambda]]];
+   Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[loss], " \[Lambda]=",Dynamic[\[Lambda]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[
+   loss=lossF[wl,inputs,targets];
    twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
    If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
 ]])
@@ -244,10 +249,40 @@ SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[i
 SemTrained:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,Loss1D,.0001,500000];
 
 
+r1=Partition[RandomList[[1;;9]],3];r2=Partition[RandomList[[10;;18]],3];
+r3=RandomList[[19;;19+4-1]];
+r4=Partition[RandomList[[23;;23+8-1]],2];
+r5=RandomList[[30]];r6=RandomList[[30;;30+4-1]];
 FTBNetwork={
-   Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]]}],
-   FilterBankToFilterBank[{.4,.7},{{.3},{.7}}],
-   FilterBankTo2D[.3,{.3,.5}]};
+   Convolve2DToFilterBank[{Convolve2D[0.,r1-.5],Convolve2D[0.,r2-.5]}],
+   FilterBankToFilterBank[0.,r4-.5],
+   FilterBankTo2D[0.,r6-.5]};
 FTBInputs=edgeInputs;
-FTBOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2;
-FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss3D,500000];
+FTBOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2+(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}])^2;
+FTBMonitor:=Dynamic[{ColDispImage/@{
+   FTBNetwork[[1,1,1,2]],
+   FTBNetwork[[1,1,2,2]],
+   wl[[1,1,1,2]],
+   wl[[1,1,2,2]],
+   gw[[1,1,2]]/Max[Abs[gw[[1,1,2]]]],
+   gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
+},Max[Abs[gw[[1,1,2]]]],
+   Max[Abs[gw[[1,2,2]]]]}]
+FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss2D,500000];
+
+
+TestNetwork={
+   FilterBankToFilterBank[{.4,.7,.1,.7},{{.3,.2},{.7,.3},{.15,.16},{.32,.31}}],
+   FilterBankTo2D[.3,{.3,.5,.1,.2}]};
+TestInputs=Transpose[{ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}],ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]},{2,1,3,4}];
+TestOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2+(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}])^2;
+TestMonitor:=Dynamic[{ColDispImage/@{
+   TestNetwork[[1,1,1,2]],
+   TestNetwork[[1,1,2,2]],
+   wl[[1,1,1,2]],
+   wl[[1,1,2,2]],
+   gw[[1,1,2]]/Max[Abs[gw[[1,1,2]]]],
+   gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
+},Max[Abs[gw[[1,1,2]]]],
+   Max[Abs[gw[[1,2,2]]]]}]
+TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,500000];
