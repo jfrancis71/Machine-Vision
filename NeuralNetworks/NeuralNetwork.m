@@ -63,13 +63,6 @@ Loss1D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameter
 Loss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]
 Loss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]
 
-(*
-WeightDec[networkWeight_,grad_]:=(
-   Assert[Length[networkWeight]==Length[grad]];
-   Table[If[Head[networkWeight[[n]]]==List,
-      Head[networkWeight[[n]]][networkWeight[[n,1]]-grad[[n,1]],networkWeight[[n,2]]-grad[[n,2]]],
-      Head[networkWeight[[n]]][MapThread[WeightDec,{networkWeight[[n]],grad[[n]]}]]],
-{n,1,Length[grad]}])*)
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
@@ -109,7 +102,17 @@ Visualise[parameters_]:=(
 )
 
 
-(*Layer Types*)
+(*Layer Types
+
+FullyConnected1DTo1D
+Convolve2D
+Convolve2DToFilterBank
+FilterBankTo2D
+FilterBankToFilterBank
+
+*)
+
+
 
 (*FullyConnected1D Layer*)
 (*
@@ -130,7 +133,7 @@ LayerForwardPropogation[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]
    Assert[(layerBiases//Length)==(layerWeights//Length)]; (*Bias on units should match up with number of units from weight layer *)
    Transpose[layerWeights.Transpose[inputs] + layerBiases]
 )
-Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
+Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=postLayerDeltaA.weights
 LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[Transpose[layerOutputDelta],{2}],Transpose[layerOutputDelta].layerInputs}
 
 (*Convolve2DLayer*)
