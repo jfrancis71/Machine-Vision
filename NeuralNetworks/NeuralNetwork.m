@@ -29,7 +29,6 @@ ForwardPropogation[inputs_,network_]:=(
 BackPropogation[currentParameters_,inputs_,targets_]:=(
 
    ForwardPropogation[inputs, currentParameters];
-   Assert[Length[currentParameters]<=3];
    networkLayers=Length[currentParameters];
 
    DeltaZ[networkLayers]=2*(Z[networkLayers]-targets); (*We are implicitly assuming a regression loss function*)
@@ -69,6 +68,7 @@ WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]]
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]]
 WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
+WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
@@ -178,6 +178,15 @@ Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
 LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
    Total[Table[Total[layerInputs[[t]][[in]]*layerOutputDelta[[t]][[out]],2],{t,1,Length[layerOutputDelta]},{out,1,Length[layerOutputDelta[[1]]]},{in,1,Length[layerInputs[[1]]]}]]}
+
+(*Adaptor2DTo1D*)
+LayerForwardPropogation[inputs_,Adaptor2DTo1D[width_]]:=(
+   Map[Flatten,inputs]
+)
+Backprop[Adaptor2DTo1D[width_],postLayerDeltaA_]:=
+   Map[Partition[#,width]&,postLayerDeltaA]
+LayerGrad[Adaptor2DTo1D[width_],layerInputs_,layerOutputDelta_]:=
+   Adaptor2DTo1D[width]
 
 
 (* Examples *)
@@ -289,3 +298,25 @@ TestMonitor:=Dynamic[{ColDispImage/@{
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
 TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,500000];
+
+circleTrainingImages=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CircleRecognition\\CircleTrainingImages.wdx"];
+circleTrainingLabels=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CircleRecognition\\CircleTrainingLabels.wdx"];
+CircleNetwork={
+   Convolve2DToFilterBank[{Convolve2D[0.,r1-.5],Convolve2D[0.,r2-.5]}],
+   FilterBankToFilterBank[0.,r4-.5],
+   FilterBankTo2D[0.,r6-.5],
+   Adaptor2DTo1D[14],
+   FullyConnected1DTo1D[{0},{RandomList[[1;;196]]}]};
+CircleInputs=circleTrainingImages;
+CircleOutputs=Map[{#}&,circleTrainingLabels];
+CircleMonitor:=Dynamic[{ColDispImage/@{
+   CircleNetwork[[1,1,1,2]],
+   CircleNetwork[[1,1,2,2]],
+   wl[[1,1,1,2]],
+   wl[[1,1,2,2]],
+   gw[[1,1,2]]/Max[Abs[gw[[1,1,2]]]],
+   gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
+},Max[Abs[gw[[1,1,2]]]],
+   Max[Abs[gw[[1,2,2]]]]}]
+CircleTrained:=AdaptiveGradientDescent[CircleNetwork,CircleInputs,CircleOutputs,Grad,Loss1D,500000];
+
