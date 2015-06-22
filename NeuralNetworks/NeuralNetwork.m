@@ -78,11 +78,11 @@ GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,maxLoop_:2000]:=(
    \[Lambda]=.001;
    Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[loss], " \[Lambda]=",Dynamic[\[Lambda]]];
-   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
    loss=lossF[wl,inputs,targets];
    twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
    If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
-]])
+])
 
 Visualise[parameters_]:=(
 
@@ -165,7 +165,8 @@ LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
    weights.Transpose[inputs,{2,1,3,4}]+bias
 )
 Backprop[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
-LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Table[Total[layerOutputDelta*layerInputs[[All,w]],3],{w,1,Length[weights]}]}
+LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],
+   Table[Total[layerOutputDelta*layerInputs[[All,w]],3],{w,1,Length[weights]}]}
 
 (*FilterBankToFilterBankLayer*)
 (*slices is meant to indicate one slice in the layer (ie a 2D structure) *)
@@ -177,7 +178,8 @@ Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
    Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
 LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
-   Total[Table[Total[layerInputs[[t]][[in]]*layerOutputDelta[[t]][[out]],2],{t,1,Length[layerOutputDelta]},{out,1,Length[layerOutputDelta[[1]]]},{in,1,Length[layerInputs[[1]]]}]]}
+   Total[Table[Total[layerInputs[[t]][[in]]*layerOutputDelta[[t]][[out]],2],
+      {t,1,Length[layerOutputDelta]},{out,1,Length[layerOutputDelta[[1]]]},{in,1,Length[layerInputs[[1]]]}]]}
 
 (*Adaptor2DTo1D*)
 LayerForwardPropogation[inputs_,Adaptor2DTo1D[width_]]:=(
@@ -306,7 +308,7 @@ CircleNetwork={
    FilterBankToFilterBank[0.,r4-.5],
    FilterBankTo2D[0.,r6-.5],
    Adaptor2DTo1D[14],
-   FullyConnected1DTo1D[{0},{RandomList[[1;;196]]}]};
+   FullyConnected1DTo1D[{0},{RandomList[[1;;196]]-0.5}]};
 CircleInputs=circleTrainingImages;
 CircleOutputs=Map[{#}&,circleTrainingLabels];
 CircleMonitor:=Dynamic[{ColDispImage/@{
