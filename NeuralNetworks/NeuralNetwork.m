@@ -76,7 +76,7 @@ GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_
    wl )
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,maxLoop_:2000]:=(
-   \[Lambda]=.001;
+   \[Lambda]=.000001;
    Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[loss], " \[Lambda]=",Dynamic[\[Lambda]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
    loss=lossF[wl,inputs,targets];
