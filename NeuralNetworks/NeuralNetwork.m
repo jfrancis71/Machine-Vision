@@ -178,8 +178,7 @@ Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
    Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
 LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
-   Total[Table[Total[layerInputs[[t]][[in]]*layerOutputDelta[[t]][[out]],2],
-      {t,1,Length[layerOutputDelta]},{out,1,Length[layerOutputDelta[[1]]]},{in,1,Length[layerInputs[[1]]]}]]}
+Map[Flatten,Transpose[DeltaA[2],{2,1,3,4}]].Transpose[Map[Flatten,Transpose[Z[1],{2,1,3,4}]]]}
 
 (*Adaptor2DTo1D*)
 LayerForwardPropogation[inputs_,Adaptor2DTo1D[width_]]:=(
