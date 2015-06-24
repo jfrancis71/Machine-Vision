@@ -28,3 +28,26 @@ MN1Network={Adaptor2DTo1D[28],FullyConnected1DTo1D[{0},{r1}/7840.]};
 MN1Inputs=Extract[TrainingImages,pos]-0.0;
 MN1Outputs=Extract[TrainingLabels,pos]-2.0;
 MN1Trained:=AdaptiveGradientDescent[MN1Network,MN1Inputs,MN1Outputs,Grad,Loss1D,500000];
+
+
+(*func is a function which takes an array of size*size and
+returns an output to be displayed *)
+
+DrawingPad4[func_,size_Integer] := (
+  m = Table[0, {i, size}, {j, size}];
+  DynamicModule[{},
+    Row[{Button["Reset", m = Table[0, {i, size}, {j, size}]],
+      EventHandler[
+       Dynamic@ArrayPlot[
+         m], 
+       "MouseDragged" :> (pt = Floor[MousePosition["Graphics"]] + {1, 1};
+         (*pt=Map[Min[size,#]&,pt];*)
+         pt = {Min[size, pt[[1]]], Min[size, pt[[2]]]};
+         (ci = {size - pt[[2]], pt[[1]]});
+         m[[ci[[1]], ci[[2]]]] = 1)
+       ], Dynamic@func[m]}]
+  ]
+)
+
+
+GUI:=DrawingPad4[ForwardPropogation[{#//Reverse},wl]&,28]
