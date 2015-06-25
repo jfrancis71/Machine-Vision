@@ -6,6 +6,11 @@
 RandomList=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\RandomList.wdx"];
 
 
+AbortAssert[bool_,message_]:=
+If[bool==False,
+Print[message];Abort[]]
+
+
 (*
    network is made up of sequence of layers
    layer is made up of biases for each of the units
@@ -13,7 +18,6 @@ RandomList=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\RandomL
    so weight is a matrix where each row is the weight vector
    for one particular unit
 *)
-
 ForwardPropogation[inputs_,network_]:=(
    Z[0] = inputs;
 
@@ -48,7 +52,7 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
 *)
 Grad[currentParameters_,inputs_,targets_]:=(
 
-   Assert[Length[inputs]==Length[targets]];
+   AbortAssert[Length[inputs]==Length[targets],"Grad::Training Labels should equal Training Inputs"];
 
    BackPropogation[currentParameters,inputs,targets];
 
@@ -104,12 +108,12 @@ Visualise[parameters_]:=(
 
 (*Layer Types
 
-FullyConnected1DTo1D
-Convolve2D
-Convolve2DToFilterBank
-FilterBankTo2D
-FilterBankToFilterBank
-
+FullyConnected1DTo1D - Vector of weights required for each neurone in subsequent layer
+Convolve2D - Convolves single 2D array to create single 2D array
+Convolve2DToFilterBank - Performs several convolutions to create filter bank from single 2D array
+FilterBankTo2D - Collapses filter bank to 2D array preserving locality, so single weight for each orginal filter bank
+FilterBankToFilterBank - Preserves locality, builds new filter bank. Each new filter requires vector of weights for the previous filter bank
+Adaptor2DTo1D - Flattens 2D structure. No weights required. Specify width of orginial 2D structure (so delta signals can be constructed)
 *)
 
 
@@ -125,12 +129,11 @@ FilterBankToFilterBank
    inputs has shape T*I where I is the number of inputs or possibly just from previous layer
    output is of shape T*O
 *)
+SyntaxInformation[FullyConnected1DTo1D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]]:=(
 
-   (*Weight-Activation Consistancy check*)
-   Assert[(layerWeights[[1]]//Length)==(Transpose[inputs]//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
-   (*Weight-Weight Consistancy checl*)
-   Assert[(layerBiases//Length)==(layerWeights//Length)]; (*Bias on units should match up with number of units from weight layer *)
+   AbortAssert[(layerWeights[[1]]//Length)==(Transpose[inputs]//Length),"FullyConnected1DTo1D::Weight-Activation Error"];
+   AbortAssert[(layerBiases//Length)==(layerWeights//Length),"FullyConnected1DTo1D::Weight-Weight Error"];
    Transpose[layerWeights.Transpose[inputs] + layerBiases]
 )
 Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=postLayerDeltaA.weights
@@ -140,6 +143,7 @@ LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]
 (*
    layer is {bias,weights} where weights is a 2D kernel
 *)
+SyntaxInformation[Convolve2D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
 
    Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
@@ -152,16 +156,16 @@ LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[l
    layer is {{bias,weights},{bias,weights},...,} where weights is a 2D kernel
    Resulting layer is T*F*Y*X
 *)
+SyntaxInformation[Convolve2DToFilterBank]={"ArgumentsPattern"->{_}};
 LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
-
    Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
 )
 Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}]
 
 (*FilterBankTo2DLayer*)
+SyntaxInformation[FilterBankTo2D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,FilterBankTo2D[bias_,weights_]]:=(
-  
    weights.Transpose[inputs,{2,1,3,4}]+bias
 )
 Backprop[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
@@ -171,6 +175,7 @@ LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total
 (*FilterBankToFilterBankLayer*)
 (*slices is meant to indicate one slice in the layer (ie a 2D structure) *)
 (*so FilterBankToFilterBank is comprised of a sequence of FilterBankTo2D structures *)
+SyntaxInformation[FilterBankToFilterBank]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,FilterBankToFilterBank[biases_,weights_]]:=(
    Transpose[weights.Transpose[inputs]+biases]
 )
@@ -178,9 +183,10 @@ Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
    Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
 LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
-Map[Flatten,Transpose[DeltaA[2],{2,1,3,4}]].Transpose[Map[Flatten,Transpose[Z[1],{2,1,3,4}]]]}
+   Map[Flatten,Transpose[DeltaA[2],{2,1,3,4}]].Transpose[Map[Flatten,Transpose[Z[1],{2,1,3,4}]]]}
 
 (*Adaptor2DTo1D*)
+SyntaxInformation[Adaptor2DTo1D]={"ArgumentsPattern"->{_}};
 LayerForwardPropogation[inputs_,Adaptor2DTo1D[width_]]:=(
    Map[Flatten,inputs]
 )
