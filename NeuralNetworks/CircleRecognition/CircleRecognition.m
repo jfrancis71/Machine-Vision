@@ -10,7 +10,7 @@ CircleNetwork={
    FilterBankToFilterBank[0.,r4-.5],
    FilterBankTo2D[0.,r6-.5],
    Adaptor2DTo1D[14],
-   FullyConnected1DTo1D[{0},{RandomList[[1;;196]]-0.5}]};
+   FullyConnected1DTo1D[{0},{RandomList[[1;;196]]-0.5}/196.]};
 CircleInputs=circleTrainingImages;
 CircleOutputs=Map[{#}&,circleTrainingLabels];
 CircleMonitor:=Dynamic[{ColDispImage/@{
