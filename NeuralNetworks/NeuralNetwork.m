@@ -62,9 +62,9 @@ Grad[currentParameters_,inputs_,targets_]:=(
 )
 
 (*This is implicitly a regression loss function*)
-Loss1D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,2]
-Loss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]
-Loss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]
+Loss1D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,2]/Length[inputs]
+Loss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs]
+Loss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs]
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
