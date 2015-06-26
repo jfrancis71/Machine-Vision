@@ -1,5 +1,17 @@
 (* ::Package:: *)
 
+(*
+   Technique reviewed by Yann Le Cunn et al 1995:
+
+http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf
+
+Network Architecture: Linear Network
+                      400-10
+
+They claim 8.4% test result
+*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
