@@ -201,7 +201,7 @@ sqNetwork={
    FullyConnected1DTo1D[{.2,.3},{{2},{3}}],
    FullyConnected1DTo1D[{.6},{{1,7}}]
 };
-sqInputs=Transpose[{Table[x,{x,0,1,0.1}]}];sqInputs//MatrixForm;
+sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
 sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,Loss1D,.0001,500000];
 
