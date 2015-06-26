@@ -62,7 +62,7 @@ Grad[currentParameters_,inputs_,targets_]:=(
 )
 
 (*This is implicitly a regression loss function*)
-Loss1D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,2]/Length[inputs]
+Loss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs])
 Loss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs]
 Loss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs]
 
@@ -115,7 +115,6 @@ FilterBankTo2D - Collapses filter bank to 2D array preserving locality, so singl
 FilterBankToFilterBank - Preserves locality, builds new filter bank. Each new filter requires vector of weights for the previous filter bank
 Adaptor2DTo1D - Flattens 2D structure. No weights required. Specify width of orginial 2D structure (so delta signals can be constructed)
 *)
-
 
 
 (*FullyConnected1D Layer*)
