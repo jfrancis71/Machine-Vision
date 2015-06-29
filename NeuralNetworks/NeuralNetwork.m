@@ -7,8 +7,8 @@ RandomList=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\RandomL
 
 
 AbortAssert[bool_,message_]:=
-If[bool==False,
-Print[message];Abort[]]
+   If[bool==False,
+      Print[message];Abort[]];
 
 
 (*
@@ -79,13 +79,18 @@ GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
    wl )
 
-AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,maxLoop_:2000]:=(
+AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
    \[Lambda]=.000001;
-   Print["Iter: ",Dynamic[loop]," Current Loss ",Dynamic[loss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   trainingLoss=-\[Infinity];
+   {validationInputs,validationTargets,maxLoop} = {ValidationInputs,ValidationTargets,MaxLoop} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000};
+   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
-   loss=lossF[wl,inputs,targets];
-   twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
-   If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
+      trainingLoss=lossF[wl,inputs,targets];
+      If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
+      If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
 ])
 
 Visualise[parameters_]:=(
@@ -104,6 +109,14 @@ Visualise[parameters_]:=(
    Assert[(layer2[[2,1]]//Length)==(Z1//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
    Assert[(layer2[[1]]//Length)==(layer2[[2]]//Length)]; (*Bias on units should match up with number of units from weight layer *)
 )
+
+
+(*Assuming a 1 of n target representation*)
+ClassificationPerformance[network_,inputs_,targets_]:=
+   Module[{proc},
+   proc=ForwardPropogation[inputs,network];
+   Mean[Boole[Table[Position[proc[[t]],Max[proc[[t]]]]==Position[targets[[t]],Max[targets[[t]]]],{t,1,Length[inputs]}]]]//N
+];
 
 
 (*Layer Types
@@ -182,7 +195,7 @@ Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
    Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
 LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
-   Map[Flatten,Transpose[DeltaA[2],{2,1,3,4}]].Transpose[Map[Flatten,Transpose[Z[1],{2,1,3,4}]]]}
+   Map[Flatten,Transpose[layerOutputDelta,{2,1,3,4}]].Transpose[Map[Flatten,Transpose[layerInputs,{2,1,3,4}]]]}
 
 (*Adaptor2DTo1D*)
 SyntaxInformation[Adaptor2DTo1D]={"ArgumentsPattern"->{_}};
@@ -248,7 +261,7 @@ Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,Ima
 Deep2Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep2Inputs=edgeInputs;
 Deep2Outputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]+ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])/2;
-Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,Loss2D,500000];
+Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,Loss2D,{MaxLoss->500000}];
 Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
 }]
@@ -286,7 +299,7 @@ FTBMonitor:=Dynamic[{ColDispImage/@{
    gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
-FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss2D,500000];
+FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss2D,{MaxLoss->500000}];
 
 
 TestNetwork={
@@ -303,4 +316,4 @@ TestMonitor:=Dynamic[{ColDispImage/@{
    gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
-TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,500000];
+TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,{MaxLoss->500000}];
