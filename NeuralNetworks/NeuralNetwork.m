@@ -172,8 +172,8 @@ LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[l
 SyntaxInformation[Convolve2DToFilterBank]={"ArgumentsPattern"->{_}};
 LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
    Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
-)
-Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Transpose[Transpose[filter[[2]]].Transpose[postLayerDeltaA]],{filter,filters}]
+);
+Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}]
 
 (*FilterBankTo2DLayer*)
@@ -322,7 +322,11 @@ TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Los
 
 TestConvolveNetwork={
    Convolve2D[0,Partition[RandomList[[1;;9]],3]],
-   Convolve2D[0,Partition[RandomList[[10;;18]],3]]
+   Convolve2DToFilterBank[{
+      Convolve2D[0,Partition[RandomList[[10;;18]],3]],
+      Convolve2D[0,Partition[RandomList[[20;;28]],3]]
+   }],
+   FilterBankTo2D[0,{3,1}]
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
