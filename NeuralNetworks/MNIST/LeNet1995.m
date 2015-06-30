@@ -9,6 +9,14 @@ Network Architecture: Large Fully Connected Multi-Layer Neural Network
                       400-300-10
 
 They claim 1.6% test result
+
+Our Results:
+Iteration: 1649
+Training Loss: .428
+Training Classification: 85.2%
+
+Validation Loss: .410
+Validation Classification: 87.0%
 *)
 
 
