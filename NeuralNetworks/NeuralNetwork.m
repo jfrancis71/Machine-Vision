@@ -35,6 +35,7 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
    ForwardPropogation[inputs, currentParameters];
    networkLayers=Length[currentParameters];
 
+   AbortAssert[Dimensions[Z[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
    DeltaZ[networkLayers]=2*(Z[networkLayers]-targets); (*We are implicitly assuming a regression loss function*)
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
@@ -52,7 +53,7 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
 *)
 Grad[currentParameters_,inputs_,targets_]:=(
 
-   AbortAssert[Length[inputs]==Length[targets],"Grad::Training Labels should equal Training Inputs"];
+   AbortAssert[Length[inputs]==Length[targets],"Grad::# of Training Labels should equal # of Training Inputs"];
 
    BackPropogation[currentParameters,inputs,targets];
 
@@ -160,7 +161,7 @@ LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
 
    Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
 )
-Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Transpose[Transpose[weights].Transpose[postLayerDeltaA]]
+Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1}],{t,1,Length[postLayerDeltaA]}]
 LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}
 
 (*Convolve2DToFilterBankLayer*)
@@ -317,3 +318,12 @@ TestMonitor:=Dynamic[{ColDispImage/@{
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
 TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,{MaxLoss->500000}];
+
+
+TestConvolveNetwork={
+   Convolve2D[0,Partition[RandomList[[1;;9]],3]],
+   Convolve2D[0,Partition[RandomList[[10;;18]],3]]
+};
+TestConvolveInputs=edgeInputs/4;
+TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
+TestConvolveTrained:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,Loss2D,{MaxLoop->500000}];
