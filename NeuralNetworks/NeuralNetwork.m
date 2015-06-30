@@ -74,6 +74,7 @@ WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[Wei
 WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]]
+WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
@@ -128,6 +129,8 @@ Convolve2DToFilterBank - Performs several convolutions to create filter bank fro
 FilterBankTo2D - Collapses filter bank to 2D array preserving locality, so single weight for each orginal filter bank
 FilterBankToFilterBank - Preserves locality, builds new filter bank. Each new filter requires vector of weights for the previous filter bank
 Adaptor2DTo1D - Flattens 2D structure. No weights required. Specify width of orginial 2D structure (so delta signals can be constructed)
+ConvolveFilterBankTo2D - Each feature map in the filter bank has its own convolution kernel
+ConvolveFilterBankToFilterBank - As ConvolveFilterBankTo2D but applied repeately to build filter bank layer
 *)
 
 
@@ -202,11 +205,22 @@ LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta
 SyntaxInformation[Adaptor2DTo1D]={"ArgumentsPattern"->{_}};
 LayerForwardPropogation[inputs_,Adaptor2DTo1D[width_]]:=(
    Map[Flatten,inputs]
-)
+);
 Backprop[Adaptor2DTo1D[width_],postLayerDeltaA_]:=
-   Map[Partition[#,width]&,postLayerDeltaA]
+   Map[Partition[#,width]&,postLayerDeltaA];
 LayerGrad[Adaptor2DTo1D[width_],layerInputs_,layerOutputDelta_]:=
-   Adaptor2DTo1D[width]
+   Adaptor2DTo1D[width];
+
+(*ConvolveFilterBankTo2D*)
+SyntaxInformation[ConvolveFilterBankTo2D]={"ArgumentsPattern"->{_,_}};
+LayerForwardPropogation[inputs_,ConvolveFilterBankTo2D[bias_,kernels_]]:=(
+   bias+Table[Sum[ListCorrelate[kernels[[kernel]],input[[kernel]]],{kernel,1,Length[kernels]}],{input,inputs}]);
+Backprop[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
+   (*Table[Print[postLayerDeltaA[[input]]//Dimensions].Print[kernel//Dimensions],{input,1,Length[postLayerDeltaA]},{kernel,kernels}]);*)
+   Table[ListConvolve[kernels[[w]],postLayerDeltaA[[t]],{+1,-1}],{t,1,Length[postLayerDeltaA]},{w,1,Length[kernels]}])
+LayerGrad[ConvolveFilterBankTo2D[bias_,kernels_],layerInputs_,layerOutputDelta_]:=(
+   (*{Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}*)
+   {Total[layerOutputDelta,3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs[[All,w]]}]],{w,1,Length[kernels]}]})
 
 
 (* Examples *)
@@ -321,12 +335,13 @@ TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Los
 
 
 TestConvolveNetwork={
-   Convolve2D[0,Partition[RandomList[[1;;9]],3]],
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[RandomList[[10;;18]],3]],
-      Convolve2D[0,Partition[RandomList[[20;;28]],3]]
-   }],
-   FilterBankTo2D[0,{3,1}]
+      Convolve2D[0,Partition[RandomList[[1;;9]],3]],
+      Convolve2D[0,Partition[RandomList[[31;;39]],3]]}],
+   ConvolveFilterBankTo2D[0,{
+      Partition[RandomList[[10;;18]],3],
+      Partition[RandomList[[20;;28]],3]
+   }]
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
