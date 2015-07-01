@@ -75,6 +75,7 @@ WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-g
 WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]]
 WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
+WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]]
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
@@ -222,6 +223,15 @@ LayerGrad[ConvolveFilterBankTo2D[bias_,kernels_],layerInputs_,layerOutputDelta_]
    (*{Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}*)
    {Total[layerOutputDelta,3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs[[All,w]]}]],{w,1,Length[kernels]}]})
 
+(*ConvolveFilterBankToFilterBank*)
+SyntaxInformation[ConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{_}};
+LayerForwardPropogation[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
+   Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
+);
+Backprop[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
+LayerGrad[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
+   Table[{Total[layerOutputDelta[[All,filterOutputIndex]],3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterOutputIndex]],layerInputs[[All,l]]}]],{l,1,Length[layerInputs[[1]]]}]},{filterOutputIndex,1,Length[filters]}]
+
 
 (* Examples *)
 sqNetwork={
@@ -336,12 +346,14 @@ TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Los
 
 TestConvolveNetwork={
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[RandomList[[1;;9]],3]],
-      Convolve2D[0,Partition[RandomList[[31;;39]],3]]}],
-   ConvolveFilterBankTo2D[0,{
-      Partition[RandomList[[10;;18]],3],
-      Partition[RandomList[[20;;28]],3]
-   }]
+      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]],
+      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]]}],
+   ConvolveFilterBankToFilterBank[{
+     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}],
+     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}],
+     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}]
+}],
+   FilterBankTo2D[0.,{.1,.6,.2}]   
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
