@@ -9,14 +9,14 @@ Network achieves good encoding
 
 
 AutoencoderNetwork={
-FullyConnected1DTo1D[
-ConstantArray[0,32],Table[Random[],{32},{32}]-.5],
-FullyConnected1DTo1D[
-ConstantArray[0,5],Table[Random[],{5},{32}]-.5],
-FullyConnected1DTo1D[
-ConstantArray[0,32],Table[Random[],{32},{5}]-.5],
-FullyConnected1DTo1D[
-ConstantArray[0,32],Table[Random[],{32},{32}]-.5]
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,5],Table[Random[],{5},{32}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{5}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5]
 };
 
 
