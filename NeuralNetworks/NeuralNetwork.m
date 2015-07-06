@@ -24,7 +24,10 @@ ForwardPropogation[inputs_,network_]:=(
    Module[{layerIndex=1},
    For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
       A[layerIndex]=LayerForwardPropogation[Z[layerIndex-1],network[[layerIndex]]];
-      Z[layerIndex]=Tanh[A[layerIndex]];
+      If[!MatchQ[network[[layerIndex]],MaxPoolingFilterBankToFilterBank],
+         Z[layerIndex]=Tanh[A[layerIndex]],
+         Z[layerIndex]=A[layerIndex];
+      ];
    ];
 
    Z[layerIndex-1]]
@@ -40,8 +43,11 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
    For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
-      DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
-      DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2;
+      If[!MatchQ[currentParameters[[layerIndex+1]],MaxPoolingFilterBankToFilterBank],
+         (DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
+          DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2),
+         DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],A[layerIndex+1],DeltaA[layerIndex+1]];
+      ]
    ];
 )
 
@@ -76,6 +82,7 @@ WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[net
 WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]]
 WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]]
+WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
@@ -132,6 +139,7 @@ FilterBankToFilterBank - Preserves locality, builds new filter bank. Each new fi
 Adaptor2DTo1D - Flattens 2D structure. No weights required. Specify width of orginial 2D structure (so delta signals can be constructed)
 ConvolveFilterBankTo2D - Each feature map in the filter bank has its own convolution kernel
 ConvolveFilterBankToFilterBank - As ConvolveFilterBankTo2D but applied repeately to build filter bank layer
+MaxPoolingFilterBankToFilterBank - 2*2->1*1 downsampling with max applied to filter bank. No parameters
 *)
 
 
@@ -231,6 +239,18 @@ LayerForwardPropogation[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
 Backprop[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
 LayerGrad[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
    Table[{Total[layerOutputDelta[[All,filterOutputIndex]],3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterOutputIndex]],layerInputs[[All,l]]}]],{l,1,Length[layerInputs[[1]]]}]},{filterOutputIndex,1,Length[filters]}]
+
+(*MaxPoolingFilterBankToFilterBank*)
+SyntaxInformation[MaxPoolingFilterBankToFilterBank]={"ArgumentsPattern"->{}};
+LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank_]:=Table[Max[
+   inputs[[t,f,y*2,x*2-1]],
+   inputs[[t,f,y*2,x*2]],
+   inputs[[t,f,y*2-1,x*2-1]],
+   inputs[[t,f,y*2-1,x*2]]]
+   ,{t,1,Length[inputs]},{f,1,Length[inputs[[1]]]},{y,1,Round[Length[inputs[[1,1]]]/2]},{x,1,Round[Length[inputs[[1,1,1]]]/2]}];
+Backprop[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
+   Table[If[(layerInputs[[t,f,y,x]]==layerOutputs[[t,f,Ceiling[y/2],Ceiling[x/2]]]),postLayerDeltaA[[t,f,Ceiling[y/2],Ceiling[x/2]]],0.],{t,1,Length[layerInputs]},{f,1,Length[layerInputs[[1]]]},{y,1,Length[layerInputs[[1,1]]]},{x,1,Length[layerInputs[[1,1,1]]]}];
+LayerGrad[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputDelta_]:={};
 
 
 (* Examples *)
@@ -358,3 +378,20 @@ TestConvolveNetwork={
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
 TestConvolveTrained:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,Loss2D,{MaxLoop->500000}];
+
+
+TestMaxNetwork={
+   Convolve2DToFilterBank[{
+      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]],
+      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]]}],
+   MaxPoolingFilterBankToFilterBank,
+   FilterBankTo2D[0,{.1,.5}]
+};
+TestMaxInputs=edgeInputs[[All,1;;-2,All]]/4;
+TestMaxOutputs=Table[.25*Max[
+   edgeInputs[[t,y*2,x*2-1]],
+   edgeInputs[[t,y*2,x*2]],
+   edgeInputs[[t,y*2-1,x*2-1]],
+   edgeInputs[[t,y*2-1,x*2]]]
+   ,{t,1,1},{y,1,70},{x,1,63}];
+TestMaxTrained:=AdaptiveGradientDescent[TestMaxNetwork,TestMaxInputs,TestMaxOutputs,Grad,Loss2D,{MaxLoop->500000}];
