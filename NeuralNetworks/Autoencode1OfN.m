@@ -1,7 +1,8 @@
 (* ::Package:: *)
 
-(*Autoencoder
-Network achieves good encoding
+(*
+   Autoencoder
+   Encodes 1 Of N pattern
 *)
 
 
@@ -74,6 +75,27 @@ Autoencoder1OfNNetworkA3={
 
 
 wl=Autoencoder1OfNNetworkA3;
+
+
+(* Achieves good encoding in few minutes, about 50,000 iterations. Loss .0136
+*)
+H1=96;
+B=3;
+R1=(Table[Random[],{H1},{32}]-.5)/H1;
+R2=Table[Random[],{B},{H1}]-.5;
+Autoencoder1OfNNetworkA4={
+   FullyConnected1DTo1D[
+      ConstantArray[0,H1],R1],
+   FullyConnected1DTo1D[
+      ConstantArray[0,B],R2],
+   FullyConnected1DTo1D[
+      ConstantArray[0,H1],Transpose[R2]],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Transpose[R1]]
+};
+
+
+wl=Autoencoder1OfNNetworkA4;
 
 
 Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
