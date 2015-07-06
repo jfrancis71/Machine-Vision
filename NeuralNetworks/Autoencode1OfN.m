@@ -59,4 +59,21 @@ Autoencoder1OfNNetworkA2={
 wl=Autoencoder1OfNNetworkA2;
 
 
+(* Achieves good encoding after few minutes
+*)
+Autoencoder1OfNNetworkA3={
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,5],Table[Random[],{5},{32}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{5}]-.5],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5]
+};
+
+
+wl=Autoencoder1OfNNetworkA3;
+
+
 Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
