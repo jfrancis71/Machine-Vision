@@ -8,6 +8,7 @@ Network achieves good encoding
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
+(* Achieves .625 *)
 H=64;
 B=1;
 Autoencoder1OfNNetwork={
@@ -34,7 +35,8 @@ wl=Autoencoder1OfNNetwork;
 Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
 
 
-(* Achieves .625 *)
+ (* Achieves  .531134 after 20 hours *)
+
 H1=64;
 H2=10;
 B=1;
