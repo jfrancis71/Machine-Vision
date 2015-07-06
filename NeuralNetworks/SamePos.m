@@ -20,15 +20,29 @@ SamePos1Network={
 };
 
 
-SamePos1Inputs=Flatten[Table[Join[ReplacePart[ConstantArray[0,32],i->1],ReplacePart[ConstantArray[0,32],j->1]],{i,1,32},{j,1,32}],1];
+SamePos2Network={
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],(Table[Random[],{32},{64}]-.5)/64.],
+   FullyConnected1DTo1D[
+      ConstantArray[0,1],Table[Random[],{1},{32}]-.5]
+};
 
 
-SamePos1Outputs=Map[{Boole[(Partition[#,32][[1]]
+SamePosInputs=Flatten[Table[Join[ReplacePart[ConstantArray[0,32],i->1],ReplacePart[ConstantArray[0,32],j->1]],{i,1,32},{j,1,32}],1];
+
+
+SamePosOutputs=Map[{Boole[(Partition[#,32][[1]]
 ==
-Partition[#,32][[2]])]}&,SamePos1Inputs];
+Partition[#,32][[2]])]}&,SamePosInputs];
 
 
 wl=SamePos1Network;
 
 
-SamePos1Trained:=AdaptiveGradientDescent[wl,SamePos1Inputs,SamePos1Outputs,Grad,Loss2D,{MaxLoop->500000}];
+SamePos1Trained:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
+
+
+wl=SamePos2Network;
+
+
+SamePos2Trained:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
