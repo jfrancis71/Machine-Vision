@@ -99,3 +99,44 @@ wl=Autoencoder1OfNNetworkA4;
 
 
 Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
+
+
+(*
+Achieves good encoding using intermediate eventually
+  takes a couple of days, parameters not currently in version control
+  interpretation of decoding hidden layer not obvious
+*)
+
+
+AutoencoderIntermediate=Table[{s/16}-1,{s,1,32}]//N
+
+
+H1=96;
+B=1;
+R1=(Table[Random[],{H1},{32}]-.5)/H1;
+R2=Table[Random[],{B},{H1}]-.5;
+Autoencoder1OfNNetworkA5P1={
+   FullyConnected1DTo1D[
+      ConstantArray[0,H1],R1],
+   FullyConnected1DTo1D[
+      ConstantArray[0,B],R2]
+   };
+H1=96;
+B=1;
+R1=(Table[Random[],{H1},{32}]-.5)/H1;
+R2=Table[Random[],{B},{H1}]-.5;
+Autoencoder1OfNNetworkA5P2={
+
+      FullyConnected1DTo1D[
+      ConstantArray[0,H1],Transpose[R2]],
+   FullyConnected1DTo1D[
+      ConstantArray[0,32],Transpose[R1]]
+};
+
+
+wlP1=Autoencoder1OfNNetworkA5P1;
+wlP2=Autoencoder1OfNNetworkA5P2;
+
+
+Autoencode1OfNTrainedP1:=AdaptiveGradientDescent[wlP1,AutoencoderInputs,AutoencoderIntermediate,Grad,Loss2D,{MaxLoop->500000}];
+Autoencode1OfNTrainedP2:=AdaptiveGradientDescent[wlP2,AutoencoderIntermediate,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->10^7}];
