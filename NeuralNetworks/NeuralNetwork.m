@@ -83,6 +83,7 @@ WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]]
 WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]]
 WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]]
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
+WeightDec[networkLayer_Adaptor3DTo1D,grad_]:=Adaptor3DTo1D[networkLayer[[1]],networkLayer[[2]],networkLayer[[3]]];
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
@@ -140,6 +141,7 @@ Adaptor2DTo1D - Flattens 2D structure. No weights required. Specify width of org
 ConvolveFilterBankTo2D - Each feature map in the filter bank has its own convolution kernel
 ConvolveFilterBankToFilterBank - As ConvolveFilterBankTo2D but applied repeately to build filter bank layer
 MaxPoolingFilterBankToFilterBank - 2*2->1*1 downsampling with max applied to filter bank. No parameters
+Adaptor3DTo1D - Flattens 3D structure. No weights required. Specify features and width of orginial 3D structure (so delta signals can be constructed)
 *)
 
 
@@ -251,6 +253,19 @@ LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank_]:=Table[Max[
 Backprop[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
    Table[If[(layerInputs[[t,f,y,x]]==layerOutputs[[t,f,Ceiling[y/2],Ceiling[x/2]]]),postLayerDeltaA[[t,f,Ceiling[y/2],Ceiling[x/2]]],0.],{t,1,Length[layerInputs]},{f,1,Length[layerInputs[[1]]]},{y,1,Length[layerInputs[[1,1]]]},{x,1,Length[layerInputs[[1,1,1]]]}];
 LayerGrad[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputDelta_]:={};
+
+(*Adaptor3DTo1D*)
+(* Helper Function sources from Mathematica on-line documentation regarding example use of Partition *)
+unflatten[e_,{d__?((IntegerQ[#]&&Positive[#])&)}]:= 
+   Fold[Partition,e,Take[{d},{-1,2,-1}]] /;(Length[e]===Times[d]);
+SyntaxInformation[Adaptor3DTo1D]={"ArgumentsPattern"->{_,_,_}};
+LayerForwardPropogation[inputs_,Adaptor3DTo1D[features_,width_,height_]]:=(
+   Map[Flatten,inputs]
+);
+Backprop[Adaptor3DTo1D[features_,width_,height_],postLayerDeltaA_]:=
+   unflatten[Flatten[postLayerDeltaA],{Length[postLayerDeltaA],features,width,height}];
+LayerGrad[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:=
+   Adaptor3DTo1D[features,width,height];
 
 
 (* Examples *)
