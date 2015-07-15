@@ -33,13 +33,14 @@ ForwardPropogation[inputs_,network_]:=(
    Z[layerIndex-1]]
 )
 
-BackPropogation[currentParameters_,inputs_,targets_]:=(
+BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
 
    ForwardPropogation[inputs, currentParameters];
    networkLayers=Length[currentParameters];
 
    AbortAssert[Dimensions[Z[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
-   DeltaZ[networkLayers]=2*(Z[networkLayers]-targets); (*We are implicitly assuming a regression loss function*)
+   (*DeltaZ[networkLayers]=2*(Z[networkLayers]-targets);*) (*We are implicitly assuming a regression loss function*)
+   DeltaZ[networkLayers]=DeltaLoss[lossF,Z[networkLayers],targets];
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
    For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
@@ -57,21 +58,27 @@ BackPropogation[currentParameters_,inputs_,targets_]:=(
       so it has shape T*U
    targets has shape T*O where O is the number of output units
 *)
-Grad[currentParameters_,inputs_,targets_]:=(
+Grad[currentParameters_,inputs_,targets_,lossF_]:=(
 
    AbortAssert[Length[inputs]==Length[targets],"Grad::# of Training Labels should equal # of Training Inputs"];
 
-   BackPropogation[currentParameters,inputs,targets];
+   BackPropogation[currentParameters,inputs,targets,lossF];
 
    Table[
       LayerGrad[currentParameters[[layerIndex]],Z[layerIndex-1],DeltaA[layerIndex]]
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
+DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
+DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
+DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
+DeltaLoss[ClassificationLoss,outputs_,targets_]:=1/Extract[outputs,Position[targets,1]];
+
 (*This is implicitly a regression loss function*)
-Loss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs])
-Loss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs]
-Loss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs]
+RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
+RegressionLoss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs];
+RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs];
+ClassificationLoss[parameters_,inputs_,targets_]:=Total[Log[Extract[ForwardPropogation[inputs,parameters],Position[targets,1]]]]/Length[inputs];
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 
@@ -275,7 +282,7 @@ sqNetwork={
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
-sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,Loss1D,.0001,500000];
+sqTrained:=GradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss1D,.0001,500000];
 
 
 XORNetwork={
@@ -284,35 +291,35 @@ XORNetwork={
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
-XORTrained:=GradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,Loss1D,.0001,500000];
+XORTrained:=GradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss1D,.0001,500000];
 
 
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
-MultTrained:=GradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,Loss1D,.0001,5000000];
+MultTrained:=GradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss1D,.0001,5000000];
 
 
 edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]]};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\secure\\My Pictures\\me3.png"]};
 edgeOutputs=ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}];
-edgeTrained:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,Loss2D,.000001,500000]
+edgeTrained:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,.000001,500000]
 
 
 edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Convolve2D[0,Table[Random[],{3},{3}]]}]};
 edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}]}];
-edgeFilterBankTrained:=GradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,Loss3D,.000001,500000]
+edgeFilterBankTrained:=GradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss3D,.000001,500000]
 
 
 edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}]};
 edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
 edgeFilterBankTo2DOutputs=edgeOutputs;
-edgeFilterBankTo2DTrained:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,Loss2D,.000001,500000]
+edgeFilterBankTo2DTrained:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,.000001,500000]
 
 
 Deep1Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep1Inputs=edgeInputs;
 Deep1Outputs=edgeOutputs;
-Deep1Trained:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,Loss2D,.000001,500000];
+Deep1Trained:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,RegressionLoss2D,.000001,500000];
 Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//MatrixForm,-gw[[1,2,2]]//MatrixForm},-gw[[2,2]]}
 }]
@@ -321,7 +328,7 @@ Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,Ima
 Deep2Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep2Inputs=edgeInputs;
 Deep2Outputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]+ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])/2;
-Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,Loss2D,{MaxLoss->500000}];
+Deep2Trained:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,RegressionLoss2D,{MaxLoss->500000}];
 Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
 }]
@@ -337,7 +344,7 @@ SemNetwork={
 };
 SemInputs=Select[Tuples[{0,1},8],Count[#,1]==2&];
 SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[in,1]]]],SemInputs];
-SemTrained:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,Loss1D,.0001,500000];
+SemTrained:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,RegressionLoss1D,.0001,500000];
 
 
 r1=Partition[RandomList[[1;;9]],3];r2=Partition[RandomList[[10;;18]],3];
@@ -359,7 +366,7 @@ FTBMonitor:=Dynamic[{ColDispImage/@{
    gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
-FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Loss2D,{MaxLoss->500000}];
+FTBTrained:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,RegressionLoss2D,{MaxLoss->500000}];
 
 
 TestNetwork={
@@ -376,7 +383,7 @@ TestMonitor:=Dynamic[{ColDispImage/@{
    gw[[1,2,2]]/Max[Abs[gw[[1,2,2]]]]
 },Max[Abs[gw[[1,1,2]]]],
    Max[Abs[gw[[1,2,2]]]]}]
-TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,Loss2D,{MaxLoss->500000}];
+TestTrained:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,RegressionLoss2D,{MaxLoss->500000}];
 
 
 TestConvolveNetwork={
@@ -392,7 +399,7 @@ TestConvolveNetwork={
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
-TestConvolveTrained:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,Loss2D,{MaxLoop->500000}];
+TestConvolveTrained:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 TestMaxNetwork={
@@ -409,4 +416,4 @@ TestMaxOutputs=Table[.25*Max[
    edgeInputs[[t,y*2-1,x*2-1]],
    edgeInputs[[t,y*2-1,x*2]]]
    ,{t,1,1},{y,1,70},{x,1,63}];
-TestMaxTrained:=AdaptiveGradientDescent[TestMaxNetwork,TestMaxInputs,TestMaxOutputs,Grad,Loss2D,{MaxLoop->500000}];
+TestMaxTrained:=AdaptiveGradientDescent[TestMaxNetwork,TestMaxInputs,TestMaxOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
