@@ -24,10 +24,16 @@ ForwardPropogation[inputs_,network_]:=(
    Module[{layerIndex=1},
    For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
       A[layerIndex]=LayerForwardPropogation[Z[layerIndex-1],network[[layerIndex]]];
-      If[!MatchQ[network[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-         Z[layerIndex]=Tanh[A[layerIndex]],
-         Z[layerIndex]=A[layerIndex];
+
+      Which[
+         MatchQ[network[[layerIndex]],MaxPoolingFilterBankToFilterBank],
+            Z[layerIndex]=A[layerIndex];,
+         MatchQ[network[[layerIndex]],Softmax],
+            Z[layerIndex]=A[layerIndex];,
+         True,
+            Z[layerIndex]=A[layerIndex];
       ];
+
    ];
 
    Z[layerIndex-1]]
@@ -39,16 +45,20 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
    networkLayers=Length[currentParameters];
 
    AbortAssert[Dimensions[Z[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
-   (*DeltaZ[networkLayers]=2*(Z[networkLayers]-targets);*) (*We are implicitly assuming a regression loss function*)
+
    DeltaZ[networkLayers]=DeltaLoss[lossF,Z[networkLayers],targets];
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
    For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
-      If[!MatchQ[currentParameters[[layerIndex+1]],MaxPoolingFilterBankToFilterBank],
-         (DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
-          DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2),
-         DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],A[layerIndex+1],DeltaA[layerIndex+1]];
-      ]
+      Which[
+         MatchQ[currentParameters[[layerIndex+1]],MaxPoolingFilterBankToFilterBank],
+            DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],A[layerIndex+1],DeltaA[layerIndex+1]];,
+         MatchQ[currentParameters[[layerIndex+1]],Softmax],
+            DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],DeltaZ[layerIndex+1]];,
+         True,
+            (DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
+             DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2)
+      ];
    ];
 )
 
@@ -72,13 +82,14 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
-DeltaLoss[ClassificationLoss,outputs_,targets_]:=1/Extract[outputs,Position[targets,1]];
+DeltaLoss[ClassificationLoss,outputs_,targets_]:=-1/Extract[outputs,Position[targets,1]];
+DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs);
 
 (*This is implicitly a regression loss function*)
 RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
 RegressionLoss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs];
 RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs];
-ClassificationLoss[parameters_,inputs_,targets_]:=Total[Log[Extract[ForwardPropogation[inputs,parameters],Position[targets,1]]]]/Length[inputs];
+ClassificationLoss[parameters_,inputs_,targets_]:=-Total[Log[Extract[ForwardPropogation[inputs,parameters],Position[targets,1]]]]/Length[inputs];
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 
@@ -97,7 +108,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
       trainingLoss=lossF[wl,inputs,targets];
       If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
-      twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets]];
+      twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets,lossF]];
       If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
 ])
 
@@ -139,6 +150,7 @@ ConvolveFilterBankTo2D - Each feature map in the filter bank has its own convolu
 ConvolveFilterBankToFilterBank - As ConvolveFilterBankTo2D but applied repeately to build filter bank layer
 MaxPoolingFilterBankToFilterBank - 2*2->1*1 downsampling with max applied to filter bank. No parameters
 Adaptor3DTo1D - Flattens 3D structure. No weights required. Specify features and width of orginial 3D structure (so delta signals can be constructed)
+Softmax - Softmax layer, no weights
 *)
 
 
@@ -249,15 +261,15 @@ WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBank
 
 (*MaxPoolingFilterBankToFilterBank*)
 SyntaxInformation[MaxPoolingFilterBankToFilterBank]={"ArgumentsPattern"->{}};
-LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank_]:=Table[Max[
+LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank]:=Table[Max[
    inputs[[t,f,y*2,x*2-1]],
    inputs[[t,f,y*2,x*2]],
    inputs[[t,f,y*2-1,x*2-1]],
    inputs[[t,f,y*2-1,x*2]]]
    ,{t,1,Length[inputs]},{f,1,Length[inputs[[1]]]},{y,1,Round[Length[inputs[[1,1]]]/2]},{x,1,Round[Length[inputs[[1,1,1]]]/2]}];
-Backprop[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
+Backprop[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
    Table[If[(layerInputs[[t,f,y,x]]==layerOutputs[[t,f,Ceiling[y/2],Ceiling[x/2]]]),postLayerDeltaA[[t,f,Ceiling[y/2],Ceiling[x/2]]],0.],{t,1,Length[layerInputs]},{f,1,Length[layerInputs[[1]]]},{y,1,Length[layerInputs[[1,1]]]},{x,1,Length[layerInputs[[1,1,1]]]}];
-LayerGrad[MaxPoolingFilterBankToFilterBank_,layerInputs_,layerOutputDelta_]:={};
+LayerGrad[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
 (*Adaptor3DTo1D*)
@@ -273,6 +285,16 @@ Backprop[Adaptor3DTo1D[features_,width_,height_],postLayerDeltaA_]:=
 LayerGrad[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:=
    Adaptor3DTo1D[features,width,height];
 WeightDec[networkLayer_Adaptor3DTo1D,grad_]:=Adaptor3DTo1D[networkLayer[[1]],networkLayer[[2]],networkLayer[[3]]];
+
+(*Softmax*)
+SyntaxInformation[Softmax]={"ArgumentsPattern"->{}};
+LayerForwardPropogation[inputs_,Softmax]:=Map[Exp[#]/Total[Exp[#]]&,inputs];
+Backprop[Softmax,inputs_,postLayerDeltaA_]:=
+   Table[
+      Sum[postLayerDeltaA[[n,i]]*((If[i==j,Exp[inputs[[n,i]]],0] Total[Exp[inputs[[n]]]]) - (Exp[inputs[[n,j]]]*Exp[inputs[[n,i]]]))/(Total[Exp[inputs[[n]]]])^2,{i,1,Length[postLayerDeltaA[[1]]]}],
+   {n,1,Length[postLayerDeltaA]},{j,1,Length[postLayerDeltaA[[1]]]}]
+LayerGrad[Softmax,layerInputs_,layerOutputDelta_]:={};
+WeightDec[Softmax,grad_]:=Softmax;
 
 
 (* Examples *)
