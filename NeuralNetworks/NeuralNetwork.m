@@ -49,15 +49,17 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
    DeltaZ[networkLayers]=DeltaLoss[lossF,Z[networkLayers],targets];
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
 
-   For[layerIndex=networkLayers-1,layerIndex>0,layerIndex--,
+   For[layerIndex=networkLayers,layerIndex>1,layerIndex--,
+(* layerIndex refers to layer being back propogated across
+   ie computing delta's for layerIndex-1 given layerIndex *)
       Which[
-         MatchQ[currentParameters[[layerIndex+1]],MaxPoolingFilterBankToFilterBank],
-            DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],A[layerIndex+1],DeltaA[layerIndex+1]];,
-         MatchQ[currentParameters[[layerIndex+1]],Softmax],
-            DeltaA[layerIndex]=Backprop[currentParameters[[layerIndex+1]],Z[layerIndex],DeltaZ[layerIndex+1]];,
+         MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
+            DeltaA[layerIndex-1]=Backprop[currentParameters[[layerIndex]],Z[layerIndex-1],A[layerIndex],DeltaA[layerIndex]];,
+         MatchQ[currentParameters[[layerIndex]],Softmax],
+            DeltaA[layerIndex-1]=Backprop[currentParameters[[layerIndex]],Z[layerIndex-1],DeltaZ[layerIndex]];,
          True,
-            (DeltaZ[layerIndex]=Backprop[currentParameters[[layerIndex+1]],DeltaA[layerIndex+1]];
-             DeltaA[layerIndex]=DeltaZ[layerIndex]*Sech[A[layerIndex]]^2)
+            (DeltaZ[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaA[layerIndex]];
+             DeltaA[layerIndex-1]=DeltaZ[layerIndex-1]*Sech[A[layerIndex-1]]^2)
       ];
    ];
 )
