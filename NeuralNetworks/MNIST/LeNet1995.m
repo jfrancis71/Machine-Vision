@@ -39,7 +39,7 @@ MNISTLeNet95ValidationInputs=TrainingImages[[50001;;60000,5;;24,5;;24]]*1.;
 MNISTLeNet95ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;60000]]];
 
 
- MNISTLeNet95Trained:=AdaptiveGradientDescent[
+ MNISTLeNet95Train:=AdaptiveGradientDescent[
    MNISTLeNet95Network,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
    Grad,Loss1D,
      {MaxLoop->500000,

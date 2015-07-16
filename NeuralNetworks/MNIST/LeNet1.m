@@ -49,14 +49,14 @@ MNISTLeNet1={
 };
 
 
-MNISTLeNet1TrainingInputs=TrainingImages[[1;;5,1;;28,1;;28]]*1.;
-MNISTLeNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;5]]];
+MNISTLeNet1TrainingInputs=TrainingImages[[1;;500,1;;28,1;;28]]*1.;
+MNISTLeNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;500]]];
 
-MNISTLeNet1ValidationInputs=TrainingImages[[5001;;6000,1;;28,1;;28]]*1.;
-MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[5001;;6000]]];
+MNISTLeNet1ValidationInputs=TrainingImages[[501;;600,1;;28,1;;28]]*1.;
+MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[501;;600]]];
 
 
- MNISTLeNet1Trained:=AdaptiveGradientDescent[
+ MNISTLeNet1Train:=AdaptiveGradientDescent[
    MNISTLeNet1,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingOutputs,
    Grad,ClassificationLoss,
      {MaxLoop->500000,

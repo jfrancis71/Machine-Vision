@@ -33,7 +33,7 @@ AutoencoderOutputs=AutoencoderInputs;
 wl=Autoencoder1OfNNetwork;
 
 
-Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
+Autoencode1OfNTrain:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
 
 
  (* Achieves  .531134 after 20 hours *)
@@ -98,7 +98,7 @@ Autoencoder1OfNNetworkA4={
 wl=Autoencoder1OfNNetworkA4;
 
 
-Autoencode1OfNTrained:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
+Autoencode1OfNTrain:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
 
 
 (*
@@ -138,5 +138,5 @@ wlP1=Autoencoder1OfNNetworkA5P1;
 wlP2=Autoencoder1OfNNetworkA5P2;
 
 
-Autoencode1OfNTrainedP1:=AdaptiveGradientDescent[wlP1,AutoencoderInputs,AutoencoderIntermediate,Grad,Loss2D,{MaxLoop->500000}];
-Autoencode1OfNTrainedP2:=AdaptiveGradientDescent[wlP2,AutoencoderIntermediate,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->10^7}];
+Autoencode1OfNTrainP1:=AdaptiveGradientDescent[wlP1,AutoencoderInputs,AutoencoderIntermediate,Grad,Loss2D,{MaxLoop->500000}];
+Autoencode1OfNTrainP2:=AdaptiveGradientDescent[wlP2,AutoencoderIntermediate,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->10^7}];

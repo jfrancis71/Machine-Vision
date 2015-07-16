@@ -39,10 +39,10 @@ Partition[#,32][[2]])]}&,SamePosInputs];
 wl=SamePos1Network;
 
 
-SamePos1Trained:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
+SamePos1Train:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
 
 
 wl=SamePos2Network;
 
 
-SamePos2Trained:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
+SamePos2Train:=AdaptiveGradientDescent[wl,SamePosInputs,SamePosOutputs,Grad,Loss2D,{MaxLoop->500000}];
