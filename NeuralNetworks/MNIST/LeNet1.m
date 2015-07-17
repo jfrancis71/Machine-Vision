@@ -28,23 +28,23 @@ Validation Classification: .0%
 
 MNISTLeNet1={
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[RandomList[[1;;25]]-.5,5]],
-      Convolve2D[0,Partition[RandomList[[101;;125]]-.5,5]],
-      Convolve2D[0,Partition[RandomList[[201;;225]]-.5,5]],
-      Convolve2D[0,Partition[RandomList[[301;;325]]-.5,5]]
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]]
 }],
    MaxPoolingFilterBankToFilterBank,
    ConvolveFilterBankToFilterBank[Table[
       ConvolveFilterBankTo2D[0,{
-         Partition[RandomList[[f+1;;f+25]]-.5,5],
-         Partition[RandomList[[1+f+1;;1+f+25]]-.5,5],
-         Partition[RandomList[[2+f+1;;2+f+25]]-.5,5],
-         Partition[RandomList[[3+f+1;;3+f+25]]-.5,5]}],
+         Partition[Table[Random[],{25}]-.5,5],
+         Partition[Table[Random[],{25}]-.5,5],
+         Partition[Table[Random[],{25}]-.5,5],
+         Partition[Table[Random[],{25}]-.5,5]}],
       {f,0,11}]
    ],
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[12,4,4],
-   FullyConnected1DTo1D[RandomList[[1;;10]],Partition[RandomList[[1;;10*192]],192]],
+   FullyConnected1DTo1D[Table[Random[],{10}],Partition[Table[Random[],{10*192}],192]],
    Softmax
 };
 

@@ -23,7 +23,7 @@ TestLabels = ReadMINSTLabelFile["C:\\Users\\Julian\\ImageDataSetsPublic\\MNIST\\
 
 
 pos=Position[TrainingLabels,2|3];
-r1=RandomList[[1;;28*28]]-.5;
+r1=RandomReal[{0,1},8]-.5;
 MN1Network={Adaptor2DTo1D[28],FullyConnected1DTo1D[{0},{r1}/7840.]};
 MN1Inputs=Extract[TrainingImages,pos]-0.0;
 MN1Outputs=Extract[TrainingLabels,pos]-2.0;

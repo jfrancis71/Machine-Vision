@@ -28,8 +28,8 @@ Validation Classification: 87.0%
 
 MNISTLeNet95Network={
    Adaptor2DTo1D[20],
-   FullyConnected1DTo1D[ConstantArray[0.,300],Partition[RandomList[[1;;300*400]]/400.,400]],
-   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[RandomList[[1;;3000]]/300.,300]]};
+   FullyConnected1DTo1D[ConstantArray[0.,300],Partition[Table[Random[],{300*400}]/400.,400]],
+   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{3000}]/300.,300]]};
 
 
 MNISTLeNet95TrainingInputs=TrainingImages[[1;;50000,5;;24,5;;24]]*1.;
@@ -41,7 +41,7 @@ MNISTLeNet95ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Tra
 
  MNISTLeNet95Train:=AdaptiveGradientDescent[
    MNISTLeNet95Network,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
-   Grad,Loss1D,
+   Grad,RegressionLoss1D,
      {MaxLoop->500000,
       ValidationInputs->MNISTLeNet95ValidationInputs,
       ValidationTargets->MNISTLeNet95ValidationOutputs}];

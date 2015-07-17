@@ -26,7 +26,8 @@ Validation Classification: 85.7%
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/MNIST/MNISTData.m"
 
 
-MNISTLinearNetwork={Adaptor2DTo1D[20],FullyConnected1DTo1D[ConstantArray[0.,10],Partition[RandomList[[1;;4000]]/4000.,400]]};
+SeedRandom[1234];
+MNISTLinearNetwork={Adaptor2DTo1D[20],FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{4000}]/4000.,400]]};
 
 
 MNISTLinearTrainingInputs=TrainingImages[[1;;50000,5;;24,5;;24]]*1.;
@@ -36,5 +37,5 @@ MNISTLinearValidationInputs=TrainingImages[[50001;;60000,5;;24,5;;24]]*1.;
 MNISTLinearValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;60000]]];
 
 
-MNISTLinearTrain:=AdaptiveGradientDescent[MNISTLinearNetwork,MNISTLinearTrainingInputs,MNISTLinearTrainingOutputs,Grad,Loss1D,
+MNISTLinearTrain:=AdaptiveGradientDescent[MNISTLinearNetwork,MNISTLinearTrainingInputs,MNISTLinearTrainingOutputs,Grad,RegressionLoss1D,
    {MaxLoop->500000,ValidationInputs->MNISTLinearValidationInputs,ValidationTargets->MNISTLinearValidationOutputs}];

@@ -26,4 +26,4 @@ AutoencoderNetwork={
 wl=AutoencoderNetwork;
 
 
-MNISTAutoencoderTrain:=AdaptiveGradientDescent[wl,MNISTAutoencoderTrainingInputs,MNISTAutoencoderTrainingInputs,Grad,Loss2D,{MaxLoop->500000}];
+MNISTAutoencoderTrain:=AdaptiveGradientDescent[wl,MNISTAutoencoderTrainingInputs,MNISTAutoencoderTrainingInputs,Grad,RegressionLoss2D,{MaxLoop->500000}];

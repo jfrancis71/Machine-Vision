@@ -3,9 +3,6 @@
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
 
 
-RandomList=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\RandomList.wdx"];
-
-
 AbortAssert[bool_,message_]:=
    If[bool==False,
       Print[message];Abort[]];
@@ -324,7 +321,7 @@ MultTrain:=GradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss
 
 
 edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]]};
-edgeInputs={StandardiseImage["C:\\Users\\Julian\\secure\\My Pictures\\me3.png"]};
+edgeInputs={StandardiseImage["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Dating Photos\\me3.png"]};
 edgeOutputs=ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}];
 edgeTrain:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,.000001,500000]
 
@@ -371,10 +368,11 @@ SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[i
 SemTrain:=GradientDescent[SemNetwork,SemInputs,SemOutputs,Grad,RegressionLoss1D,.0001,500000];
 
 
-r1=Partition[RandomList[[1;;9]],3];r2=Partition[RandomList[[10;;18]],3];
-r3=RandomList[[19;;19+4-1]];
-r4=Partition[RandomList[[23;;23+8-1]],2];
-r5=RandomList[[30]];r6=RandomList[[30;;30+4-1]];
+SeedRandom[1234];
+r1=Partition[RandomReal[{0,1},9],3];r2=Partition[RandomReal[{0,1},9],3];
+r3=RandomReal[{0,1},4];
+r4=Partition[RandomReal[{0,1},8],2];
+r5=Random[];r6=RandomReal[{0,1},4];
 FTBNetwork={
    Convolve2DToFilterBank[{Convolve2D[0.,r1-.5],Convolve2D[0.,r2-.5]}],
    FilterBankToFilterBank[0.,r4-.5],
@@ -410,14 +408,15 @@ TestMonitor:=Dynamic[{ColDispImage/@{
 TestTrain:=AdaptiveGradientDescent[TestNetwork,TestInputs,TestOutputs,Grad,RegressionLoss2D,{MaxLoss->500000}];
 
 
+SeedRandom[1234];
 TestConvolveNetwork={
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]],
-      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]]}],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],
    ConvolveFilterBankToFilterBank[{
-     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}],
-     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}],
-     ConvolveFilterBankTo2D[0,{Partition[RandomList[[20;;28]]-.5,3],Partition[RandomList[[21;;29]]-.5,3]}]
+     ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}],
+     ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}],
+     ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}]
 }],
    FilterBankTo2D[0.,{.1,.6,.2}]   
 };
@@ -426,10 +425,11 @@ TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
 TestConvolveTrain:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
+SeedRandom[1234];
 TestMaxNetwork={
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]],
-      Convolve2D[0,Partition[RandomList[[31;;39]]-.5,3]]}],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],
    MaxPoolingFilterBankToFilterBank,
    FilterBankTo2D[0,{.1,.5}]
 };
