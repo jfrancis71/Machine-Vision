@@ -260,14 +260,14 @@ WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBank
 
 (*MaxPoolingFilterBankToFilterBank*)
 SyntaxInformation[MaxPoolingFilterBankToFilterBank]={"ArgumentsPattern"->{}};
-LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank]:=Table[Max[
-   inputs[[t,f,y*2,x*2-1]],
-   inputs[[t,f,y*2,x*2]],
-   inputs[[t,f,y*2-1,x*2-1]],
-   inputs[[t,f,y*2-1,x*2]]]
-   ,{t,1,Length[inputs]},{f,1,Length[inputs[[1]]]},{y,1,Round[Length[inputs[[1,1]]]/2]},{x,1,Round[Length[inputs[[1,1,1]]]/2]}];
+LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank]:=
+   Map[Function[image,Map[Max,Partition[image,{2,2}],{2}]],inputs,{2}];
+backRouting[previousZ_,nextA_]:=Boole[MapThread[   (*Helper function for Backprop *)
+   Equal,
+   {Map[Partition[#,{2,2}]&,previousZ,{2}],
+   Map[{{#,#},{#,#}}&,nextA,{4}]},6]];
 Backprop[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
-   Table[If[(layerInputs[[t,f,y,x]]==layerOutputs[[t,f,Ceiling[y/2],Ceiling[x/2]]]),postLayerDeltaA[[t,f,Ceiling[y/2],Ceiling[x/2]]],0.],{t,1,Length[layerInputs]},{f,1,Length[layerInputs[[1]]]},{y,1,Length[layerInputs[[1,1]]]},{x,1,Length[layerInputs[[1,1,1]]]}];
+   Map[ArrayFlatten,backRouting[layerInputs,layerOutputs]*Map[{{#,#},{#,#}}&,postLayerDeltaA,{4}],4];
 LayerGrad[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
