@@ -81,7 +81,6 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
-DeltaLoss[ClassificationLoss,outputs_,targets_]:=-1/Extract[outputs,Position[targets,1]];
 DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs);
 
 (*This is implicitly a regression loss function*)
