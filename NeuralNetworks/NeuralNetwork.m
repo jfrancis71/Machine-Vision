@@ -265,7 +265,7 @@ LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank]:=
 backRouting[previousZ_,nextA_]:=UnitStep[Map[Partition[#,{2,2}]&,previousZ,{2}]-
    Map[Function[image,Map[{{#,#},{#,#}}&,image,{2}]],nextA,{2}]];
 Backprop[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
-   Map[ArrayFlatten,backRouting[layerInputs,layerOutputs]*Map[{{#,#},{#,#}}&,postLayerDeltaA,{4}],4];
+   Map[ArrayFlatten,backRouting[layerInputs,layerOutputs]*Map[{{#,#},{#,#}}&,postLayerDeltaA,{4}],2];
 LayerGrad[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
