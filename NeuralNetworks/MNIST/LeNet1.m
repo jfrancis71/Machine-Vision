@@ -57,7 +57,7 @@ MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Trai
 
  MNISTLeNet1Train:=AdaptiveGradientDescent[
    MNISTLeNet1,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingOutputs,
-   Grad,RegressionLoss1D,
+   Grad,ClassificationLoss,
      {MaxLoop->500000,
       ValidationInputs->MNISTLeNet1ValidationInputs,
       ValidationTargets->MNISTLeNet1ValidationOutputs}];
