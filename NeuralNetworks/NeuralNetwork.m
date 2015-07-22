@@ -28,7 +28,7 @@ ForwardPropogation[inputs_,network_]:=(
          MatchQ[network[[layerIndex]],Softmax],
             Z[layerIndex]=A[layerIndex];,
          True,
-            Z[layerIndex]=A[layerIndex];
+            Z[layerIndex]=Tanh[A[layerIndex]];(*A[layerIndex];*)
       ];
 
    ];
@@ -45,6 +45,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
 
    DeltaZ[networkLayers]=DeltaLoss[lossF,Z[networkLayers],targets];
    DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
+   (*Note above line correct, but see switching on layer type, may be bit confusing*)
 
    For[layerIndex=networkLayers,layerIndex>1,layerIndex--,
 (* layerIndex refers to layer being back propogated across
@@ -300,7 +301,7 @@ sqNetwork={
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
-sqTrain:=GradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss1D,.0001,500000];
+sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 XORNetwork={
@@ -309,35 +310,35 @@ XORNetwork={
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
-XORTrain:=GradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss1D,.0001,500000];
+XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
-MultTrain:=GradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss1D,.0001,5000000];
+MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]]};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Dating Photos\\me3.png"]};
 edgeOutputs=ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}];
-edgeTrain:=GradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,.000001,500000]
+edgeTrain:=AdaptiveGradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Convolve2D[0,Table[Random[],{3},{3}]]}]};
 edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}]}];
-edgeFilterBankTrain:=GradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss3D,.000001,500000]
+edgeFilterBankTrain:=AdaptiveGradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}]};
 edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
 edgeFilterBankTo2DOutputs=edgeOutputs;
-edgeFilterBankTo2DTrain:=GradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,.000001,500000]
+edgeFilterBankTo2DTrain:=AdaptiveGradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
 Deep1Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep1Inputs=edgeInputs;
 Deep1Outputs=edgeOutputs;
-Deep1Train:=GradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,RegressionLoss2D,.000001,500000];
+Deep1Train:=AdaptiveGradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//MatrixForm,-gw[[1,2,2]]//MatrixForm},-gw[[2,2]]}
 }]
@@ -346,7 +347,7 @@ Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,Ima
 Deep2Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep2Inputs=edgeInputs;
 Deep2Outputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]+ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])/2;
-Deep2Train:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,RegressionLoss2D,{MaxLoss->500000}];
+Deep2Train:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
 }]

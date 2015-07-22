@@ -28,24 +28,23 @@ Validation Classification: .0%
 
 MNISTLeNet1={
    Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]]
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
+      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25]
 }],
    MaxPoolingFilterBankToFilterBank,
    ConvolveFilterBankToFilterBank[Table[
       ConvolveFilterBankTo2D[0,{
-         Partition[Table[Random[],{25}]-.5,5],
-         Partition[Table[Random[],{25}]-.5,5],
-         Partition[Table[Random[],{25}]-.5,5],
-         Partition[Table[Random[],{25}]-.5,5]}],
+         Partition[Table[Random[],{25}]-.5,5]/25,
+         Partition[Table[Random[],{25}]-.5,5]/25,
+         Partition[Table[Random[],{25}]-.5,5]/25,
+         Partition[Table[Random[],{25}]-.5,5]}/25],
       {f,0,11}]
    ],
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[12,4,4],
-   FullyConnected1DTo1D[Table[Random[],{10}],Partition[Table[Random[],{10*192}],192]],
-   Softmax
+   FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*192}],192]-.5)/1920]
 };
 
 
@@ -58,7 +57,7 @@ MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Trai
 
  MNISTLeNet1Train:=AdaptiveGradientDescent[
    MNISTLeNet1,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingOutputs,
-   Grad,ClassificationLoss,
+   Grad,RegressionLoss1D,
      {MaxLoop->500000,
       ValidationInputs->MNISTLeNet1ValidationInputs,
       ValidationTargets->MNISTLeNet1ValidationOutputs}];
