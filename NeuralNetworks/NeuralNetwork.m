@@ -304,6 +304,8 @@ sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
 sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
+(*See Parallel Distributed Processing Volume 1: Foundations, PDP Research Group, page 332 Figure 4*)
+(*Achieves excellent solution quickly*)
 XORNetwork={
    FullyConnected1DTo1D[{.2,.3},{{2,.3},{1,Random[]-.5}}],
    FullyConnected1DTo1D[{.6},{{1,Random[]-.5}}]
