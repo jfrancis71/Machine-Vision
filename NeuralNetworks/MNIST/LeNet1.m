@@ -44,7 +44,8 @@ MNISTLeNet1={
    ],
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[12,4,4],
-   FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*192}],192]-.5)/1920]
+   FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*192}],192]-.5)/1920],
+   Softmax
 };
 
 
