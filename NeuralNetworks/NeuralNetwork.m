@@ -16,24 +16,13 @@ AbortAssert[bool_,message_]:=
    for one particular unit
 *)
 ForwardPropogation[inputs_,network_]:=(
-   Z[0] = inputs;
+   L[0] = inputs;
 
    Module[{layerIndex=1},
-   For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
-      A[layerIndex]=LayerForwardPropogation[Z[layerIndex-1],network[[layerIndex]]];
-
-      Which[
-         MatchQ[network[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-            Z[layerIndex]=A[layerIndex];,
-         MatchQ[network[[layerIndex]],Softmax],
-            Z[layerIndex]=A[layerIndex];,
-         True,
-            Z[layerIndex]=Tanh[A[layerIndex]];(*A[layerIndex];*)
+      For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
+         L[layerIndex]=LayerForwardPropogation[L[layerIndex-1],network[[layerIndex]]];
       ];
-
-   ];
-
-   Z[layerIndex-1]]
+      L[layerIndex-1]]
 )
 
 BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
@@ -41,24 +30,25 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
    ForwardPropogation[inputs, currentParameters];
    networkLayers=Length[currentParameters];
 
-   AbortAssert[Dimensions[Z[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
+   AbortAssert[Dimensions[L[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
 
-   DeltaZ[networkLayers]=DeltaLoss[lossF,Z[networkLayers],targets];
-   DeltaA[networkLayers]=DeltaZ[networkLayers]*Sech[A[networkLayers]]^2;
-   (*Note above line correct, but see switching on layer type, may be bit confusing*)
+   DeltaL[networkLayers]=DeltaLoss[lossF,L[networkLayers],targets];
 
    For[layerIndex=networkLayers,layerIndex>1,layerIndex--,
 (* layerIndex refers to layer being back propogated across
    ie computing delta's for layerIndex-1 given layerIndex *)
+
       Which[
          MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-            DeltaA[layerIndex-1]=Backprop[currentParameters[[layerIndex]],Z[layerIndex-1],A[layerIndex],DeltaA[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],L[layerIndex],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Softmax],
-            DeltaA[layerIndex-1]=Backprop[currentParameters[[layerIndex]],Z[layerIndex-1],DeltaZ[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+         MatchQ[currentParameters[[layerIndex]],Tanh],
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          True,
-            (DeltaZ[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaA[layerIndex]];
-             DeltaA[layerIndex-1]=DeltaZ[layerIndex-1]*Sech[A[layerIndex-1]]^2)
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
+
    ];
 )
 
@@ -75,7 +65,7 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
    BackPropogation[currentParameters,inputs,targets,lossF];
 
    Table[
-      LayerGrad[currentParameters[[layerIndex]],Z[layerIndex-1],DeltaA[layerIndex]]
+      LayerGrad[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]]
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
@@ -150,6 +140,7 @@ ConvolveFilterBankToFilterBank - As ConvolveFilterBankTo2D but applied repeately
 MaxPoolingFilterBankToFilterBank - 2*2->1*1 downsampling with max applied to filter bank. No parameters
 Adaptor3DTo1D - Flattens 3D structure. No weights required. Specify features and width of orginial 3D structure (so delta signals can be constructed)
 Softmax - Softmax layer, no weights
+Tanh - Simple 1<->1 Non linear layer
 *)
 
 
@@ -293,11 +284,18 @@ Backprop[Softmax,inputs_,postLayerDeltaA_]:=
 LayerGrad[Softmax,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Softmax,grad_]:=Softmax;
 
+(*Tanh*)
+LayerForwardPropogation[inputs_,Tanh]:=Tanh[inputs];
+Backprop[Tanh,inputs_,postLayerDeltaA_]:=
+   postLayerDeltaA*Sech[inputs]^2;
+LayerGrad[Tanh,layerInputs_,layerOutputDelta_]:={};
+WeightDec[Tanh,grad_]:=Tanh;
+
 
 (* Examples *)
 sqNetwork={
-   FullyConnected1DTo1D[{.2,.3},{{2},{3}}],
-   FullyConnected1DTo1D[{.6},{{1,7}}]
+   FullyConnected1DTo1D[{.2,.3},{{2},{3}}],Tanh,
+   FullyConnected1DTo1D[{.6},{{1,7}}],Tanh
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
@@ -307,8 +305,8 @@ sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLos
 (*See Parallel Distributed Processing Volume 1: Foundations, PDP Research Group, page 332 Figure 4*)
 (*Achieves excellent solution quickly*)
 XORNetwork={
-   FullyConnected1DTo1D[{.2,.3},{{2,.3},{1,Random[]-.5}}],
-   FullyConnected1DTo1D[{.6},{{1,Random[]-.5}}]
+   FullyConnected1DTo1D[{.2,.3},{{2,.3},{1,Random[]-.5}}],Tanh,
+   FullyConnected1DTo1D[{.6},{{1,Random[]-.5}}],Tanh
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
@@ -320,18 +318,18 @@ MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
 MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
-edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]]};
+edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]],Tanh};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Dating Photos\\me3.png"]};
 edgeOutputs=ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}];
 edgeTrain:=AdaptiveGradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
-edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Convolve2D[0,Table[Random[],{3},{3}]]}]};
-edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}]}];
+edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Tanh,Convolve2D[0,Table[Random[],{3},{3}]]}],Tanh};
+edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}],Tanh}];
 edgeFilterBankTrain:=AdaptiveGradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
-edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}]};
+edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}],Tanh};
 edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
 edgeFilterBankTo2DOutputs=edgeOutputs;
 edgeFilterBankTo2DTrain:=AdaptiveGradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
@@ -358,10 +356,10 @@ Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35
 SemNetwork={
    FullyConnected1DTo1D[
       Table[Random[],{h1,1,6}],
-      Table[Random[],{h1,1,6},{i1,1,8}]],
+      Table[Random[],{h1,1,6},{i1,1,8}]],Tanh,
    FullyConnected1DTo1D[
       Table[Random[],{o1,1,6}],
-      Table[Random[],{o1,1,6},{h1,1,6}]]
+      Table[Random[],{o1,1,6},{h1,1,6}]],Tanh
 };
 SemInputs=Select[Tuples[{0,1},8],Count[#,1]==2&];
 SemOutputs=Map[Function[in,Flatten[Map[IntegerDigits[First[#]-1,2,3]&,Position[in,1]]]],SemInputs];
@@ -374,9 +372,9 @@ r3=RandomReal[{0,1},4];
 r4=Partition[RandomReal[{0,1},8],2];
 r5=Random[];r6=RandomReal[{0,1},4];
 FTBNetwork={
-   Convolve2DToFilterBank[{Convolve2D[0.,r1-.5],Convolve2D[0.,r2-.5]}],
-   FilterBankToFilterBank[0.,r4-.5],
-   FilterBankTo2D[0.,r6-.5]};
+   Convolve2DToFilterBank[{Convolve2D[0.,r1-.5],Convolve2D[0.,r2-.5]}],Tanh,
+   FilterBankToFilterBank[0.,r4-.5],Tanh
+   FilterBankTo2D[0.,r6-.5],Tanh};
 FTBInputs=edgeInputs;
 FTBOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2+(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}])^2;
 FTBMonitor:=Dynamic[{ColDispImage/@{
@@ -392,8 +390,8 @@ FTBTrain:=AdaptiveGradientDescent[FTBNetwork,FTBInputs,FTBOutputs,Grad,Regressio
 
 
 TestNetwork={
-   FilterBankToFilterBank[{.4,.7,.1,.7},{{.3,.2},{.7,.3},{.15,.16},{.32,.31}}],
-   FilterBankTo2D[.3,{.3,.5,.1,.2}]};
+   FilterBankToFilterBank[{.4,.7,.1,.7},{{.3,.2},{.7,.3},{.15,.16},{.32,.31}}],Tanh,
+   FilterBankTo2D[.3,{.3,.5,.1,.2}],Tanh};
 TestInputs=Transpose[{ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}],ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]},{2,1,3,4}];
 TestOutputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])^2+(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}])^2;
 TestMonitor:=Dynamic[{ColDispImage/@{
@@ -412,13 +410,13 @@ SeedRandom[1234];
 TestConvolveNetwork={
    Convolve2DToFilterBank[{
       Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]],
-      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],Tanh,
    ConvolveFilterBankToFilterBank[{
      ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}],
      ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}],
      ConvolveFilterBankTo2D[0,{Partition[RandomReal[{0,1},9]-.5,3],Partition[RandomReal[{0,1},9]-.5,3]}]
-}],
-   FilterBankTo2D[0.,{.1,.6,.2}]   
+}],Tanh,
+   FilterBankTo2D[0.,{.1,.6,.2}],Tanh
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
@@ -429,9 +427,9 @@ SeedRandom[1234];
 TestMaxNetwork={
    Convolve2DToFilterBank[{
       Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]],
-      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],
+      Convolve2D[0,Partition[RandomReal[{0,1},9]-.5,3]]}],Tanh,
    MaxPoolingFilterBankToFilterBank,
-   FilterBankTo2D[0,{.1,.5}]
+   FilterBankTo2D[0,{.1,.5}],Tanh
 };
 TestMaxInputs=edgeInputs[[All,1;;-2,All]]/4;
 TestMaxOutputs=Table[.25*Max[
