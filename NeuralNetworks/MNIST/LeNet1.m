@@ -9,13 +9,13 @@ Network Architecture: Convolutional Network, see Figure 1 in above paper
 
 They claim 1.7% test result
 
-Our Results:
-Iteration: 
-Training Loss: .
-Training Classification: .%
+Our Results: Needs more training (note the training set)
+Iteration: Around 2,000 four days
+Training Loss: .251
+Training Classification: 92.3%
 
-Validation Loss: .
-Validation Classification: .0%
+Validation Loss: .295
+Validation Classification: 90.8%
 *)
 
 
@@ -25,22 +25,23 @@ Validation Classification: .0%
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/MNIST/MNISTData.m"
 
 
+SeedRandom[1234];
 MNISTLeNet1={
    Convolve2DToFilterBank[{
       Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
       Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
       Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
       Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25]
-}],
+}],Tanh,
    MaxPoolingFilterBankToFilterBank,
    ConvolveFilterBankToFilterBank[Table[
       ConvolveFilterBankTo2D[0,{
          Partition[Table[Random[],{25}]-.5,5]/25,
          Partition[Table[Random[],{25}]-.5,5]/25,
          Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]}/25],
+         Partition[Table[Random[],{25}]-.5,5]/25}/4],
       {f,0,11}]
-   ],
+   ],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[12,4,4],
    FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*192}],192]-.5)/1920],
@@ -48,11 +49,11 @@ MNISTLeNet1={
 };
 
 
-MNISTLeNet1TrainingInputs=TrainingImages[[1;;500,1;;28,1;;28]]*1.;
-MNISTLeNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;500]]];
+MNISTLeNet1TrainingInputs=TrainingImages[[1;;10000,1;;28,1;;28]]*1.;
+MNISTLeNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;10000]]];
 
-MNISTLeNet1ValidationInputs=TrainingImages[[501;;600,1;;28,1;;28]]*1.;
-MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[501;;600]]];
+MNISTLeNet1ValidationInputs=TrainingImages[[50001;;55000,1;;28,1;;28]]*1.;
+MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;55000]]];
 
 
 wl=MNISTLeNet1;
