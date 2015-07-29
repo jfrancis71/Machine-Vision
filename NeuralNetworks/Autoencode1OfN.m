@@ -33,7 +33,7 @@ AutoencoderOutputs=AutoencoderInputs;
 wl=Autoencoder1OfNNetwork;
 
 
-Autoencode1OfNTrain:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,Loss2D,{MaxLoop->500000}];
+Autoencode1OfNTrain:=AdaptiveGradientDescent[wl,AutoencoderInputs,AutoencoderOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
 
 
  (* Achieves  .531134 after 20 hours *)
@@ -61,16 +61,18 @@ wl=Autoencoder1OfNNetworkA2;
 
 
 (* Achieves good encoding after few minutes
+   Neurones significantly uniform across (-1,+1)
+   but both +1 and -1 are used at twice normal frequency
 *)
 Autoencoder1OfNNetworkA3={
    FullyConnected1DTo1D[
-      ConstantArray[0,32],Table[Random[],{32},{32}]-.5],
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5],Tanh,
    FullyConnected1DTo1D[
-      ConstantArray[0,5],Table[Random[],{5},{32}]-.5],
+      ConstantArray[0,5],Table[Random[],{5},{32}]-.5],Tanh,
    FullyConnected1DTo1D[
-      ConstantArray[0,32],Table[Random[],{32},{5}]-.5],
+      ConstantArray[0,32],Table[Random[],{32},{5}]-.5],Tanh,
    FullyConnected1DTo1D[
-      ConstantArray[0,32],Table[Random[],{32},{32}]-.5]
+      ConstantArray[0,32],Table[Random[],{32},{32}]-.5],Tanh
 };
 
 
