@@ -45,6 +45,8 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Tanh],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+         MatchQ[currentParameters[[layerIndex]],ReLU],
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          True,
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
@@ -141,6 +143,7 @@ MaxPoolingFilterBankToFilterBank - 2*2->1*1 downsampling with max applied to fil
 Adaptor3DTo1D - Flattens 3D structure. No weights required. Specify features and width of orginial 3D structure (so delta signals can be constructed)
 Softmax - Softmax layer, no weights
 Tanh - Simple 1<->1 Non linear layer
+ReLU - Rectified Linear Unit layer
 *)
 
 
@@ -290,6 +293,13 @@ Backprop[Tanh,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*Sech[inputs]^2;
 LayerGrad[Tanh,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Tanh,grad_]:=Tanh;
+
+(*ReLU*)
+LayerForwardPropogation[inputs_,ReLU]:=UnitStep[inputs-0]*inputs;
+Backprop[ReLU,inputs_,postLayerDeltaA_]:=
+   postLayerDeltaA*UnitStep[inputs-0];
+LayerGrad[ReLU,layerInputs_,layerOutputDelta_]:={};
+WeightDec[ReLU,grad_]:=ReLU;
 
 
 (* Examples *)
