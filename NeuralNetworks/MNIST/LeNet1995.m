@@ -10,13 +10,13 @@ Network Architecture: Large Fully Connected Multi-Layer Neural Network
 
 They claim 1.6% test result
 
-Our Results:
-Iteration: 1649
-Training Loss: .428
-Training Classification: 85.2%
+Our Results:    NEEDS MORE TRAINING!!!
+Iteration: 66
+Training Loss: .638
+Training Classification: 81.1%
 
-Validation Loss: .410
-Validation Classification: 87.0%
+Validation Loss: .597
+Validation Classification: 83.0%
 *)
 
 
@@ -28,8 +28,9 @@ Validation Classification: 87.0%
 
 MNISTLeNet95Network={
    Adaptor2DTo1D[20],
-   FullyConnected1DTo1D[ConstantArray[0.,300],Partition[Table[Random[],{300*400}]/400.,400]],
-   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{3000}]/300.,300]]};
+   FullyConnected1DTo1D[ConstantArray[0.,300],Partition[Table[Random[],{300*400}]/400.,400]],Tanh,
+   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{3000}]/300.,300]],
+   Softmax};
 
 
 MNISTLeNet95TrainingInputs=TrainingImages[[1;;50000,5;;24,5;;24]]*1.;
@@ -41,7 +42,7 @@ MNISTLeNet95ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Tra
 
  MNISTLeNet95Train:=AdaptiveGradientDescent[
    MNISTLeNet95Network,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
-   Grad,RegressionLoss1D,
+   Grad,ClassificationLoss,
      {MaxLoop->500000,
       ValidationInputs->MNISTLeNet95ValidationInputs,
       ValidationTargets->MNISTLeNet95ValidationOutputs}];
