@@ -100,7 +100,9 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       trainingLoss=lossF[wl,inputs,targets];
       If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
       twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets,lossF]];
-      If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],(wl=twl;\[Lambda]=\[Lambda]*2),(\[Lambda]=\[Lambda]*0.5)];
+      If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],
+         (wl=twl;\[Lambda]=\[Lambda]*2);AppendTo[TrainingHistory,trainingLoss];If[validationInputs!={},AppendTo[ValidationHistory,validationLoss]],
+         (\[Lambda]=\[Lambda]*0.5)];
 ])
 
 Visualise[parameters_]:=(
