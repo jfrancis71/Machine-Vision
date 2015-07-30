@@ -42,7 +42,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
          MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],L[layerIndex],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Softmax],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Tanh],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],ReLU],
@@ -281,10 +281,11 @@ WeightDec[networkLayer_Adaptor3DTo1D,grad_]:=Adaptor3DTo1D[networkLayer[[1]],net
 (*Softmax*)
 SyntaxInformation[Softmax]={"ArgumentsPattern"->{}};
 LayerForwardPropogation[inputs_,Softmax]:=Map[Exp[#]/Total[Exp[#]]&,inputs];
-Backprop[Softmax,inputs_,postLayerDeltaA_]:=
+Backprop[Softmax,outputs_,postLayerDeltaA_]:=
    Table[
-      Sum[postLayerDeltaA[[n,i]]*((If[i==j,Exp[inputs[[n,i]]],0] Total[Exp[inputs[[n]]]]) - (Exp[inputs[[n,j]]]*Exp[inputs[[n,i]]]))/(Total[Exp[inputs[[n]]]])^2,{i,1,Length[postLayerDeltaA[[1]]]}],
-   {n,1,Length[postLayerDeltaA]},{j,1,Length[postLayerDeltaA[[1]]]}]
+      Sum[postLayerDeltaA[[n,i]]*outputs[[n,i]]*(KroneckerDelta[j,i]-outputs[[n,j]]),{i,1,Length[postLayerDeltaA[[1]]]}],
+         {n,1,Length[postLayerDeltaA]},
+      {j,1,Length[postLayerDeltaA[[1]]]}];
 LayerGrad[Softmax,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Softmax,grad_]:=Softmax;
 
