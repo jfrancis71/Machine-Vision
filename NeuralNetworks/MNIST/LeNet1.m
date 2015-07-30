@@ -57,6 +57,8 @@ MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Trai
 
 
 wl=MNISTLeNet1;
+TrainingHistory={};
+ValidatiohHistory={};
 
 
  MNISTLeNet1Train:=AdaptiveGradientDescent[
