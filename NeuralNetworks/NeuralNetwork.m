@@ -259,10 +259,10 @@ WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBank
 SyntaxInformation[MaxPoolingFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 LayerForwardPropogation[inputs_,MaxPoolingFilterBankToFilterBank]:=
    Map[Function[image,Map[Max,Partition[image,{2,2}],{2}]],inputs,{2}];
-backRouting[previousZ_,nextA_]:=UnitStep[Map[Partition[#,{2,2}]&,previousZ,{2}]-
-   Map[Function[image,Map[{{#,#},{#,#}}&,image,{2}]],nextA,{2}]];
+UpSample[x_]:=Riffle[temp=Riffle[x,x]//Transpose;temp,temp]//Transpose;
+backRouting[previousZ_,nextA_]:=UnitStep[previousZ-Map[UpSample,nextA,{2}]];
 Backprop[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
-   Map[ArrayFlatten,backRouting[layerInputs,layerOutputs]*Map[{{#,#},{#,#}}&,postLayerDeltaA,{4}],2];
+   backRouting[layerInputs,layerOutputs]*Map[UpSample,postLayerDeltaA,{2}];
 LayerGrad[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
