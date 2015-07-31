@@ -87,7 +87,14 @@ WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
-   wl )
+   wl );
+
+LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
+(* This is implicitly a lowest line search *)(
+   t\[Lambda]=\[Lambda]*1.1; (*Has an optimism bias*)
+   While[(loss=objectiveF[t\[Lambda]*v])>current,t\[Lambda]=t\[Lambda]*.5;AbortAssert[t\[Lambda]>10^-30]];
+  {t\[Lambda],loss}
+);
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
    \[Lambda]=.000001;
@@ -98,11 +105,11 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
       trainingLoss=lossF[wl,inputs,targets];
-      If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
-      twl=WeightDec[wl,gw=\[Lambda] gradientF[wl,inputs,targets,lossF]];
-      If[lossF[twl,inputs,targets]<lossF[wl,inputs,targets],
-         (wl=twl;\[Lambda]=\[Lambda]*2);AppendTo[TrainingHistory,trainingLoss];If[validationInputs!={},AppendTo[ValidationHistory,validationLoss]],
-         (\[Lambda]=\[Lambda]*0.5)];
+      If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0]; AppendTo[TrainingHistory,trainingLoss];
+         AppendTo[ValidationHistory,validationLoss];
+   gw=gradientF[wl,inputs,targets,lossF];
+   {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
+   wl=WeightDec[wl,\[Lambda]*gw];
 ])
 
 Visualise[parameters_]:=(
