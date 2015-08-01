@@ -49,8 +49,8 @@ TrainingHistory={};
 ValidationHistory={};
 
 
-(*{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR-10\\AndrejNet1.wdx"];*)
-(*Export["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR-10\\AndrejNet1.wdx",{TrainingHistory,ValidationHistory,wl}];*)
+(*{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx"];*)
+(*Export["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx",{TrainingHistory,ValidationHistory,wl}];*)
 
 
  CIFAR10AndrejNet1Train:=AdaptiveGradientDescent[
