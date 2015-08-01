@@ -103,6 +103,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000};
    Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   Print[Dynamic[ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
       trainingLoss=lossF[wl,inputs,targets];
       If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0]; AppendTo[TrainingHistory,trainingLoss];
@@ -184,9 +185,8 @@ WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[network
 *)
 SyntaxInformation[Convolve2D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
-
-   Map[ListCorrelate[layerKernel,#]&,inputs]+layerBias
-)
+   ListCorrelate[{layerKernel},inputs]+layerBias
+);
 Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1}],{t,1,Length[postLayerDeltaA]}]
 LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]};
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
@@ -242,6 +242,7 @@ WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]];
 (*ConvolveFilterBankTo2D*)
 SyntaxInformation[ConvolveFilterBankTo2D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,ConvolveFilterBankTo2D[bias_,kernels_]]:=(
+   AbortAssert[Length[inputs[[1]]]==Length[kernels],"ConvolveFilterBankTo2D::#Kernels not equal to #Features in input feature map"];
    bias+Sum[ListCorrelate[{kernels[[kernel]]},inputs[[All,kernel]]],
       {kernel,1,Length[kernels]}]);
 Backprop[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
