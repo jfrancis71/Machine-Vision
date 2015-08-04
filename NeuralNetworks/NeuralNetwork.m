@@ -117,24 +117,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       gw=gradientF[wl,inputs,targets,lossF];
       {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
       wl=WeightDec[wl,\[Lambda]*gw];
-   ])
-
-Visualise[parameters_]:=(
-
-   Z0 = Table[0,{layer1[[2,1]]//Length}];
-   Print[Z0//Length," Inputs"];
-
-   layer1=parameters[[1]];
-   Assert[(layer1[[2,1]]//Length)==(Z0//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
-   Assert[(layer1[[1]]//Length)==(layer1[[2]]//Length)]; (*Bias on units should match up with number of units from weight layer *)
-
-   Z1 = Table[0,{layer1[[1]]//Length}];
-   Print[Z1//Length," H1 Units"];
-
-   layer2=parameters[[2]];
-   Assert[(layer2[[2,1]]//Length)==(Z1//Length)]; (* Incoming weight matrix should match up with number of units from previous layer *)
-   Assert[(layer2[[1]]//Length)==(layer2[[2]]//Length)]; (*Bias on units should match up with number of units from weight layer *)
-)
+   ]);
 
 
 (*Assuming a 1 of n target representation*)
