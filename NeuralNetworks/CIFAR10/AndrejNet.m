@@ -37,8 +37,8 @@ CIFAR10AndrejNet1={
 };
 
 
-CIFAR10AndrejNet1TrainingInputs=ColTrainingImages[[1;;1000]]*1.;
-CIFAR10AndrejNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;1000]]];
+CIFAR10AndrejNet1TrainingInputs=ColTrainingImages[[1;;2000]]*1.;
+CIFAR10AndrejNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;2000]]];
 
 CIFAR10AndrejNet1ValidationInputs=ColValidationImages[[All]]*1.;
 CIFAR10AndrejNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
@@ -49,20 +49,28 @@ TrainingHistory={};
 ValidationHistory={};
 
 
-PersistFile="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx";
-{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx"];
+ CIFAR10AndrejNet1KTanhTrain:=(
+   {TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx"];
+   AdaptiveGradientDescent[
+      wl,CIFAR10AndrejNet1TrainingInputs[[1;;1000]],CIFAR10AndrejNet1TrainingOutputs[[1;;1000]],
+      BatchGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         ValidationInputs->CIFAR10AndrejNet1ValidationInputs,
+         ValidationTargets->CIFAR10AndrejNet1ValidationOutputs,
+         UpdateFunction->Persist["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx"]}];
+)
 
 
-(*{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx"];*)
-(*Export["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx",{TrainingHistory,ValidationHistory,wl}];*)
-
-
- CIFAR10AndrejNet1KTanhTrain:=AdaptiveGradientDescent[
-   wl,CIFAR10AndrejNet1TrainingInputs[[1;;1000]],CIFAR10AndrejNet1TrainingOutputs[[1;;1000]],
-   BatchGrad,ClassificationLoss,
-     {MaxLoop->500000,
-      ValidationInputs->CIFAR10AndrejNet1ValidationInputs,
-      ValidationTargets->CIFAR10AndrejNet1ValidationOutputs}];
+CIFAR10AndrejNet2KTanhTrain:=(
+   {TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet2KTanh.wdx"];
+   AdaptiveGradientDescent[
+      wl,CIFAR10AndrejNet1TrainingInputs[[1;;2000]],CIFAR10AndrejNet1TrainingOutputs[[1;;2000]],
+      BatchGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         ValidationInputs->CIFAR10AndrejNet1ValidationInputs,
+         ValidationTargets->CIFAR10AndrejNet1ValidationOutputs,
+         UpdateFunction->Persist["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet2KTanh.wdx"]}];
+)
 
 
 CIFAR10Output[probs_]:=BarChart[probs[[Reverse[Ordering[probs,-3]]]],ChartLabels->WordLabels[[Reverse[Ordering[probs,-3]]]]];

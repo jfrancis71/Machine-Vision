@@ -71,8 +71,9 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
-BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=
-   Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500],Partition[targets,500]}]]
+BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=(
+   AbortAssert[Length[inputs]>=500,"BatchGrad::Inputs must be great than 0 (and multiple of 500)"];
+   Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500],Partition[targets,500]}]])
 
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
@@ -102,8 +103,8 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
    \[Lambda]=.000001;
    trainingLoss=-\[Infinity];
-   {validationInputs,validationTargets,maxLoop} = {ValidationInputs,ValidationTargets,MaxLoop} /.
-      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000};
+   {validationInputs,validationTargets,maxLoop,updateF} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity};
    Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    Print[Dynamic[ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]]];
@@ -113,11 +114,16 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
          validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
       AppendTo[TrainingHistory,trainingLoss];
       AppendTo[ValidationHistory,validationLoss];
-      If[ValueQ[PersistFile]&&Mod[loop,10]==5,Export[PersistFile,{TrainingHistory,ValidationHistory,wl}],];
       gw=gradientF[wl,inputs,targets,lossF];
       {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
       wl=WeightDec[wl,\[Lambda]*gw];
+      updateF[];
    ]);
+
+
+(* Note this is quite funky, still needs some modularity thought *)
+Persist[filename_]:=Function[{},(
+   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl}],];)]
 
 
 (*Assuming a 1 of n target representation*)
