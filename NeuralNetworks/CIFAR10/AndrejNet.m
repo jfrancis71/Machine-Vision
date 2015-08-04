@@ -49,13 +49,17 @@ TrainingHistory={};
 ValidationHistory={};
 
 
+PersistFile="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx";
+{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx"];
+
+
 (*{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx"];*)
 (*Export["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1.wdx",{TrainingHistory,ValidationHistory,wl}];*)
 
 
- CIFAR10AndrejNet1Train:=AdaptiveGradientDescent[
-   wl,CIFAR10AndrejNet1TrainingInputs,CIFAR10AndrejNet1TrainingOutputs,
-   Grad,ClassificationLoss,
+ CIFAR10AndrejNet1KTanhTrain:=AdaptiveGradientDescent[
+   wl,CIFAR10AndrejNet1TrainingInputs[[1;;1000]],CIFAR10AndrejNet1TrainingOutputs[[1;;1000]],
+   BatchGrad,ClassificationLoss,
      {MaxLoop->500000,
       ValidationInputs->CIFAR10AndrejNet1ValidationInputs,
       ValidationTargets->CIFAR10AndrejNet1ValidationOutputs}];

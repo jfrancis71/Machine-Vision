@@ -71,6 +71,9 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
+BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=
+   Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500],Partition[targets,500]}]]
+
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
@@ -106,12 +109,15 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    Print[Dynamic[ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
       trainingLoss=lossF[wl,inputs,targets];
-      If[validationInputs!={},validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0]; AppendTo[TrainingHistory,trainingLoss];
-         AppendTo[ValidationHistory,validationLoss];
-   gw=gradientF[wl,inputs,targets,lossF];
-   {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
-   wl=WeightDec[wl,\[Lambda]*gw];
-])
+      If[validationInputs!={},
+         validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      AppendTo[TrainingHistory,trainingLoss];
+      AppendTo[ValidationHistory,validationLoss];
+      If[ValueQ[PersistFile]&&Mod[loop,10]==5,Export[PersistFile,{TrainingHistory,ValidationHistory,wl}],];
+      gw=gradientF[wl,inputs,targets,lossF];
+      {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
+      wl=WeightDec[wl,\[Lambda]*gw];
+   ])
 
 Visualise[parameters_]:=(
 
