@@ -310,6 +310,20 @@ LayerGrad[ReLU,layerInputs_,layerOutputDelta_]:={};
 WeightDec[ReLU,grad_]:=ReLU;
 
 
+(* Some Test Helping Code *)
+CheckSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2}]:={
+(* Neuron sensitivity checking code *)
+(* Advise save L levels in SaveL before running to prevent interference *)
+ (* levelCheck: This is the sensitivity of the output neurones at this level *)
+(* So note to check backprop you go one before, eg levelCheck 6 is checking neurons are correct at *)
+(* level 6, ie backprop iscorrect for level 7 *)
+(* cellCheck: {200,16,3,2} *)
+   500*10^3*(ClassificationLoss[wl[[levelCheck+1;;11]],SaveL[levelCheck]+ReplacePart[(SaveL[levelCheck]*0.),cellCheck->10^-3],CIFAR10NetTrainingOutputs[[1;;500]]]-
+   ClassificationLoss[wl[[levelCheck+1;;levelCheck]],SaveL[11],CIFAR10NetTrainingOutputs[[1;;500]]]),
+   Extract[DeltaL[levelCheck],cellCheck]
+}
+
+
 (* Examples *)
 sqNetwork={
    FullyConnected1DTo1D[{.2,.3},{{2},{3}}],Tanh,
