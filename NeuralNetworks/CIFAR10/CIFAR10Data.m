@@ -1,5 +1,13 @@
 (* ::Package:: *)
 
+(*
+   Ref: CIFAR 10 - 
+      Learning Multiple Layers Of Features From Tiny Images
+      Krizhevsky - 2009
+   http://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf
+*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
