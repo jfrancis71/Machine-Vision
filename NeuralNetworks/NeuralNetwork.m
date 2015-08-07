@@ -78,7 +78,7 @@ BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=(
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
-DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs);
+DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs)/Length[outputs];
 
 (*This is implicitly a regression loss function*)
 RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
@@ -101,7 +101,7 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 );
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
-   \[Lambda]=.000001;
+   \[Lambda]=.001;
    trainingLoss=-\[Infinity];
    {validationInputs,validationTargets,maxLoop,updateF} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction} /.
       options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity};
@@ -123,7 +123,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
 
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
-   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl}],];)]
+   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl}],0];)]
 
 
 (*Assuming a 1 of n target representation*)
@@ -182,7 +182,7 @@ SyntaxInformation[Convolve2D]={"ArgumentsPattern"->{_,_}};
 LayerForwardPropogation[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
    ListCorrelate[{layerKernel},inputs]+layerBias
 );
-Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1}],{t,1,Length[postLayerDeltaA]}]
+Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1},0],{t,1,Length[postLayerDeltaA]}]
 LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]};
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
 
@@ -241,7 +241,7 @@ LayerForwardPropogation[inputs_,ConvolveFilterBankTo2D[bias_,kernels_]]:=(
    bias+Sum[ListCorrelate[{kernels[[kernel]]},inputs[[All,kernel]]],
       {kernel,1,Length[kernels]}]);
 Backprop[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
-   Transpose[Table[ListConvolve[{kernels[[w]]},postLayerDeltaA,{+1,-1}],{w,1,Length[kernels]}],{2,1,3,4}]);
+   Transpose[Table[ListConvolve[{kernels[[w]]},postLayerDeltaA,{+1,-1},0],{w,1,Length[kernels]}],{2,1,3,4}]);
 LayerGrad[ConvolveFilterBankTo2D[bias_,kernels_],layerInputs_,layerOutputDelta_]:=(
    (*{Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}*)
    {Total[layerOutputDelta,3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs[[All,w]]}]],{w,1,Length[kernels]}]})
@@ -318,8 +318,8 @@ CheckSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
 (* So note to check backprop you go one before, eg levelCheck 6 is checking neurons are correct at *)
 (* level 6, ie backprop iscorrect for level 7 *)
 (* cellCheck: {200,16,3,2} *)
-   500*10^6*(ClassificationLoss[wl[[levelCheck+1;;-1]],SaveL[levelCheck]+ReplacePart[(SaveL[levelCheck]*0.),cellCheck->10^-6],targets]-
-   ClassificationLoss[wl[[levelCheck+1;;levelCheck]],SaveL[Length[wl]],targets]),
+   (10^6)*(ClassificationLoss[wl[[levelCheck+1;;-1]],SaveL[levelCheck]+ReplacePart[(SaveL[levelCheck]*0.),cellCheck->10^-6],targets]-
+      ClassificationLoss[wl[[levelCheck+1;;-1]],SaveL[levelCheck],targets]),
    Extract[DeltaL[levelCheck],cellCheck]
 }
 
