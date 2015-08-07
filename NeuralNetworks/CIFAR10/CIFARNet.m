@@ -31,14 +31,18 @@ CIFARNet={
          Table[Random[],{20},{5},{5}]/(20*5*5)],
       {f,1,16}]],Tanh,
    MaxPoolingFilterBankToFilterBank,
-   Adaptor3DTo1D[16,5,5],
-   FullyConnected1DTo1D[Table[Random[],{10}],Table[Random[]-.5,{10},{16*5*5}]],
+   ConvolveFilterBankToFilterBank[Table[
+      ConvolveFilterBankTo2D[0,
+         Table[Random[],{16},{3},{3}]/(20*5*5)],
+      {f,1,16}]],Tanh,
+   Adaptor3DTo1D[16,3,3],
+   FullyConnected1DTo1D[Table[Random[],{10}],Table[Random[]-.5,{10},{16*3*3}]],
    Softmax
 };
 
 
-CIFAR10NetTrainingInputs=ColTrainingImages[[1;;2000]]*1.;
-CIFAR10NetTrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;2000]]];
+CIFAR10NetTrainingInputs=ColTrainingImages[[1;;4000]]*1.;
+CIFAR10NetTrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;4000]]];
 
 CIFAR10NetValidationInputs=ColValidationImages[[All]]*1.;
 CIFAR10NetValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
@@ -49,7 +53,7 @@ TrainingHistory={};
 ValidationHistory={};
 
 
- CIFAR10Net1KTanhTrain:=(
+CIFAR10Net1KTanhTrain:=(
    {TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\CIFARNet1KTanh.wdx"];
    AdaptiveGradientDescent[
       wl,CIFAR10NetTrainingInputs[[1;;500]],CIFAR10NetTrainingOutputs[[1;;500]],
@@ -70,6 +74,25 @@ CIFAR10Net2KTanhTrain:=(
          ValidationInputs->CIFAR10NetValidationInputs,
          ValidationTargets->CIFAR10NetValidationOutputs,
          UpdateFunction->Persist["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\CIFARNet2KTanh.wdx"]}];
+)
+
+
+WebMonitor[]:=(
+   Export["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\Monitor.jpg",
+      Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
+   Persist[Filename][];)
+
+
+CIFAR10Net4KTanhTrain:=(
+   Filename="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\CIFARNet4KTanh.wdx";
+   {TrainingHistory,ValidationHistory,wl}=Import[Filename];
+   AdaptiveGradientDescent[
+      wl,CIFAR10NetTrainingInputs[[1;;4000]],CIFAR10NetTrainingOutputs[[1;;4000]],
+      BatchGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         ValidationInputs->CIFAR10NetValidationInputs,
+         ValidationTargets->CIFAR10NetValidationOutputs,
+         UpdateFunction->WebMonitor}];
 )
 
 
