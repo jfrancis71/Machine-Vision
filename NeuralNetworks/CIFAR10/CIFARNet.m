@@ -4,10 +4,10 @@
    Based on Andrej Karpathy. Not completely faithful implementation. (He uses extra convolution layer and ReLU)
    See: http://cs.stanford.edu/people/karpathy/convnetjs/demo/cifar10.html
 
-   Needs more training:
-   Iter: ?
-   TrainingLoss: ?
-   ValidationLoss: ?
+   On 4K Dataset:
+   Iter: 2092
+   TrainingLoss: 1.9077
+   ValidationLoss: 1.9620
 *)
 
 
