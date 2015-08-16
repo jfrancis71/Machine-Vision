@@ -126,6 +126,12 @@ Persist[filename_]:=Function[{},(
    If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl}],0];)]
 
 
+WebMonitor[filename_]:=Function[{},(
+   Export["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\Monitor.jpg",
+      Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
+   Persist[filename][];)]
+
+
 (*Assuming a 1 of n target representation*)
 ClassificationPerformance[network_,inputs_,targets_]:=
    Module[{proc},

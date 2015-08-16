@@ -77,12 +77,6 @@ CIFAR10Net2KTanhTrain:=(
 )
 
 
-WebMonitor[]:=(
-   Export["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\Monitor.jpg",
-      Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
-   Persist[Filename][];)
-
-
 CIFAR10Net4KTanhTrain:=(
    Filename="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\CIFARNet4KTanh.wdx";
    {TrainingHistory,ValidationHistory,wl}=Import[Filename];
@@ -92,7 +86,7 @@ CIFAR10Net4KTanhTrain:=(
         {MaxLoop->500000,
          ValidationInputs->CIFAR10NetValidationInputs,
          ValidationTargets->CIFAR10NetValidationOutputs,
-         UpdateFunction->WebMonitor}];
+         UpdateFunction->WebMonitor[Filename]}];
 )
 
 

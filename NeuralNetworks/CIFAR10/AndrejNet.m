@@ -50,14 +50,15 @@ ValidationHistory={};
 
 
  CIFAR10AndrejNet1KTanhTrain:=(
-   {TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx"];
+   Filename="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx";
+   {TrainingHistory,ValidationHistory,wl}=Import[Filename];
    AdaptiveGradientDescent[
       wl,CIFAR10AndrejNet1TrainingInputs[[1;;1000]],CIFAR10AndrejNet1TrainingOutputs[[1;;1000]],
       BatchGrad,ClassificationLoss,
         {MaxLoop->500000,
          ValidationInputs->CIFAR10AndrejNet1ValidationInputs,
          ValidationTargets->CIFAR10AndrejNet1ValidationOutputs,
-         UpdateFunction->Persist["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx"]}];
+         UpdateFunction->WebMonitor["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\CIFAR10\\AndrejNet1KTanh.wdx"]}];
 )
 
 
