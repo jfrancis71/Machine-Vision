@@ -41,6 +41,25 @@ CIFARNet={
 };
 
 
+SeedRandom[1234];
+CIFARNet1={
+   ConvolveFilterBankToFilterBank[Table[
+      ConvolveFilterBankTo2D[0,{
+         (Table[Random[],{5},{5}]-.5),
+         (Table[Random[],{5},{5}]-.5),
+         (Table[Random[],{5},{5}]-.5)}/(25*3.)],
+      {f,1,32}]],Tanh,
+   MaxPoolingFilterBankToFilterBank,
+   ConvolveFilterBankToFilterBank[Table[
+      ConvolveFilterBankTo2D[0,
+         Table[Random[],{32},{5},{5}]/(32*5*5)],
+      {f,1,32}]],Tanh,
+   Adaptor3DTo1D[32,10,10],
+   FullyConnected1DTo1D[Table[Random[],{10}],Table[Random[]-.5,{10},{32*10*10}]],
+   Softmax
+};
+
+
 CIFAR10NetTrainingInputs=ColTrainingImages[[1;;4000]]*1.;
 CIFAR10NetTrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;4000]]];
 
@@ -88,6 +107,20 @@ CIFAR10Net4KTanhTrain:=(
          ValidationInputs->CIFAR10NetValidationInputs,
          ValidationTargets->CIFAR10NetValidationOutputs,
          UpdateFunction->WebMonitor[Filename]}];
+)
+
+
+CIFAR10Net1Sz1KTrain:=(
+   name="CIFAR10\\CIFARNet1Sz1KTanh";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,CIFAR10NetTrainingInputs[[1;;1000]],CIFAR10NetTrainingOutputs[[1;;1000]],
+      BatchGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         ValidationInputs->CIFAR10NetValidationInputs,
+         ValidationTargets->CIFAR10NetValidationOutputs,
+         UpdateFunction->WebMonitor[name],
+         InitialLearningRate->\[Lambda]}];
 )
 
 

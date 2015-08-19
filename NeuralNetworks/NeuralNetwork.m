@@ -101,10 +101,9 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 );
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
-   \[Lambda]=.001;
    trainingLoss=-\[Infinity];
-   {validationInputs,validationTargets,maxLoop,updateF} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction} /.
-      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity};
+   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
    Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    Print[Dynamic[ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]]];
@@ -123,13 +122,13 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
 
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
-   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl}],0];)]
+   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}],0];)]
 
 
-WebMonitor[filename_]:=Function[{},(
-   Export["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\Monitor.jpg",
+WebMonitor[name_]:=Function[{},(
+   Export[StringJoin["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\",name,".jpg"],
       Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
-   Persist[filename][];)]
+   Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
 
 
 (*Assuming a 1 of n target representation*)
