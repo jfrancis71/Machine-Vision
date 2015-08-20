@@ -120,15 +120,21 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    ]);
 
 
+SkipOver[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
+
+
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
-   If[Mod[loop,10]==5,Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}],0];)]
+   Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}];)]
 
 
 WebMonitor[name_]:=Function[{},(
    Export[StringJoin["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\",name,".jpg"],
       Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
    Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
+
+
+SkipWebMonitor[name_]:=SkipOver[WebMonitor[name],10]
 
 
 (*Assuming a 1 of n target representation*)

@@ -32,6 +32,6 @@ Net1KTanhTrain:=(
       wl,Fl[[1;;1000]],Fl[[1;;1000]],
       BatchGrad,RegressionLoss1D,
         {MaxLoop->500000,
-         UpdateFunction->WebMonitor[name],
+         UpdateFunction->SkipWebMonitor[name],
          InitialLearningRate->\[Lambda]}];
 )
