@@ -122,7 +122,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    ]);
 
 
-SkipOver[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
+Checkpoint[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
 
 
 (* Note this is quite funky, still needs some modularity thought *)
@@ -136,7 +136,7 @@ WebMonitor[name_]:=Function[{},(
    Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
 
 
-SkipWebMonitor[name_,skip_:10]:=SkipOver[WebMonitor[name],skip]
+Checkpoint[name_,skip_:10]:=Checkpoint[WebMonitor[name],skip]
 
 
 (*Assuming a 1 of n target representation*)
