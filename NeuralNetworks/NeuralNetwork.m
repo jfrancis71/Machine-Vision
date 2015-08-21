@@ -45,6 +45,8 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Tanh],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+         MatchQ[currentParameters[[layerIndex]],Logistic],
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],ReLU],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
          True,
@@ -106,7 +108,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
    Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
-   Print[Dynamic[ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]]];
+   Print[Dynamic[grOutput]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
       trainingLoss=lossF[wl,inputs,targets];
       If[validationInputs!={},
@@ -130,11 +132,11 @@ Persist[filename_]:=Function[{},(
 
 WebMonitor[name_]:=Function[{},(
    Export[StringJoin["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\",name,".jpg"],
-      Rasterize[{Text[trainingLoss],Text[validationLoss],ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
+      Rasterize[{Text[trainingLoss],Text[validationLoss],grOutput=ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
    Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
 
 
-SkipWebMonitor[name_]:=SkipOver[WebMonitor[name],10]
+SkipWebMonitor[name_,skip_:10]:=SkipOver[WebMonitor[name],skip]
 
 
 (*Assuming a 1 of n target representation*)
@@ -160,6 +162,7 @@ Adaptor3DTo1D - Flattens 3D structure. No weights required. Specify features and
 Softmax - Softmax layer, no weights
 Tanh - Simple 1<->1 Non linear layer
 ReLU - Rectified Linear Unit layer
+Logistic - Logistic Activation layer
 *)
 
 
@@ -319,6 +322,14 @@ Backprop[ReLU,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*UnitStep[inputs-0];
 LayerGrad[ReLU,layerInputs_,layerOutputDelta_]:={};
 WeightDec[ReLU,grad_]:=ReLU;
+
+(*Logistic*)
+SyntaxInformation[Logistic]={"ArgumentsPattern"->{}};
+LayerForwardPropogation[inputs_,Logistic]:=1./(1.+Exp[-inputs]);
+Backprop[Logistic,inputs_,postLayerDeltaA_]:=
+   postLayerDeltaA*Exp[inputs]*(1+Exp[inputs])^-2;
+LayerGrad[Logistic,layerInputs_,layerOutputDelta_]:={};
+WeightDec[Logistic,grad_]:=Logistic;
 
 
 (* Some Test Helping Code *)
