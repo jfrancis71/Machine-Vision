@@ -74,6 +74,20 @@ CIFAR10AndrejNet2KTanhTrain:=(
 )
 
 
+MGDNet1DataSet1K:=(
+   name="CIFAR10\\MGDNet1DataSet1K";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,CIFAR10AndrejNet1TrainingInputs[[1;;1000]],CIFAR10AndrejNet1TrainingOutputs[[1;;1000]],
+      BatchGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         ValidationInputs->CIFAR10NetValidationInputs,
+         ValidationTargets->CIFAR10NetValidationOutputs,
+         UpdateFunction->WebMonitor[name],
+         InitialLearningRate->\[Lambda]}];
+)
+
+
 CIFAR10Output[probs_]:=BarChart[probs[[Reverse[Ordering[probs,-3]]]],ChartLabels->WordLabels[[Reverse[Ordering[probs,-3]]]]];
 
 

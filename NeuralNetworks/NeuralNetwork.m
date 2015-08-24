@@ -1,5 +1,37 @@
 (* ::Package:: *)
 
+AddNoise[inputs_]:=(
+   tmp1=UnitStep[RandomReal[{0,1},inputs//Dimensions]-.667];
+   (inputs*(1-tmp1)+tmp1*RandomReal[{0,1},inputs//Dimensions])
+)
+
+
+(*Mini Batch Gradient Descent With Noise*)
+MBGDWithNoise[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
+   trainingLoss=-\[Infinity];
+   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   Print[Dynamic[grOutput]];
+   velocity=0.;
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
+      trainingLoss=lossF[wl,inputs,targets];
+      If[validationInputs!={},
+         validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      AppendTo[TrainingHistory,trainingLoss];
+      AppendTo[ValidationHistory,validationLoss];
+      noiseInputs=AddNoise[inputs];
+      MapThread[
+         (
+         gw=gradientF[wl,#1,#2,lossF];
+         velocity=0.5*velocity + \[Lambda]*gw;
+         wl=WeightDec[wl,velocity];)&,
+         {Partition[noiseInputs,100],Partition[targets,100]}];
+      updateF[];
+   ]);
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
 
 
@@ -92,7 +124,7 @@ WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad
 
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
-   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets])]]];
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets,lossF])]]];
    wl );
 
 LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
@@ -122,6 +154,28 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
    ]);
 
 
+MomentumGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
+   trainingLoss=-\[Infinity];
+   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   Print[Dynamic[grOutput]];
+   velocity=0;
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
+      trainingLoss=lossF[wl,inputs,targets];
+      If[validationInputs!={},
+         validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      AppendTo[TrainingHistory,trainingLoss];
+      AppendTo[ValidationHistory,validationLoss];
+      gw=gradientF[wl,inputs,targets,lossF];
+      (*{\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];*)
+      velocity=0.9*velocity + \[Lambda]*gw;
+      wl=WeightDec[wl,velocity];
+      updateF[];
+   ]);
+
+
 Checkpoint[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
 
 
@@ -136,7 +190,7 @@ WebMonitor[name_]:=Function[{},(
    Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
 
 
-Checkpoint[name_,skip_:10]:=Checkpoint[WebMonitor[name],skip]
+CheckpointWebMonitor[name_,skip_:10]:=Checkpoint[WebMonitor[name],skip]
 
 
 (*Assuming a 1 of n target representation*)
