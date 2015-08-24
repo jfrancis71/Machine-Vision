@@ -105,9 +105,8 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
-BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=(
-   AbortAssert[Length[inputs]>=500,"BatchGrad::Inputs must be great than 0 (and multiple of 500)"];
-   Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500],Partition[targets,500]}]])
+BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=
+      Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500,500,{+1,+1},{}],Partition[targets,500,500,{+1,+1},{}]}]]
 
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
