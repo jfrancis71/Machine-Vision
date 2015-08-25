@@ -179,3 +179,17 @@ Net7Train:=(
          UpdateFunction->CheckpointWebMonitor[name,100],
          InitialLearningRate->\[Lambda]}];
 )
+
+
+Net7NoiseTrain:=(
+   name="ImgEncode\\Net7Noise";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   MBGDWithNoise[
+      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      TiedGrad,TiedRegressionLoss1D,
+        {MaxLoop->500000,
+         ValidationInputs->Fl[[3000;;3200]],
+         ValidationTargets->Fl[[3000;;3200]],         
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         InitialLearningRate->\[Lambda]}];
+)
