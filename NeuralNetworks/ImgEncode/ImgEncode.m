@@ -63,6 +63,12 @@ ValidationHistory={};
 Fl=Map[Flatten,Images];
 
 
+AddNoise[inputs_]:=(
+   tmp1=UnitStep[RandomReal[{0,1},inputs//Dimensions]-.667];
+   (inputs*(1-tmp1)+tmp1*RandomReal[{0,1},inputs//Dimensions])
+)
+
+
 Net1KTanhTrain:=(
    name="ImgEncode\\Net1Sz1KTanh";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
