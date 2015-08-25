@@ -54,6 +54,13 @@ Net7={
    FullyConnected1DTo1D[Table[0.,{32*32}],Table[0.,{32*32},{100}]]
 };
 
+Net8={
+   FullyConnected1DTo1D[Table[0.,{500}],Table[(Random[]-.5)*4*Sqrt[6/(32*32+500)],{500},{32*32}]],
+   Logistic,
+   FullyConnected1DTo1D[Table[0.,{32*32}],Table[0.,{32*32},{500}]],
+   Logistic
+};
+
 
 wl=Net2;
 TrainingHistory={};
@@ -165,14 +172,25 @@ Net6Train:=(
 
 
 TiedGrad[wl_,inputs_,targets_,lossF_]:=(
-   t1=ReplacePart[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D],{3,2}->Table[0.,{32*32},{100}]];
-   tt2=Transpose[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D][[3,2]]];
+   t1=ReplacePart[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss],{3,2}->wl[[3,2]]*0.0];
+   tt2=Transpose[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss][[3,2]]];
    t1[[1,2]]+=tt2;
    t1)
 
 
 TiedRegressionLoss1D[wl_,inputs_,targets_]:=
    RegressionLoss1D[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
+
+
+CrossEntropyLoss[parameters_,inputs_,targets_]:=
+   -Total[targets*Log[ForwardPropogation[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogation[inputs,parameters]],2]/Length[inputs]
+
+
+DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=(((1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
+
+
+TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
+   CrossEntropyLoss[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
 
 
 Net7GradTrain:=(
@@ -199,12 +217,30 @@ Net7AdaptTrain:=(
 )
 
 
+NoisyTiedGrad[wl_,inputs_,targets_,lossF_]:=
+   TiedGrad[wl,AddNoise[inputs],targets,lossF];
+
+
 Net7NoiseTrain:=(
    name="ImgEncode\\Net7Noise";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
-   MBGDWithNoise[
+   MiniBatchGradientDescent[
       wl,Fl[[1;;1000]],Fl[[1;;1000]],
-      TiedGrad,TiedRegressionLoss1D,
+      NoisyTiedGrad,TiedRegressionLoss1D,
+        {MaxLoop->500000,
+         ValidationInputs->Fl[[3000;;3200]],
+         ValidationTargets->Fl[[3000;;3200]],         
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         InitialLearningRate->\[Lambda]}];
+)
+
+
+Net8NoiseTrain:=(
+   name="ImgEncode\\Net8Noise";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   MiniBatchGradientDescent[
+      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      NoisyTiedGrad,TiedCrossEntropyLoss,
         {MaxLoop->500000,
          ValidationInputs->Fl[[3000;;3200]],
          ValidationTargets->Fl[[3000;;3200]],         
