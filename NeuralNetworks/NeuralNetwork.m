@@ -105,12 +105,12 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
-BatchGrad[currentParameters_,inputs_,targets_,lossF_]:=
+MemConstrainedGrad[currentParameters_,inputs_,targets_,lossF_]:=
       Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500,500,{+1,+1},{}],Partition[targets,500,500,{+1,+1},{}]}]]
 
-DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets);
-DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets);
-DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets);
+DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
+DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
+DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
 DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs)/Length[outputs];
 
 (*This is implicitly a regression loss function*)
@@ -120,18 +120,37 @@ RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs
 ClassificationLoss[parameters_,inputs_,targets_]:=-Total[Log[Extract[ForwardPropogation[inputs,parameters],Position[targets,1]]]]/Length[inputs];
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
-
+(*
 GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,\[Lambda]_,maxLoop_:2000]:=(
    Print["Iter: ",Dynamic[loop],"Current Loss", Dynamic[loss]];
    For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,PreemptProtect[loss=lossF[wl,inputs,targets];wl=WeightDec[wl,(gw=\[Lambda]*gradientF[wl,inputs,targets,lossF])]]];
    wl );
-
+*)
 LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 (* This is implicitly a lowest line search *)(
    t\[Lambda]=\[Lambda]*1.1; (*Has an optimism bias*)
    While[(loss=objectiveF[t\[Lambda]*v])>current,t\[Lambda]=t\[Lambda]*.5;AbortAssert[t\[Lambda]>10^-30]];
   {t\[Lambda],loss}
 );
+
+GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
+   trainingLoss=-\[Infinity];
+   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   Print[Dynamic[grOutput]];
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
+      trainingLoss=lossF[wl,inputs,targets];
+      If[validationInputs!={},
+         validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      AppendTo[TrainingHistory,trainingLoss];
+      AppendTo[ValidationHistory,validationLoss];
+      gw=gradientF[wl,inputs,targets,lossF];
+      (*{\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];*)
+      wl=WeightDec[wl,\[Lambda]*gw];
+      updateF[];
+   ]);
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
    trainingLoss=-\[Infinity];
@@ -149,6 +168,28 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       gw=gradientF[wl,inputs,targets,lossF];
       {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
       wl=WeightDec[wl,\[Lambda]*gw];
+      updateF[];
+   ]);
+
+
+MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
+   trainingLoss=-\[Infinity];
+   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   Print[Dynamic[grOutput]];
+   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
+      trainingLoss=lossF[wl,inputs,targets];
+      If[validationInputs!={},
+         validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
+      AppendTo[TrainingHistory,trainingLoss];
+      AppendTo[ValidationHistory,validationLoss];
+      MapThread[
+         (
+         gw=gradientF[wl,#1,#2,lossF];
+         wl=WeightDec[wl,\[Lambda]*gw];)&,
+         {Partition[inputs,100],Partition[targets,100]}];
       updateF[];
    ]);
 

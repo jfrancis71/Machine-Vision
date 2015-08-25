@@ -159,8 +159,8 @@ Net6Train:=(
 
 
 TiedGrad[wl_,inputs_,targets_,lossF_]:=(
-   t1=ReplacePart[BatchGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D],{3,2}->Table[0.,{32*32},{100}]];
-   tt2=Transpose[BatchGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D][[3,2]]];
+   t1=ReplacePart[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D],{3,2}->Table[0.,{32*32},{100}]];
+   tt2=Transpose[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D][[3,2]]];
    t1[[1,2]]+=tt2;
    t1)
 
@@ -169,8 +169,20 @@ TiedRegressionLoss1D[wl_,inputs_,targets_]:=
    RegressionLoss1D[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
 
 
-Net7Train:=(
-   name="ImgEncode\\Net7";
+Net7GradTrain:=(
+   name="ImgEncode\\Net7Grad";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   GradientDescent[
+      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      TiedGrad,TiedRegressionLoss1D,
+        {MaxLoop->500000,
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         InitialLearningRate->\[Lambda]}];
+)
+
+
+Net7AdaptTrain:=(
+   name="ImgEncode\\Net7AdaptGrad";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
    AdaptiveGradientDescent[
       wl,Fl[[1;;1000]],Fl[[1;;1000]],
