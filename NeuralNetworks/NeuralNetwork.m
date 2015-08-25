@@ -355,8 +355,12 @@ LayerGrad[Logistic,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Logistic,grad_]:=Logistic;
 
 
+CheckGrad[lossF_,weight_,inputs_,targets_]:=
+   (lossF[WeightDec[wl,-ReplacePart[gw*0.,weight->10^-8]],inputs,targets]-lossF[wl,inputs,targets])/10^-8
+
+
 (* Some Test Helping Code *)
-CheckSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
+CheckDeltaSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
 (* Neuron sensitivity checking code *)
 (* Advise save L levels in SaveL before running to prevent interference *)
  (* levelCheck: This is the sensitivity of the output neurones at this level *)
