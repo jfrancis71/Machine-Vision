@@ -40,5 +40,15 @@ MNISTLinearValidationInputs=TrainingImages[[50001;;60000,5;;24,5;;24]]*1.;
 MNISTLinearValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;60000]]];
 
 
-MNISTLinearTrain:=AdaptiveGradientDescent[MNISTLinearNetwork,MNISTLinearTrainingInputs,MNISTLinearTrainingOutputs,Grad,ClassificationLoss,
-   {MaxLoop->500000,ValidationInputs->MNISTLinearValidationInputs,ValidationTargets->MNISTLinearValidationOutputs}];
+TrainLogistic1:=(
+   name="MNIST\\Logistic1";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,MNISTLinearTrainingInputs,MNISTLinearTrainingOutputs,
+      NNGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         ValidationInputs->MNISTLinearValidationInputs,
+         ValidationTargets->MNISTLinearValidationOutputs,
+         InitialLearningRate->\[Lambda]}];
+)
