@@ -73,8 +73,11 @@ Grad[currentParameters_,inputs_,targets_,lossF_]:=(
       ,{layerIndex,1,Length[currentParameters]}]
 )
 
+(*
+Deprecated: harder than it looks to implement, be careful with normalising sizes and mixing with only half batches
 MemConstrainedGrad[currentParameters_,inputs_,targets_,lossF_]:=
       Total[MapThread[Grad[currentParameters,#1,#2,lossF]&,{Partition[inputs,500,500,{+1,+1},{}],Partition[targets,500,500,{+1,+1},{}]}]]
+*)
 
 DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
