@@ -62,9 +62,9 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
       so it has shape T*U
    targets has shape T*O where O is the number of output units
 *)
-Grad[currentParameters_,inputs_,targets_,lossF_]:=(
+NNGrad[currentParameters_,inputs_,targets_,lossF_]:=(
 
-   AbortAssert[Length[inputs]==Length[targets],"Grad::# of Training Labels should equal # of Training Inputs"];
+   AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
    BackPropogation[currentParameters,inputs,targets,lossF];
 
