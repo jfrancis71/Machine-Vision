@@ -180,12 +180,3 @@ Test1=Table[Random[],{i,1,6},{j,1,6}];
 Assert[Dimensions[StandardiseImage[Test1//Image,36]][[2]]==36];
 
 (TestB=BoxMatrix[1,5]);
-Assert[SobelFilter[TestB,EdgeDir][[2,2]]==0.7853981633974483`]
-Assert[SobelFilter[TestB,EdgeDir][[5,5]]==-2.356194490192345`]
-Assert[SobelFilter[TestB,EdgeDir][[1,5]]==2.356194490192345`]
-
-Assert[SobelFilter[TestB//N,SurfDir][[2,2]]==2.356194490192345`]
-Assert[SobelFilter[TestB//N,SurfDir][[4,4]]==2.356194490192345`]
-Assert[SobelFilter[TestB//N,SurfDir][[3,2]]==1.5707963267948966`]
-Assert[SobelFilter[TestB//N,SurfDir][[2,3]]==0.`]
-Assert[SobelFilter[TestB//N,SurfDir][[4,3]]==0.`]
