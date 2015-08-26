@@ -77,6 +77,7 @@ EdgeDir[dx_,dy_]=ArcTan[dx,dy];
 EdgeDir[0.0,0.0]=0.0;SetAttributes[EdgeDir,Listable];
 
 (* Returns angle in direction of surface, no polarity *)
+SurfDir[0,0]:=0.
 SurfDir[dx_,dy_]:=Mod[ArcTan[dx,dy]+\[Pi]/2//N,\[Pi]]
 SurfDir[0.0,0.0]:=0.0
 
