@@ -9,13 +9,13 @@ Network Architecture: Convolutional Network, see Figure 1 in above paper
 
 They claim 1.7% test result
 
-Our Results: Needs more training (note the training set)
-Iteration: Around 2,000 four days
-Training Loss: .251
-Training Classification: 92.3%
+Our Results: (Training set size, 10,000)
+Iteration: 991, approx 12 hours
+Training Loss: .025
+Training Classification: 99.6%
 
-Validation Loss: .295
-Validation Classification: 90.8%
+Validation Loss: .096
+Validation Classification: 97.2%
 *)
 
 
@@ -56,18 +56,15 @@ MNISTLeNet1ValidationInputs=TrainingImages[[50001;;55000,1;;28,1;;28]]*1.;
 MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;55000]]];
 
 
-wl=MNISTLeNet1;
-TrainingHistory={};
-ValidationHistory={};
-
-
-{TrainingHistory,ValidationHistory,wl}=Import["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\MNIST\\LeNet1H.wdx"];
-(*Export["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\MNIST\\LeNet1.wdx",{TrainingHistory,ValidationHistory,wl}]*)
-
-
- MNISTLeNet1Train:=AdaptiveGradientDescent[
-   wl,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingOutputs,
-   Grad,ClassificationLoss,
-     {MaxLoop->500000,
-      ValidationInputs->MNISTLeNet1ValidationInputs,
-      ValidationTargets->MNISTLeNet1ValidationOutputs}];
+LeNet1Train:=(
+   name="MNIST\\LeNetb//Length1";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingInputs,
+      NNGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         ValidationInputs->MNISTLeNet1ValidationInputs,
+         ValidationTargets->MNISTLeNet1ValidationOutputs,
+         InitialLearningRate->\[Lambda]}];
+)
