@@ -151,6 +151,11 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
 Checkpoint[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
 
 
+GITBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\";
+
+Initialise[className_String,trainName_String,network_,learningRate_:0.001]:=
+   Export[StringJoin[GITBaseDir,className,"\\",trainName,".wdx"],{{},{},network,learningRate}]
+
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
    Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}];)]
