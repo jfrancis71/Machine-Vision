@@ -57,7 +57,7 @@ MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,Trai
 
 
 LeNet1Train:=(
-   name="MNIST\\LeNetb//Length1";
+   name="MNIST\\LeNet1";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
    AdaptiveGradientDescent[
       wl,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingInputs,
