@@ -106,12 +106,12 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 
 GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algo_,options_:{}]:=(
    trainingLoss=-\[Infinity];
-   {validationInputs,validationTargets,maxLoop,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxLoop,UpdateFunction,InitialLearningRate} /.
-      options /. {ValidationInputs->{},ValidationTargets->{},MaxLoop->20000,UpdateFunction->Identity,InitialLearningRate->.001};
-   Print["Iter: ",Dynamic[loop]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
+   {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxEpoch,UpdateFunction,InitialLearningRate} /.
+      options /. {ValidationInputs->{},ValidationTargets->{},MaxEpoch->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   Print["Iter: ",Dynamic[epoch]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    Print[Dynamic[grOutput]];
-   For[wl=initialParameters;loop=1,loop<=maxLoop,loop++,
+   For[wl=initialParameters;epoch=1,epoch<=maxEpoch,epoch++,
       trainingLoss=lossF[wl,inputs,targets];
       If[validationInputs!={},
          validationLoss=lossF[wl,validationInputs,validationTargets],validationLoss=0.0];
@@ -148,7 +148,7 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
          {Partition[inputs,100],Partition[targets,100]}];)&,options];
 
 
-Checkpoint[f_,skip_:10]:=Function[{},If[Mod[loop,skip]==1,f[],0]]
+Checkpoint[f_,skip_:10]:=Function[{},If[Mod[epoch,skip]==1,f[],0]]
 
 
 GITBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\";
@@ -388,7 +388,7 @@ sqNetwork={
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
-sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 (*See Parallel Distributed Processing Volume 1: Foundations, PDP Research Group, page 332 Figure 4*)
@@ -399,35 +399,35 @@ XORNetwork={
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
-XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
-MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss2D,{MaxEoch->500000}];
 
 
 edgeNetwork={Convolve2D[0,Table[Random[],{3},{3}]],Tanh};
 edgeInputs={StandardiseImage["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Dating Photos\\me3.png"]};
 edgeOutputs=ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}];
-edgeTrain:=AdaptiveGradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+edgeTrain:=AdaptiveGradientDescent[edgeNetwork,edgeInputs,edgeOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 edgeFilterBankNetwork={Convolve2DToFilterBank[{Convolve2D[0,Table[Random[],{3},{3}]],Tanh,Convolve2D[0,Table[Random[],{3},{3}]]}],Tanh};
 edgeFilterBankOutputs=ForwardPropogation[edgeInputs,{Convolve2DToFilterBank[{Convolve2D[0,sobelY],Convolve2D[0,sobelX]}],Tanh}];
-edgeFilterBankTrain:=AdaptiveGradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+edgeFilterBankTrain:=AdaptiveGradientDescent[edgeFilterBankNetwork,edgeInputs,edgeFilterBankOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 edgeFilterBankTo2DNetwork={FilterBankTo2D[.3,{.3,.5}],Tanh};
 edgeFilterBankTo2DInputs=edgeFilterBankOutputs;
 edgeFilterBankTo2DOutputs=edgeOutputs;
-edgeFilterBankTo2DTrain:=AdaptiveGradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+edgeFilterBankTo2DTrain:=AdaptiveGradientDescent[edgeFilterBankTo2DNetwork,edgeFilterBankTo2DInputs,edgeFilterBankTo2DOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 Deep1Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep1Inputs=edgeInputs;
 Deep1Outputs=edgeOutputs;
-Deep1Train:=AdaptiveGradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+Deep1Train:=AdaptiveGradientDescent[Deep1Network,Deep1Inputs,Deep1Outputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//MatrixForm,-gw[[1,2,2]]//MatrixForm},-gw[[2,2]]}
 }]
@@ -436,7 +436,7 @@ Deep1Monitor:=Dynamic[{wl[[2,2]],{Show[Deep1Network[[1,1,1,2]]//ColDispImage,Ima
 Deep2Network=Join[edgeFilterBankNetwork,edgeFilterBankTo2DNetwork];
 Deep2Inputs=edgeInputs;
 Deep2Outputs=(ForwardPropogation[edgeInputs,{Convolve2D[0,sobelX]}]+ForwardPropogation[edgeInputs,{Convolve2D[0,sobelY]}])/2;
-Deep2Train:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+Deep2Train:=AdaptiveGradientDescent[Deep2Network,Deep2Inputs,Deep2Outputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 Deep2Monitor:=Dynamic[{{Show[Deep1Network[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[Deep1Network[[1,1,2,2]]//ColDispImage,ImageSize->35]},wl[[2,2]],{Show[wl[[1,1,1,2]]//ColDispImage,ImageSize->35],Show[wl[[1,1,2,2]]//ColDispImage,ImageSize->35]},
 {{-gw[[1,1,2]]//Reverse//MatrixForm,-gw[[1,2,2]]//Reverse//MatrixForm},-gw[[2,2]]}
 }]
@@ -509,7 +509,7 @@ TestConvolveNetwork={
 };
 TestConvolveInputs=edgeInputs/4;
 TestConvolveOutputs=edgeInputs[[All,3;;-3,3;;-3]]/4;
-TestConvolveTrain:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+TestConvolveTrain:=AdaptiveGradientDescent[TestConvolveNetwork,TestConvolveInputs,TestConvolveOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 SeedRandom[1234];
@@ -527,4 +527,4 @@ TestMaxOutputs=Table[.25*Max[
    edgeInputs[[t,y*2-1,x*2-1]],
    edgeInputs[[t,y*2-1,x*2]]]
    ,{t,1,1},{y,1,70},{x,1,63}];
-TestMaxTrain:=AdaptiveGradientDescent[TestMaxNetwork,TestMaxInputs,TestMaxOutputs,Grad,RegressionLoss2D,{MaxLoop->500000}];
+TestMaxTrain:=AdaptiveGradientDescent[TestMaxNetwork,TestMaxInputs,TestMaxOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
