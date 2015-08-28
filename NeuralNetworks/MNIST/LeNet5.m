@@ -6,16 +6,18 @@
 http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
 
 Network Architecture: Convolutional Network, see Figure 2 in above paper
+I think we're missing a final convolutional layer, not sure what it did in original paper
+as layer too small to fit filter.
 
 They claim .9% test result
 
 Our Results:
-Iteration: 
-Training Loss: .
-Training Classification: .%
+Iteration: 421
+Training Loss: .084
+Training Classification: 97.7%
 
-Validation Loss: .
-Validation Classification: .0%
+Validation Loss: .118
+Validation Classification: 96.7%
 *)
 
 
@@ -43,7 +45,7 @@ MNISTLeNet5={
          Partition[Table[Random[],{25}]-.5,5]/25,
          Partition[Table[Random[],{25}]-.5,5]/25,
          Partition[Table[Random[],{25}]-.5,5]}/25],
-      {f,0,15}]
+      {f,1,16}]
    ],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[16,5,5],
@@ -52,19 +54,22 @@ MNISTLeNet5={
 };
 
 
-MNISTLeNet5TrainingInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[1;;500]]*1.];
-MNISTLeNet5TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;500]]];
+MNISTLeNet5TrainingInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[1;;10000]]*1.];
+MNISTLeNet5TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;10000]]];
 
-MNISTLeNet5ValidationInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[501;;600]]*1.];
-MNISTLeNet5ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[501;;600]]];
-
-
-wl=MNISTLeNet5;
+MNISTLeNet5ValidationInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[50001;;55000]]*1.];
+MNISTLeNet5ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;55000]]];
 
 
- MNISTLeNet5Train:=AdaptiveGradientDescent[
-   wl,MNISTLeNet5TrainingInputs,MNISTLeNet5TrainingOutputs,
-   Grad,ClassificationLoss,
-     {MaxLoop->500000,
-      ValidationInputs->MNISTLeNet5ValidationInputs,
-      ValidationTargets->MNISTLeNet5ValidationOutputs}];
+LeNet5Train:=(
+   name="MNIST\\LeNet5";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin[GITBaseDir,name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,MNISTLeNet5TrainingInputs,MNISTLeNet5TrainingOutputs,
+      NNGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         UpdateFunction->CheckpointWebMonitor[name,5],
+         ValidationInputs->MNISTLeNet5ValidationInputs,
+         ValidationTargets->MNISTLeNet5ValidationOutputs,
+         InitialLearningRate->\[Lambda]}];
+)

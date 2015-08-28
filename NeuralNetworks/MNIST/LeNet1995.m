@@ -10,13 +10,13 @@ Network Architecture: Large Fully Connected Multi-Layer Neural Network
 
 They claim 1.6% test result
 
-Our Results:    NEEDS MORE TRAINING!!!
-Iteration: 66
-Training Loss: .638
-Training Classification: 81.1%
+Our Results:
+Iteration: 3201
+Training Loss: .010
+Training Classification: 99.9%
 
-Validation Loss: .597
-Validation Classification: 83.0%
+Validation Loss: .090
+Validation Classification: 97.3%
 *)
 
 
@@ -40,9 +40,15 @@ MNISTLeNet95ValidationInputs=TrainingImages[[50001;;60000,5;;24,5;;24]]*1.;
 MNISTLeNet95ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;60000]]];
 
 
- MNISTLeNet95Train:=AdaptiveGradientDescent[
-   MNISTLeNet95Network,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
-   Grad,ClassificationLoss,
-     {MaxLoop->500000,
-      ValidationInputs->MNISTLeNet95ValidationInputs,
-      ValidationTargets->MNISTLeNet95ValidationOutputs}];
+ LeNet95Train:=(
+   name="MNIST\\LeNet95";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin[GITBaseDir,name,".wdx"]];
+   AdaptiveGradientDescent[
+      wl,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
+      NNGrad,ClassificationLoss,
+        {MaxLoop->500000,
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         ValidationInputs->MNISTLeNet95ValidationInputs,
+         ValidationTargets->MNISTLeNet95ValidationOutputs,
+         InitialLearningRate->\[Lambda]}];
+)
