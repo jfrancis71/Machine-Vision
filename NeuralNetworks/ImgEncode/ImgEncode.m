@@ -6,10 +6,16 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/CIFAR10/CIFAR10Data.m"
 
 
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/MNIST/MNISTData.m"
+
+
 Images=Sqrt[Map[Reverse[Apply[Plus,#^2]]&,ColTrainingImages[[1;;4000]]]]/3.;
 
 
 SparseRandom[]:=If[Random[]>.995,Random[],Random[]/1000]
+
+
+MNIST=Map[Flatten,TrainingImages]*1.;
 
 
 SeedRandom[1234];
@@ -55,11 +61,17 @@ Net7={
 };
 
 Net8={
-   FullyConnected1DTo1D[Table[0.,{500}],Table[(Random[]-.5)*4*Sqrt[6/(32*32+500)],{500},{32*32}]],
+   FullyConnected1DTo1D[Table[0.5,{500}],Table[(Random[]-.5)*4*Sqrt[6/(28*28+500)],{500},{28*28}]],
    Logistic,
-   FullyConnected1DTo1D[Table[0.,{32*32}],Table[0.,{32*32},{500}]],
+   FullyConnected1DTo1D[Table[0.,{28*28}],Table[0.,{28*28},{500}]],
    Logistic
 };
+
+Net9={
+   FullyConnected1DTo1D[Table[0.,{500}],Table[(Random[]-.5)*4*Sqrt[6/(32*32+500)],{500},{32*32}]],
+   FullyConnected1DTo1D[Table[0.,{32*32}],Table[0.,{32*32},{500}]],
+};
+
 
 
 wl=Net2;
@@ -172,10 +184,12 @@ Net6Train:=(
 
 
 TiedGrad[wl_,inputs_,targets_,lossF_]:=(
-   t1=ReplacePart[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss],{3,2}->wl[[3,2]]*0.0];
-   tt2=Transpose[MemConstrainedGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss][[3,2]]];
-   t1[[1,2]]+=tt2;
-   t1)
+   t1=ReplacePart[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss],{3,2}->wl[[3,2]]*0.0];
+   t2=Transpose[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss][[3,2]]];
+   t3=t1;
+   t4=t3;
+   t4[[1,2]]+=t2;
+   t4)
 
 
 TiedRegressionLoss1D[wl_,inputs_,targets_]:=
@@ -186,7 +200,7 @@ CrossEntropyLoss[parameters_,inputs_,targets_]:=
    -Total[targets*Log[ForwardPropogation[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogation[inputs,parameters]],2]/Length[inputs]
 
 
-DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=(((1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
+DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
 
 
 TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
@@ -235,12 +249,53 @@ Net7NoiseTrain:=(
 )
 
 
+Net8Train:=(
+   name="ImgEncode\\Net8";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   MiniBatchGradientDescent[
+      wl,MNIST[[1;;50000]],MNIST[[1;;50000]],
+      TiedGrad,TiedCrossEntropyLoss,
+        {MaxLoop->500000,
+         ValidationInputs->MNIST[[53000;;53200]],
+         ValidationTargets->MNIST[[53000;;53200]],         
+         UpdateFunction->WebMonitor[name],
+         InitialLearningRate->\[Lambda]}];
+)
+
+
+
 Net8NoiseTrain:=(
    name="ImgEncode\\Net8Noise";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
    MiniBatchGradientDescent[
-      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      wl,MNIST[[1;;50000]],MNIST[[1;;50000]],
       NoisyTiedGrad,TiedCrossEntropyLoss,
+        {MaxEpoch->500000,
+         ValidationInputs->MNIST[[53000;;53200]],
+         ValidationTargets->MNIST[[53000;;53200]],         
+         UpdateFunction->CheckpointWebMonitor[name,5],
+         InitialLearningRate->\[Lambda]}];
+)
+
+Net9Train:=(
+   name="ImgEncode\\Net9";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   MiniBatchGradientDescent[
+      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      TiedGrad,TiedCrossEntropyLoss,
+        {MaxLoop->500000,
+         ValidationInputs->Fl[[3000;;3200]],
+         ValidationTargets->Fl[[3000;;3200]],         
+         UpdateFunction->CheckpointWebMonitor[name,100],
+         InitialLearningRate->\[Lambda]}];
+)
+
+Net9NoiseTrain:=(
+   name="ImgEncode\\Net9Noise";
+   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
+   MiniBatchGradientDescent[
+      wl,Fl[[1;;1000]],Fl[[1;;1000]],
+      TiedGrad,TiedCrossEntropyLoss,
         {MaxLoop->500000,
          ValidationInputs->Fl[[3000;;3200]],
          ValidationTargets->Fl[[3000;;3200]],         
