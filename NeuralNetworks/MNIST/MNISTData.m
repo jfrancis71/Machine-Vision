@@ -1,5 +1,12 @@
 (* ::Package:: *)
 
+(*
+   Loads data for the famous MNIST dataset.
+
+   Ref: http://yann.lecun.com/exdb/mnist/
+*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
@@ -20,14 +27,6 @@ TestImages = ReadMINSTImageFile["C:\\Users\\Julian\\ImageDataSetsPublic\\MNIST\\
 
 TrainingLabels = ReadMINSTLabelFile["C:\\Users\\Julian\\ImageDataSetsPublic\\MNIST\\train-labels-idx1-ubyte"];
 TestLabels = ReadMINSTLabelFile["C:\\Users\\Julian\\ImageDataSetsPublic\\MNIST\\t10k-labels-idx1-ubyte"];
-
-
-pos=Position[TrainingLabels,2|3];
-r1=RandomReal[{0,1},8]-.5;
-MN1Network={Adaptor2DTo1D[28],FullyConnected1DTo1D[{0},{r1}/7840.]};
-MN1Inputs=Extract[TrainingImages,pos]-0.0;
-MN1Outputs=Extract[TrainingLabels,pos]-2.0;
-MN1Trained:=AdaptiveGradientDescent[MN1Network,MN1Inputs,MN1Outputs,Grad,Loss1D,500000];
 
 
 (*func is a function which takes an array of size*size and

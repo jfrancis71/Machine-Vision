@@ -32,7 +32,7 @@ picVector=Map[Rest,reorder];
 
 
 TrainingImages=Table[((Partition[Sqrt[Total[Partition[picVector[[l]],1024]^2]],32]//Reverse)//N)/443,
-{l,1,4500}];
+{l,1,10000}];
 
 
 TrainingLabels=labels[[1;;4500]];
@@ -45,7 +45,7 @@ ValidationImages=Table[((Partition[Sqrt[Total[Partition[picVector[[l]],1024]^2]]
 ValidationLabels=labels[[4501;;5000]];
 
 
-ColTrainingImages=Table[Map[Partition[#,32]&,Partition[picVector[[l]],1024]]/256.,{l,1,4500}];
+ColTrainingImages=Table[Map[Partition[#,32]&,Partition[picVector[[l]],1024]]/256.,{l,1,10000}];
 
 
 ColValidationImages=Table[Map[Partition[#,32]&,Partition[picVector[[l]],1024]]/256.,{l,4501,5000}];
