@@ -28,30 +28,6 @@ Net1={
 };
 
 
-TiedGrad[wl_,inputs_,targets_,lossF_]:=(
-   t1=ReplacePart[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss],{3,2}->wl[[3,2]]*0.0];
-   t2=Transpose[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss][[3,2]]];
-   t3=t1;
-   t4=t3;
-   t4[[1,2]]+=t2;
-   t4)
-
-
-TiedRegressionLoss1D[wl_,inputs_,targets_]:=
-   RegressionLoss1D[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
-CrossEntropyLoss[parameters_,inputs_,targets_]:=
-   -Total[targets*Log[ForwardPropogation[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogation[inputs,parameters]],2]/Length[inputs]
-
-
-DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
-
-
-TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
-   CrossEntropyLoss[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
 NetDeNoiseTrain:=(
    name="ImgEncode\\DeNoiseAutoencoder";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];

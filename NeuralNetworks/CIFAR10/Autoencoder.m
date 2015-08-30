@@ -33,30 +33,6 @@ Images=.2*ColTrainingImages[[All,1]]+.73*ColTrainingImages[[All,2]]+.07*ColTrain
 Fl=Map[Flatten,Images];
 
 
-TiedGrad[wl_,inputs_,targets_,lossF_]:=(
-   t1=ReplacePart[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D],{3,2}->wl[[3,2]]*0.0];
-   t2=Transpose[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,RegressionLoss1D][[3,2]]];
-   t3=t1;
-   t4=t3;
-   t4[[1,2]]+=t2;
-   t4)
-
-
-CrossEntropyLoss[parameters_,inputs_,targets_]:=
-   -Total[targets*Log[ForwardPropogation[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogation[inputs,parameters]],2]/Length[inputs]
-
-
-DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
-
-
-TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
-   CrossEntropyLoss[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
-TiedRegressionLoss1D[wl_,inputs_,targets_]:=
-   RegressionLoss1D[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
 (* Produced Autoencoder.wdx *)  
 Train:=MiniBatchGradientDescent[
       wl,Fl[[1;;10000]],Fl[[1;;10000]],
