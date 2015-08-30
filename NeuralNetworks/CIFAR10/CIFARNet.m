@@ -52,16 +52,16 @@ CIFARNet1={
    MaxPoolingFilterBankToFilterBank,
    ConvolveFilterBankToFilterBank[Table[
       ConvolveFilterBankTo2D[0,
-         Table[Random[],{32},{5},{5}]/(32*5*5)],
+         (Table[Random[],{32},{5},{5}]-.5)/(32*5*5)],
       {f,1,32}]],Tanh,
    Adaptor3DTo1D[32,10,10],
-   FullyConnected1DTo1D[Table[Random[],{10}],Table[Random[]-.5,{10},{32*10*10}]],
+   FullyConnected1DTo1D[Table[.0,{10}],Table[Random[]-.5,{10},{32*10*10}]],
    Softmax
 };
 
 
 CIFAR10NetTrainingInputs=ColTrainingImages[[1;;4000]]*1.;
-CIFAR10NetTrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;4000]]];
+CIFAR10NetTrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels];
 
 CIFAR10NetValidationInputs=ColValidationImages[[All]]*1.;
 CIFAR10NetValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
@@ -122,6 +122,16 @@ CIFAR10Net1Sz1KTrain:=(
          UpdateFunction->WebMonitor[name],
          InitialLearningRate->\[Lambda]}];
 )
+
+
+TrainNet1MB:=MiniBatchGradientDescent[
+      wl,ColTrainingImages,CIFAR10NetTrainingOutputs,
+      NNGrad,ClassificationLoss,
+        {MaxEpoch->500000,
+         ValidationInputs->ColValidationImages[[1;;500]],
+         ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],         
+         UpdateFunction->WebMonitor["CIFAR10\\Net1MB"],
+         InitialLearningRate->\[Lambda]}];
 
 
 CIFAR10Output[probs_]:=BarChart[probs[[Reverse[Ordering[probs,-3]]]],ChartLabels->WordLabels[[Reverse[Ordering[probs,-3]]]]];
