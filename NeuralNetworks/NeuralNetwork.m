@@ -100,8 +100,8 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 );
 
 GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,options_:{}]:=(
-   trainingLoss=-\[Infinity];
-   validationLoss=-\[Infinity];
+   trainingLoss=\[Infinity];
+   validationLoss=\[Infinity];
    {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxEpoch,UpdateFunction,InitialLearningRate} /.
       options /. {ValidationInputs->{},ValidationTargets->{},MaxEpoch->20000,UpdateFunction->Identity,InitialLearningRate->.001};
    Print["Epoch: ",Dynamic[epoch]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
@@ -164,6 +164,10 @@ GITBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks
 
 Initialise[className_String,trainName_String,network_,learningRate_:0.001]:=
    Export[StringJoin[GITBaseDir,className,"\\",trainName,".wdx"],{{},{},network,learningRate}]
+
+ReadNN[className_String,trainName_String]:=
+   ({TrainingHistory,ValidationHistory,wl,\[Lambda]}=
+      Import[GITBaseDir<>className<>"\\"<>trainName<>".wdx"];);
 
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
