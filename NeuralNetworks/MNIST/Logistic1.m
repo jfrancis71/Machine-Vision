@@ -31,7 +31,7 @@ We may have slightly overtrained at around iteration 600 onwards.
 SeedRandom[1234];
 MNISTLinearNetwork={
    Adaptor2DTo1D[20],
-   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{4000}]/4000.,400]],
+   FullyConnected1DTo1DInit[400,10],
    Softmax};
 
 

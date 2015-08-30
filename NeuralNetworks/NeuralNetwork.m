@@ -231,6 +231,9 @@ LayerForwardPropogation[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]
 Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=postLayerDeltaA.weights
 LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[Transpose[layerOutputDelta],{2}],Transpose[layerOutputDelta].layerInputs};
 WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
+(* For below justification, see http://arxiv.org/pdf/1206.5533v2.pdf page 15 *)
+FullyConnected1DTo1DInit[noFromNeurons_,noToNeurones_]:=
+   FullyConnected1DTo1D[ConstantArray[0.,noToNeurones],Table[Random[]-.5,{noToNeurones},{noFromNeurons}]/Sqrt[noFromNeurons]]
 
 (*Convolve2DLayer*)
 (*
