@@ -31,12 +31,6 @@ Images=.2*ColTrainingImages[[All,1]]+.73*ColTrainingImages[[All,2]]+.07*ColTrain
 Fl=Map[Flatten,Images];
 
 
-AddNoise[inputs_]:=(
-   tmp1=UnitStep[RandomReal[{0,1},inputs//Dimensions]-.667];
-   (inputs*(1-tmp1)+tmp1*RandomReal[{0,1},inputs//Dimensions])
-)
-
-
 TiedGrad[wl_,inputs_,targets_,lossF_]:=(
    t1=ReplacePart[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss],{3,2}->wl[[3,2]]*0.0];
    t2=Transpose[NNGrad[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets,CrossEntropyLoss][[3,2]]];
@@ -59,10 +53,6 @@ TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
 
 TiedRegressionLoss1D[wl_,inputs_,targets_]:=
    RegressionLoss1D[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
-NoisyTiedGrad[wl_,inputs_,targets_,lossF_]:=
-   TiedGrad[wl,AddNoise[inputs],targets,lossF];
 
 
 (* Produced Autoencoder.wdx *)  

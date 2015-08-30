@@ -9,7 +9,7 @@
 *)
 
 
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/Autoencoder.m"
 
 
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/MNIST/MNISTData.m"
@@ -26,12 +26,6 @@ Net1={
    FullyConnected1DTo1D[Table[0.,{28*28}],Table[0.,{28*28},{500}]],
    Logistic
 };
-
-
-AddNoise[inputs_]:=(
-   tmp1=UnitStep[RandomReal[{0,1},inputs//Dimensions]-.667];
-   (inputs*(1-tmp1)+tmp1*RandomReal[{0,1},inputs//Dimensions])
-)
 
 
 TiedGrad[wl_,inputs_,targets_,lossF_]:=(
@@ -56,10 +50,6 @@ DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (t
 
 TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
    CrossEntropyLoss[ReplacePart[wl,{3,2}->Transpose[wl[[1,2]]]],inputs,targets]
-
-
-NoisyTiedGrad[wl_,inputs_,targets_,lossF_]:=
-   TiedGrad[wl,AddNoise[inputs],targets,lossF];
 
 
 NetDeNoiseTrain:=(
