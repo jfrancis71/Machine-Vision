@@ -166,8 +166,8 @@ Initialise[className_String,trainName_String,network_,learningRate_:0.001]:=
    Export[StringJoin[GITBaseDir,className,"\\",trainName,".wdx"],{{},{},network,learningRate}]
 
 ReadNN[className_String,trainName_String]:=
-   ({TrainingHistory,ValidationHistory,wl,\[Lambda]}=
-      Import[GITBaseDir<>className<>"\\"<>trainName<>".wdx"];);
+   (({TrainingHistory,ValidationHistory,wl,\[Lambda]}=
+      Import[GITBaseDir<>className<>"\\"<>trainName<>".wdx"]););
 
 (* Note this is quite funky, still needs some modularity thought *)
 Persist[filename_]:=Function[{},(
