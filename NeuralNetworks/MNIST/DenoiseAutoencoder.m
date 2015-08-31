@@ -29,7 +29,7 @@ Net1={
 
 
 NetDeNoiseTrain:=(
-   name="ImgEncode\\DeNoiseAutoencoder";
+   name="MNIST\\DeNoiseAutoencoder";
    {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
    MiniBatchGradientDescent[
       wl,MNIST[[1;;50000]],MNIST[[1;;50000]],
