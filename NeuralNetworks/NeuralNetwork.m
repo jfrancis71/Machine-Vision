@@ -174,9 +174,14 @@ Persist[filename_]:=Function[{},(
    Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}];)]
 
 
+ScreenMonitor[]:=(grOutput=ListPlot[
+   If[ValidationHistory=={},TrainingHistory,{TrainingHistory,ValidationHistory}]
+   ,PlotRange->All,PlotStyle->{Blue,Green}])
+
+
 WebMonitor[name_]:=Function[{},(
    Export[StringJoin["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\",name,".jpg"],
-      Rasterize[{Text[trainingLoss],Text[validationLoss],grOutput=ListPlot[{TrainingHistory,ValidationHistory},PlotRange->All,PlotStyle->{Blue,Green}]},ImageSize->800,RasterSize->1000]];
+      Rasterize[{Text[trainingLoss],Text[validationLoss],ScreenMonitor[]},ImageSize->800,RasterSize->1000]];
    Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
 
 
