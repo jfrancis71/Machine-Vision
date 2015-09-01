@@ -15,24 +15,21 @@ AbortAssert[bool_,message_]:=
    so weight is a matrix where each row is the weight vector
    for one particular unit
 *)
-ForwardPropogation[inputs_,network_]:=(
-   L[0] = inputs;
+ForwardPropogateLayers[inputs_,network_]:=
+(* We don't include the inputs *)
+   Rest[FoldList[LayerForwardPropogation,inputs,network]]
 
-   Module[{layerIndex=1},
-      For[layerIndex=1,layerIndex<=Length[network],layerIndex++,
-         L[layerIndex]=LayerForwardPropogation[L[layerIndex-1],network[[layerIndex]]];
-      ];
-      L[layerIndex-1]]
-)
+ForwardPropogate[inputs_,network_]:=
+   ForwardPropogateLayers[inputs,network][[-1]]
 
 BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
 
-   ForwardPropogation[inputs, currentParameters];
+   L = ForwardPropogateLayers[inputs, currentParameters];
    networkLayers=Length[currentParameters];
 
-   AbortAssert[Dimensions[L[networkLayers]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
+   AbortAssert[Dimensions[L[[networkLayers]]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
 
-   DeltaL[networkLayers]=DeltaLoss[lossF,L[networkLayers],targets];
+   DeltaL[networkLayers]=DeltaLoss[lossF,L[[networkLayers]],targets];
 
    For[layerIndex=networkLayers,layerIndex>1,layerIndex--,
 (* layerIndex refers to layer being back propogated across
@@ -40,15 +37,15 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
 
       Which[
          MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],L[layerIndex],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Softmax],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Tanh],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Logistic],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],ReLU],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          True,
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
@@ -68,9 +65,12 @@ NNGrad[currentParameters_,inputs_,targets_,lossF_]:=(
 
    BackPropogation[currentParameters,inputs,targets,lossF];
 
-   Table[
-      LayerGrad[currentParameters[[layerIndex]],L[layerIndex-1],DeltaL[layerIndex]]
-      ,{layerIndex,1,Length[currentParameters]}]
+   Prepend[
+      Table[
+         LayerGrad[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]
+         ,{layerIndex,2,Length[currentParameters]}],
+      LayerGrad[currentParameters[[1]],inputs,DeltaL[1]]
+   ]
 )
 
 (*
@@ -85,10 +85,10 @@ DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outp
 DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs)/Length[outputs];
 
 (*This is implicitly a regression loss function*)
-RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogation[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
-RegressionLoss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,3]/Length[inputs];
-RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogation[inputs,parameters]-targets)^2,4]/Length[inputs];
-ClassificationLoss[parameters_,inputs_,targets_]:=-Total[Log[Extract[ForwardPropogation[inputs,parameters],Position[targets,1]]]]/Length[inputs];
+RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogate[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
+RegressionLoss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogate[inputs,parameters]-targets)^2,3]/Length[inputs];
+RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogate[inputs,parameters]-targets)^2,4]/Length[inputs];
+ClassificationLoss[parameters_,inputs_,targets_]:=-Total[Log[Extract[ForwardPropogate[inputs,parameters],Position[targets,1]]]]/Length[inputs];
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 
@@ -186,7 +186,7 @@ CheckpointWebMonitor[name_,skip_:10]:=Checkpoint[WebMonitor[name],skip]
 (*Assuming a 1 of n target representation*)
 ClassificationPerformance[network_,inputs_,targets_]:=
    Module[{proc},
-   proc=ForwardPropogation[inputs,network];
+   proc=ForwardPropogate[inputs,network];
    Mean[Boole[Table[Position[proc[[t]],Max[proc[[t]]]]==Position[targets[[t]],Max[targets[[t]]]],{t,1,Length[inputs]}]]]//N
 ];
 

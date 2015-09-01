@@ -10,7 +10,7 @@ sqNetwork={
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
-sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
+sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,NNGrad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 (*See Parallel Distributed Processing Volume 1: Foundations, PDP Research Group, page 332 Figure 4*)
@@ -21,9 +21,9 @@ XORNetwork={
 };
 XORInputs={{0,0},{0,1},{1,0},{1,1}};XORInputs//MatrixForm;
 XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
-XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,Grad,RegressionLoss2D,{MaxEpoch->500000}];
+XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,NNGrad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
-MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,Grad,RegressionLoss2D,{MaxEoch->500000}];
+MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,NNGrad,RegressionLoss2D,{MaxEoch->500000}];
