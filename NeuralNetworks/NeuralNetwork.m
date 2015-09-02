@@ -212,6 +212,7 @@ Softmax - Softmax layer, no weights
 Tanh - Simple 1<->1 Non linear layer
 ReLU - Rectified Linear Unit layer
 Logistic - Logistic Activation layer
+PadFilterBank - Padding for filter banks
 *)
 
 
@@ -323,6 +324,11 @@ Backprop[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
 LayerGrad[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
    Table[{Total[layerOutputDelta[[All,filterOutputIndex]],3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterOutputIndex]],layerInputs[[All,l]]}]],{l,1,Length[layerInputs[[1]]]}]},{filterOutputIndex,1,Length[filters]}]
 WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]];
+ConvolveFilterBankToFilterBankInit[noOldFilterBank_,noNewFilterBank_,filterSize_]:=
+   ConvolveFilterBankToFilterBank[
+      Table[ConvolveFilterBankTo2D[0.,
+            Table[Random[]-.5,{noOldFilterBank},{filterSize},{filterSize}]/Sqrt[noOldFilterBank*filterSize*filterSize]],
+         {noNewFilterBank}]]
 
 (*MaxPoolingFilterBankToFilterBank*)
 SyntaxInformation[MaxPoolingFilterBankToFilterBank]={"ArgumentsPattern"->{}};
@@ -382,6 +388,14 @@ Backprop[Logistic,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*Exp[inputs]*(1+Exp[inputs])^-2;
 LayerGrad[Logistic,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Logistic,grad_]:=Logistic;
+
+(*PadFilterBank*)
+SyntaxInformation[PadFilterBank]={"ArgumentsPattern"->{_}};
+LayerForwardPropogation[inputs_,PadFilterBank[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs,{2}]
+Backprop[PadFilterBank[padding_],postLayerDeltaA_]:=
+   postLayerDeltaA[[All,All,padding+1;;-padding-1,padding+1;;-padding-1]];
+LayerGrad[PadFilterBank,layerInputs_,layerOutputDelta_]:={};
+WeightDec[PadFilterBank[padding_],grad_]:=PadFilterBank[padding];
 
 
 CheckGrad[lossF_,weight_,inputs_,targets_]:=
