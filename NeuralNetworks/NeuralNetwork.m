@@ -160,32 +160,35 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
 Checkpoint[f_,skip_:10]:=Function[{},If[Mod[epoch,skip]==1,f[],0]]
 
 
-GITBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\";
+NNBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\";
+NNBaseDir="C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\";
 
-Initialise[className_String,trainName_String,network_,learningRate_:0.001]:=
-   Export[StringJoin[GITBaseDir,className,"\\",trainName,".wdx"],{{},{},network,learningRate}]
+(* Note learning rate .01 reference: http://arxiv.org/pdf/1206.5533v2.pdf, page 9 *)
+NNInitialise[resourceName_,network_,learningRate_:0.01]:=
+   Export[NNBaseDir<>resourceName<>".wdx",{{},{},network,learningRate}]
 
-ReadNN[className_String,trainName_String]:=
+NNRead[resourceName_String]:=
    (({TrainingHistory,ValidationHistory,wl,\[Lambda]}=
-      Import[GITBaseDir<>className<>"\\"<>trainName<>".wdx"]););
+      Import[NNBaseDir<>resourceName<>".wdx"]););
 
-(* Note this is quite funky, still needs some modularity thought *)
-Persist[filename_]:=Function[{},(
-   Export[filename,{TrainingHistory,ValidationHistory,wl,\[Lambda]}];)]
+NNWrite[resourceName_String]:=
+      Export[NNBaseDir<>resourceName<>".wdx",{TrainingHistory,ValidationHistory,wl,\[Lambda]}];
 
+(* Note Following functions either take no args, or return a function that takes no args
+   so they can be used as update functions for example *)
+Persist[resourceName_String]:=Function[{},
+   NNWrite[resourceName]];
 
-ScreenMonitor[]:=(grOutput=ListPlot[
-   If[ValidationHistory=={},TrainingHistory,{TrainingHistory,ValidationHistory}]
-   ,PlotRange->All,PlotStyle->{Blue,Green}])
+ScreenMonitor[]:=(grOutput=
+   ListPlot[
+      If[ValidationHistory=={},TrainingHistory,{TrainingHistory,ValidationHistory}],
+      PlotRange->All,PlotStyle->{Blue,Green}]);
 
+WebMonitor[resourceName_]:=Function[{},
+   Export[StringJoin[NNBaseDir,resourceName,".jpg"],
+      Rasterize[{Text[trainingLoss],Text[validationLoss],ScreenMonitor[]},ImageSize->800,RasterSize->1000]];];
 
-WebMonitor[name_]:=Function[{},(
-   Export[StringJoin["C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\",name,".jpg"],
-      Rasterize[{Text[trainingLoss],Text[validationLoss],ScreenMonitor[]},ImageSize->800,RasterSize->1000]];
-   Persist[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]][];)]
-
-
-CheckpointWebMonitor[name_,skip_:10]:=Checkpoint[WebMonitor[name],skip]
+NNCheckpoint[resourceName_]:=Function[{},(WebMonitor[resourceName];Persist[resourceName])];
 
 
 (*Assuming a 1 of n target representation*)
