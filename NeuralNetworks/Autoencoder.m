@@ -32,7 +32,7 @@ TiedGrad[wl_,inputs_,targets_,lossF_]:=(
 
 
 CrossEntropyLoss[parameters_,inputs_,targets_]:=
-   -Total[targets*Log[ForwardPropogation[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogation[inputs,parameters]],2]/Length[inputs]
+   -Total[targets*Log[ForwardPropogate[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogate[inputs,parameters]],2]/Length[inputs]
 
 
 DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
@@ -44,3 +44,28 @@ TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
 
 TiedRegressionLoss1D[wl_,inputs_,targets_]:=
    RegressionLoss1D[TieNet[wl],inputs,targets]
+
+
+TieLoss[CrossEntropyLoss]:=TiedCrossEntropyLoss
+
+
+TieLoss[RegressionLoss1D]:=TiedRegressionLoss1D
+
+
+TieLoss[_]:=AbortAssert[0,"TieLoss: Unrecognised loss function"];
+
+
+TrainAutoencoder[in_Integer,out_Integer,data_,lossF_]:=(
+   SeedRandom[1234];
+   net={
+      FullyConnected1DTo1DInit[in,out],
+      Logistic,
+      FullyConnected1DTo1DInit[out,in],
+      Logistic};
+   MiniBatchGradientDescent[
+      net,data,data,
+      NoisyTiedGrad,TieLoss[lossF],
+        {MaxEpoch->50,
+        UpdateFunction->ScreenMonitor,
+         InitialLearningRate->.1}];
+   {wl[[1;;2]],TieNet[wl][[3;;4]]})
