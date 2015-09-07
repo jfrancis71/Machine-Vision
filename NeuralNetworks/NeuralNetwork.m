@@ -181,7 +181,7 @@ Persist[resourceName_String]:=Function[{},
 
 ScreenMonitor[]:=(grOutput=
    ListPlot[
-      If[ValidationHistory=={},TrainingHistory,{TrainingHistory,ValidationHistory}],
+      If[!MatchQ[ValidationHistory,_List],TrainingHistory,{TrainingHistory,ValidationHistory}],
       PlotRange->All,PlotStyle->{Blue,Green}]);
 
 WebMonitor[resourceName_]:=Function[{},
