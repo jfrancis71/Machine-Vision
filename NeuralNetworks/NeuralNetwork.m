@@ -22,7 +22,9 @@ ForwardPropogateLayers[inputs_,network_]:=
 ForwardPropogate[inputs_,network_]:=
    ForwardPropogateLayers[inputs,network][[-1]]
 
-BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
+BackPropogation[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
+
+   xL1A = L1A /. options /. {L1A->.0};
 
    L = ForwardPropogateLayers[inputs, currentParameters];
    networkLayers=Length[currentParameters];
@@ -50,6 +52,8 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
 
+      AbortAssert[Dimensions[DeltaL[layerIndex-1]]==Dimensions[L[[layerIndex-1]]]];
+      DeltaL[layerIndex-1]+=Sign[L[[layerIndex-1]]]*xL1A;
    ];
 )
 
@@ -59,11 +63,11 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_]:=(
       so it has shape T*U
    targets has shape T*O where O is the number of output units
 *)
-NNGrad[currentParameters_,inputs_,targets_,lossF_]:=(
+NNGrad[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
 
    AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
-   BackPropogation[currentParameters,inputs,targets,lossF];
+   BackPropogation[currentParameters,inputs,targets,lossF,options];
 
    Prepend[
       Table[
@@ -127,7 +131,7 @@ GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{
 
 AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
-      (  gw=gradientF[wl,inputs,targets,lossF];
+      (  gw=gradientF[wl,inputs,targets,lossF,options];
          {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
          wl=WeightDec[wl,\[Lambda]*gw];
          trainingLoss=lossF[wl,inputs,targets];)&,
@@ -149,7 +153,7 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
          MapThread[
             (
             batch++;
-            gw=gradientF[wl,#1,#2,lossF];
+            gw=gradientF[wl,#1,#2,lossF,options];
             wl=WeightDec[wl,\[Lambda]*gw];
             AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
          {Partition[inputs,100],Partition[targets,100]}];
