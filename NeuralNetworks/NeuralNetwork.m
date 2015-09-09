@@ -421,3 +421,8 @@ CheckDeltaSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
       ClassificationLoss[wl[[levelCheck+1;;-1]],SaveL[levelCheck],targets]),
    Extract[DeltaL[levelCheck],cellCheck]
 }
+
+
+Size[net_,input_]:=(
+   Print["# of Parameters ",Level[wl,{-1}]//Length]; (*Slightly approx due to symbol vs function ie overcount Tanh etc *)
+   Print["# of Neurons ",ForwardPropogateLayers[{input},wl]//Flatten//Length];)
