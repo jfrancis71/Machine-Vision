@@ -42,3 +42,9 @@ ValidationLabels=CIFARReadFile["c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10
 
 
 ColValidationImages=CIFARReadFile["c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_5.bin"][[2]];
+
+
+CIFAR10Output[probs_]:=BarChart[probs[[Reverse[Ordering[probs,-3]]]],ChartLabels->WordLabels[[Reverse[Ordering[probs,-3]]]]];
+
+
+CIFAR10Outputs[net_,pics_]:=MapThread[{Image[#2,Interleaving->False],CIFAR10Output[#1]}&,{ForwardPropogate[pics,net],pics}];
