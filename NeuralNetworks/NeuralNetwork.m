@@ -192,7 +192,7 @@ WebMonitor[resourceName_]:=Function[{},
    Export[StringJoin[NNBaseDir,resourceName,".jpg"],
       Rasterize[{Text[trainingLoss],Text[validationLoss],ScreenMonitor[]},ImageSize->800,RasterSize->1000]];];
 
-NNCheckpoint[resourceName_]:=Function[{},(WebMonitor[resourceName];Persist[resourceName])];
+NNCheckpoint[resourceName_]:=Function[{},(WebMonitor[resourceName][];Persist[resourceName][])];
 
 
 (*Assuming a 1 of n target representation*)
