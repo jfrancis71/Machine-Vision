@@ -137,14 +137,6 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
          trainingLoss=lossF[wl,inputs,targets];)&,
       options];
 
-(*
-AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
-   GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
-      (gw=gradientF[wl,inputs,targets,lossF];
-      {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},Function[g,lossF[WeightDec[wl,g],inputs,targets]]];
-      wl=WeightDec[wl,\[Lambda]*gw];)&,options];
-   trainingLoss=lossF[wl,inputs,targets];)*)
-
 
 MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
    Print["Batch #:", Dynamic[batch], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
