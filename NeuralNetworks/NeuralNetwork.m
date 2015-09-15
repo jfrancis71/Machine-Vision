@@ -220,6 +220,7 @@ Tanh - Simple 1<->1 Non linear layer
 ReLU - Rectified Linear Unit layer
 Logistic - Logistic Activation layer
 PadFilterBank - Padding for filter banks
+RNorm - Local contrast normalisation layer
 *)
 
 
@@ -404,12 +405,19 @@ Backprop[PadFilterBank[padding_],postLayerDeltaA_]:=
 LayerGrad[PadFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilterBank[padding_],grad_]:=PadFilterBank[padding];
 
-
-CheckGrad[lossF_,weight_,inputs_,targets_]:=
-   (lossF[WeightDec[wl,-ReplacePart[gw*0.,weight->10^-8]],inputs,targets]-lossF[wl,inputs,targets])/10^-8
+(* Ref: https://code.google.com/p/cuda-convnet/wiki/LayerParams# Local_response _normalization _layer _(same_map) *)
+SyntaxInformation[RNorm]={"ArgumentsPattern"->{}};
+RNorm\[Beta]=.00005;RNorm\[Alpha]=.75;
+LayerForwardPropogation[inputs_,RNorm]:=
+   Map[(#*((1+(RNorm\[Alpha]/ListConvolve[ConstantArray[1.,{5,5}],ConstantArray[1.,#//Dimensions],{3,3},.0])*
+      ListConvolve[ConstantArray[1.,{5,5}],#^2,{3,3},0.])^RNorm\[Beta])^-1)&,inputs,{2}];
+Backprop[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimplemented."];
 
 
 (* Some Test Helping Code *)
+CheckGrad[lossF_,weight_,inputs_,targets_]:=
+   (lossF[WeightDec[wl,-ReplacePart[gw*0.,weight->10^-8]],inputs,targets]-lossF[wl,inputs,targets])/10^-8
+
 CheckDeltaSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
 (* Neuron sensitivity checking code *)
 (* Advise save L levels in SaveL before running to prevent interference *)
