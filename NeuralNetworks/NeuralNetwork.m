@@ -213,6 +213,7 @@ ReLU - Rectified Linear Unit layer
 Logistic - Logistic Activation layer
 PadFilterBank - Padding for filter banks
 RNorm - Local contrast normalisation layer
+SubsampleFilterBankToFilterBank - subsamples the filter bank by 2.
 *)
 
 
@@ -404,6 +405,14 @@ LayerForwardPropogation[inputs_,RNorm]:=
    Map[(#*((1+(RNorm\[Alpha]/ListConvolve[ConstantArray[1.,{5,5}],ConstantArray[1.,#//Dimensions],{3,3},.0])*
       ListConvolve[ConstantArray[1.,{5,5}],#^2,{3,3},0.])^RNorm\[Beta])^-1)&,inputs,{2}];
 Backprop[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimplemented."];
+
+(*SubsampleFilterBankToFilterBank*)
+SyntaxInformation[SubsampleFilterBankToFilterBank]={"ArgumentsPattern"->{}};
+LayerForwardPropogation[inputs_,SubsampleFilterBankToFilterBank]:=Map[inputs[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}]
+Backprop[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
+   UpSample[postLayerDeltaA];
+LayerGrad[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
+WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBank;
 
 
 (* Some Test Helping Code *)
