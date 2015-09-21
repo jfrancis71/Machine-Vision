@@ -31,13 +31,6 @@ TiedGrad[wl_,inputs_,targets_,lossF_,options_:{}]:=(
    t4)
 
 
-CrossEntropyLoss[parameters_,inputs_,targets_]:=
-   -Total[targets*Log[ForwardPropogate[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogate[inputs,parameters]],2]/Length[inputs]
-
-
-DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
-
-
 TiedCrossEntropyLoss[wl_,inputs_,targets_]:=
    CrossEntropyLoss[TieNet[wl],inputs,targets]
 
@@ -69,3 +62,24 @@ TrainAutoencoder[in_Integer,out_Integer,data_,lossF_]:=(
         UpdateFunction->ScreenMonitor,
          InitialLearningRate->.1}];
    {wl[[1;;2]],TieNet[wl][[3;;4]]})
+
+
+TrainStackedAutoencoder[dat_]:=(
+   TrainingHistory={};
+
+   AbortAssert[MatrixQ[dat],"TrainStackedAutoencoder::Data must be flat."];
+
+   layer1Dat=dat;
+   {encoder1,decoder1}=TrainAutoencoder[layer1Dat[[1]]//Length,500,layer1Dat,CrossEntropyLoss];
+
+   layer2Dat=ForwardPropogate[layer1Dat,encoder1];
+   {encoder2,decoder2}=TrainAutoencoder[500,250,layer2Dat,RegressionLoss1D];
+
+   layer3Dat=ForwardPropogate[layer2Dat,encoder2];
+   {encoder3,decoder3}=TrainAutoencoder[250,125,layer3Dat,RegressionLoss1D];
+
+   layer4Dat=ForwardPropogate[layer3Dat,encoder3];
+   {encoder4,decoder4}=TrainAutoencoder[125,64,layer4Dat,RegressionLoss1D];
+
+   {encoder,decoder}={Flatten[{encoder1,encoder2,encoder3,encoder4}],Flatten[{decoder1,decoder2,decoder3,decoder4}//Reverse]};
+)
