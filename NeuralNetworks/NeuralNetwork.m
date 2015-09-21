@@ -87,12 +87,15 @@ DeltaLoss[RegressionLoss1D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outp
 DeltaLoss[RegressionLoss2D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
 DeltaLoss[RegressionLoss3D,outputs_,targets_]:=2.0*(outputs-targets)/Length[outputs];
 DeltaLoss[ClassificationLoss,outputs_,targets_]:=-targets*(1.0/outputs)/Length[outputs];
+DeltaLoss[CrossEntropyLoss,outputs_,targets_]:=-((-(1-targets)/(1-outputs)) + (targets/outputs))/Length[outputs];
 
 (*This is implicitly a regression loss function*)
 RegressionLoss1D[parameters_,inputs_,targets_]:=(outputs=ForwardPropogate[inputs,parameters];AbortAssert[Dimensions[outputs]==Dimensions[targets],"Loss1D::Mismatched Targets and Outputs"];Total[(outputs-targets)^2,2]/Length[inputs]);
 RegressionLoss2D[parameters_,inputs_,targets_]:=Total[(ForwardPropogate[inputs,parameters]-targets)^2,3]/Length[inputs];
 RegressionLoss3D[parameters_,inputs_,targets_]:=Total[(ForwardPropogate[inputs,parameters]-targets)^2,4]/Length[inputs];
 ClassificationLoss[parameters_,inputs_,targets_]:=-Total[Log[Extract[ForwardPropogate[inputs,parameters],Position[targets,1]]]]/Length[inputs];
+CrossEntropyLoss[parameters_,inputs_,targets_]:=
+   -Total[targets*Log[ForwardPropogate[inputs,parameters]]+(1-targets)*Log[1-ForwardPropogate[inputs,parameters]],2]/Length[inputs];
 
 WeightDec[networkLayers_List,grad_List]:=MapThread[WeightDec,{networkLayers,grad}]
 
@@ -214,6 +217,7 @@ Logistic - Logistic Activation layer
 PadFilterBank - Padding for filter banks
 RNorm - Local contrast normalisation layer
 SubsampleFilterBankToFilterBank - subsamples the filter bank by 2.
+PadFilter - Padding for filter
 *)
 
 
@@ -266,6 +270,11 @@ LayerForwardPropogation[inputs_,Convolve2DToFilterBank[filters_]]:=(
 Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}];
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]];
+Convolve2DToFilterBankInit[noNewFilterBank_,filterSize_]:=
+   Convolve2DToFilterBank[
+      Table[Convolve2D[0.,
+            Table[Random[]-.5,{filterSize},{filterSize}]/Sqrt[filterSize*filterSize]],
+         {noNewFilterBank}]]
 
 (*FilterBankTo2DLayer*)
 SyntaxInformation[FilterBankTo2D]={"ArgumentsPattern"->{_,_}};
@@ -413,6 +422,14 @@ Backprop[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
    UpSample[postLayerDeltaA];
 LayerGrad[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBank;
+
+(*PadFilter*)
+SyntaxInformation[PadFilter]={"ArgumentsPattern"->{_}};
+LayerForwardPropogation[inputs_,PadFilter[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs]
+Backprop[PadFilter[padding_],postLayerDeltaA_]:=
+   postLayerDeltaA[[All,padding+1;;-padding-1,padding+1;;-padding-1]];
+LayerGrad[PadFilter,layerInputs_,layerOutputDelta_]:={};
+WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 
 
 (* Some Test Helping Code *)
