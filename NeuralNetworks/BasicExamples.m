@@ -4,6 +4,8 @@
 
 
 (* Examples *)
+
+(*Learning the square function*)
 sqNetwork={
    FullyConnected1DTo1D[{.2,.3},{{2},{3}}],Tanh,
    FullyConnected1DTo1D[{.6},{{1,7}}],Tanh
@@ -24,6 +26,7 @@ XOROutputs=Transpose[{{0,1,1,0}}];XOROutputs//MatrixForm;
 XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,NNGrad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
+(*Learning to multiply two inputs*)
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
 MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,NNGrad,RegressionLoss2D,{MaxEoch->500000}];
