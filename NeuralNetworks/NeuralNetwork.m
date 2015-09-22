@@ -48,6 +48,8 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],ReLU],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
+         MatchQ[currentParameters[[layerIndex]],MaxConvolveFilterBankToFilterBank],
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          True,
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
@@ -218,6 +220,7 @@ PadFilterBank - Padding for filter banks
 RNorm - Local contrast normalisation layer
 SubsampleFilterBankToFilterBank - subsamples the filter bank by 2.
 PadFilter - Padding for filter
+MaxConvolveFilterBankToFilterBank - Each filter in the filter bank is convolved with max operation, neighbourhood 1 (ie 1 on either side)
 *)
 
 
@@ -430,6 +433,17 @@ Backprop[PadFilter[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,padding+1;;-padding-1,padding+1;;-padding-1]];
 LayerGrad[PadFilter,layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
+
+(*MaxConvolveFilterBankToFilterBank*)
+SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
+LayerForwardPropogation[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
+   Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
+Backprop[MaxConvolveFilterBankToFilterBank,inputs_,postLayerDeltaA_]:=(
+   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
+   u2=UnitStep[u1-Map[Max[Flatten[#]]&,u1,{4}]];
+   u3=Map[Total[Flatten[#]]&,u2*postLayerDeltaA,{4}];)
+LayerGrad[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
+WeightDec[MaxConvolveFilterBankToFilterBank,grad_]:=MaxConvolveFilterBankToFilterBank;
 
 
 (* Some Test Helping Code *)
