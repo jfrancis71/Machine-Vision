@@ -17,11 +17,14 @@ Dream::usage = "Dream[inputDims,neuron] returns input which maximises neuron res
 Note if neuron is saturated, then gradients may have difficulty propogating and optimisation will be exceptionally slow";
 
 
-Dream[inputDims_,neuron_]:=(
+Options[Dream] = { MaxIterations -> 2000 };
+
+
+Dream[inputDims_,neuron_,opts___]:=(
    dream=Array[Random[]&,inputDims];
    neuronLayer=neuron[[1]];
    target=ReplacePart[ForwardPropogate[{dream},wl[[1;;neuronLayer]]][[1]]*.0,Rest[neuron]->1.0];
-   For[sl=0,sl<=200000,sl++,
+   For[sl=0,sl<=(MaxIterations/.{opts}/.Options[Dream]),sl++,
       BackPropogation[wl[[1;;neuronLayer]],{dream},{target},DreamLoss];
       dw=Backprop[wl[[1]],DeltaL[1]];
       fw=UnitStep[dream-1.];
