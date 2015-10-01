@@ -48,7 +48,7 @@ EngSparkFeature3Kernel=Table[If[y<=-13&&x<=-20,1,0],{y,-15,+15},{x,-23,+23}];
 EngSparkRelationKernels={EngSparkFeature1Kernel,EngSparkFeature2Kernel,EngSparkFeature3Kernel};
 
 
-FaceModel=StandardiseImage[Import["c:/users/julian/ImageDataSetsPublic/huttenlocher/images/faces/Training/image_0001.jpg"]
+FaceModel=StandardiseImage[Import["c:/users/julian/ImageDataSetsPublic/Caltech1999/image_0002.jpg"]
 ];
 
 
