@@ -51,3 +51,15 @@ ObjectRecognitionOutput[image_]:=
       PlotRange->{{0,(image//Dimensions)[[2]]},{0,(image//Dimensions)[[1]]}}
 ] 
 )
+
+
+FaceRecognitionOutput[image_]:=
+(
+   c1=Table[ArrayPad[ConstantArray[1.,(pyr[[l]]//Dimensions)-{16,16}],8],{l,1,Length[pyr]}];
+   FaceMap=ObjectRecognition[image,FaceFeatureKernels,FaceRelationKernels];
+
+   o=Show[image//DispImage,
+      OutlineGraphics[BoundingRectangles[FaceMap,1.0,{10,10}],Yellow],
+      PlotRange->{{0,(image//Dimensions)[[2]]},{0,(image//Dimensions)[[1]]}}
+] 
+)
