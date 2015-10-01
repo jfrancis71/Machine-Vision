@@ -1,5 +1,11 @@
 (* ::Package:: *)
 
+(*
+   Extracting and composing robust features with denoising autoencoders, Vincent et al (Feb 2008)
+   Ref: http://www.iro.umontreal.ca/~vincentp/Publications/denoising_autoencoders_tr1316.pdf
+*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
