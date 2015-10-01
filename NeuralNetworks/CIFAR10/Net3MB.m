@@ -8,6 +8,11 @@
 
    Not completely faithful implementation.
    He uses RELU and a contrast normalisation layer.
+
+   Training Cross Entropy: .33
+   Validation Cross Entropy: 1.01
+
+   Note this has overtrained, we had achieved validation cross entropy loss of around .95
 *)
 
 
