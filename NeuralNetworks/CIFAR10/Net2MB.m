@@ -4,6 +4,7 @@
    Based on Andrej Karpathy. Not completely faithful implementation. (He uses extra convolution layer and ReLU)
    See: http://cs.stanford.edu/people/karpathy/convnetjs/demo/cifar10.html
 
+   Epoch: 56
    Training Loss: .752
    Validation Loss: 1.18
 

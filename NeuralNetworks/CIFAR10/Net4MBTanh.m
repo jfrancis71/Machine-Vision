@@ -2,16 +2,17 @@
 
 (*
 
-   Ref: https://code.google.com/p/cuda-convnet/
-   Ref: https://code.google.com/p/cuda-convnet/source/browse/trunk/example-layers/layers-18pct.cfg
-   Ref: Alex Krizhevsky
+   CAFFE Ref:
+
+   Differences in pooling arrangements
 
    Not completely faithful implementation.
-   He uses RELU and a contrast normalisation layer.
 
-   Epoch: 112 Note this has overtrained, we had achieved validation cross entropy loss of around .95
-   Training Cross Entropy: .33
-   Validation Cross Entropy: 1.01
+   Epoch: 66
+   Training Loss: .563
+   Validation Loss: .943
+
+   Validation Accuracy: 66.8%
 
 *)
 
@@ -23,7 +24,7 @@
 
 
 SeedRandom[1234];
-CIFARNet3={
+CIFARNet={
    PadFilterBank[2],ConvolveFilterBankToFilterBankInit[3,32,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,32,5],Tanh,
@@ -31,7 +32,8 @@ CIFARNet3={
    PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,64,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[64,4,4],
-   FullyConnected1DTo1DInit[64*4*4,10],
+   FullyConnected1DTo1DInit[64*4*4,64],Tanh,
+   FullyConnected1DTo1DInit[64,10],
    Softmax
 };
 
@@ -43,22 +45,17 @@ CIFAR10NetValidationInputs=ColValidationImages[[All]]*1.;
 CIFAR10NetValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
 
 
-wl=CIFARNet3;
+wl=CIFARNet;
 TrainingHistory={};
 ValidationHistory={};
 \[Lambda]=.01;
 
 
-TrainNet3MB:=MiniBatchGradientDescent[
+TrainNet:=MiniBatchGradientDescent[
       wl,ColTrainingImages,CIFAR10NetTrainingOutputs,
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
          ValidationInputs->ColValidationImages[[1;;500]],
-         ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],         
+         ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],
+         UpdateFunction->NNCheckpoint["CIFAR10\\Net4MBTanh"],
          InitialLearningRate->\[Lambda]}];
-
-
-CIFAR10Output[probs_]:=BarChart[probs[[Reverse[Ordering[probs,-3]]]],ChartLabels->WordLabels[[Reverse[Ordering[probs,-3]]]]];
-
-
-CIFAR10Outputs[probs_,pics_]:=MapThread[{Image[#2,Interleaving->False],CIFAR10Output[#1]}&,{probs,pics}];

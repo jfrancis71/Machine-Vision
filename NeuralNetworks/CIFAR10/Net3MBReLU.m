@@ -9,9 +9,9 @@
    Not completely faithful implementation.
    He uses RELU and a contrast normalisation layer.
 
-   Epoch: 112 Note this has overtrained, we had achieved validation cross entropy loss of around .95
-   Training Cross Entropy: .33
-   Validation Cross Entropy: 1.01
+   Epoch: 48
+   Training Loss: .746
+   Validation Loss: 1.19
 
 *)
 
@@ -24,11 +24,11 @@
 
 SeedRandom[1234];
 CIFARNet3={
-   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[3,32,5],Tanh,
+   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[3,32,5],ReLU,
    MaxPoolingFilterBankToFilterBank,
-   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,32,5],Tanh,
+   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,32,5],ReLU,
    MaxPoolingFilterBankToFilterBank,
-   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,64,5],Tanh,
+   PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,64,5],ReLU,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[64,4,4],
    FullyConnected1DTo1DInit[64*4*4,10],
@@ -49,12 +49,13 @@ ValidationHistory={};
 \[Lambda]=.01;
 
 
-TrainNet3MB:=MiniBatchGradientDescent[
+TrainNet3MBReLU:=MiniBatchGradientDescent[
       wl,ColTrainingImages,CIFAR10NetTrainingOutputs,
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
          ValidationInputs->ColValidationImages[[1;;500]],
-         ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],         
+         ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],
+         UpdateFunction->NNCheckpoint["CIFAR10//Net3MBReLU"],
          InitialLearningRate->\[Lambda]}];
 
 
