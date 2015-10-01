@@ -45,12 +45,11 @@ ValidationHistory={};
 
 
 TrainNet3MB:=MiniBatchGradientDescent[
-      wl,ColTrainingImages[[1;;200]],CIFAR10NetTrainingOutputs[[1;;200]],
+      wl,ColTrainingImages,CIFAR10NetTrainingOutputs,
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
          ValidationInputs->ColValidationImages[[1;;500]],
          ValidationTargets->CIFAR10NetValidationOutputs[[1;;500]],         
-         UpdateFunction->ScreenMonitor,
          InitialLearningRate->\[Lambda]}];
 
 
