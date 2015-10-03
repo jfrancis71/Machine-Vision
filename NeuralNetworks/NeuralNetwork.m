@@ -420,9 +420,11 @@ Backprop[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimp
 
 (*SubsampleFilterBankToFilterBank*)
 SyntaxInformation[SubsampleFilterBankToFilterBank]={"ArgumentsPattern"->{}};
-LayerForwardPropogation[inputs_,SubsampleFilterBankToFilterBank]:=Map[inputs[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}]
+LayerForwardPropogation[inputs_,SubsampleFilterBankToFilterBank]:=Map[#[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}]
 Backprop[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
-   UpSample[postLayerDeltaA];
+   Table[If[OddQ[r]&&OddQ[c],postLayerDeltaA[[w,f,1+((r-1)/2),1+((c-1)/2)]],.0],
+      {w,1,Length[postLayerDeltaA]},{f,1,Length[postLayerDeltaA[[1]]]},
+      {r,1,2*Length[postLayerDeltaA[[1,1]]]},{c,1,2*Length[postLayerDeltaA[[1,1,1]]]}];
 LayerGrad[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBank;
 
@@ -439,9 +441,14 @@ SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 LayerForwardPropogation[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
 Backprop[MaxConvolveFilterBankToFilterBank,inputs_,postLayerDeltaA_]:=(
+   AbortAssert[Max[inputs]<1.4,"BackProp::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
    u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
-   u2=UnitStep[u1-Map[Max[Flatten[#]]&,u1,{4}]];
-   u3=Map[Total[Flatten[#]]&,u2*postLayerDeltaA,{4}];)
+   u2=Map[Max[Flatten[#]]&,u1,{4}];
+   u3=Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,u2,{2}];
+   u4=UnitStep[inputs-u3];
+   u5=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,postLayerDeltaA,{2}];
+   u6=u4*u5;
+   u7=Map[Total[Flatten[#]]&,u6,{4}])
 LayerGrad[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxConvolveFilterBankToFilterBank,grad_]:=MaxConvolveFilterBankToFilterBank;
 
