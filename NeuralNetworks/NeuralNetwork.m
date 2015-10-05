@@ -49,7 +49,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
          MatchQ[currentParameters[[layerIndex]],ReLU],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],MaxConvolveFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
          True,
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];
@@ -440,11 +440,11 @@ WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 LayerForwardPropogation[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
-Backprop[MaxConvolveFilterBankToFilterBank,inputs_,postLayerDeltaA_]:=(
+Backprop[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
    AbortAssert[Max[inputs]<1.4,"BackProp::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
-   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
-   u2=Map[Max[Flatten[#]]&,u1,{4}];
-   u3=Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,u2,{2}];
+(*   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
+   u2=Map[Max[Flatten[#]]&,u1,{4}];*)
+   u3=Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,outputs,{2}];
    u4=UnitStep[inputs-u3];
    u5=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,postLayerDeltaA,{2}];
    u6=u4*u5;
