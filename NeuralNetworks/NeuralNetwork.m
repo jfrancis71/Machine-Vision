@@ -115,8 +115,9 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
   {t\[Lambda],loss}
 );
 
+NullFunction[]=Function[{},(Null)];
 Options[GenericGradientDescent] = { MaxEpoch -> 20000,
-   StepMonitor->Identity, InitialLearningRate->.01,
+   StepMonitor->NullFunction, InitialLearningRate->.01,
    ValidationInputs->{},ValidationTargets->{}};
 SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
