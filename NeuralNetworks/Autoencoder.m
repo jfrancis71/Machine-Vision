@@ -54,7 +54,10 @@ TieLoss[RegressionLoss1D]:=TiedRegressionLoss1D
 TieLoss[_]:=AbortAssert[0,"TieLoss: Unrecognised loss function"];
 
 
-TrainAutoencoder[in_Integer,out_Integer,data_,lossF_]:=(
+Options[TrainAutoencoder] = { MaxIterations -> 2000 };
+
+
+TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts___]:=(
    SeedRandom[1234];
    net={
       FullyConnected1DTo1DInit[in,out],
@@ -64,7 +67,7 @@ TrainAutoencoder[in_Integer,out_Integer,data_,lossF_]:=(
    MiniBatchGradientDescent[
       net,data,data,
       NoisyTiedGrad,TieLoss[lossF],
-        {MaxEpoch->50,
+        {MaxEpoch->(MaxIterations/.{opts}/.Options[TrainAutoencoder]),
         UpdateFunction->ScreenMonitor,
          InitialLearningRate->.1}];
    {wl[[1;;2]],TieNet[wl][[3;;4]]})
