@@ -25,9 +25,12 @@ ForwardPropogateLayers[inputs_,network_]:=
 ForwardPropogate[inputs_,network_]:=
    ForwardPropogateLayers[inputs,network][[-1]]
 
-BackPropogation[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
 
-   xL1A = L1A /. options /. {L1A->.0};
+Options[BackPropogation] = { L1A->0.0 };
+SyntaxInformation[L1A]={"ArgumentsPattern"->{}};
+BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
+
+   xL1A = (L1A/.{opts}/.Options[BackPropogation])
 
    L = ForwardPropogateLayers[inputs, currentParameters];
    networkLayers=Length[currentParameters];
@@ -68,11 +71,12 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
       so it has shape T*U
    targets has shape T*O where O is the number of output units
 *)
-NNGrad[currentParameters_,inputs_,targets_,lossF_,options_:{}]:=(
+Options[NNGrad] = {};
+NNGrad[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
 
    AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
-   BackPropogation[currentParameters,inputs,targets,lossF,options];
+   BackPropogation[currentParameters,inputs,targets,lossF,opts];
 
    Prepend[
       Table[
@@ -111,11 +115,21 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
   {t\[Lambda],loss}
 );
 
-GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,options_:{}]:=(
+Options[GenericGradientDescent] = { MaxEpoch -> 20000,
+   StepMonitor->Identity, InitialLearningRate->.01,
+   ValidationInputs->{},ValidationTargets->{}};
+SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
+SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
+SyntaxInformation[ValidationTargets]={"ArgumentsPattern"->{}};
+SyntaxInformation[InitialLearningRate]={"ArgumentsPattern"->{}};
+GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,opts___]:=(
+
    trainingLoss=\[Infinity];
    validationLoss=\[Infinity];
-   {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} = {ValidationInputs,ValidationTargets,MaxEpoch,UpdateFunction,InitialLearningRate} /.
-      options /. {ValidationInputs->{},ValidationTargets->{},MaxEpoch->20000,UpdateFunction->Identity,InitialLearningRate->.001};
+   {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} =
+      {ValidationInputs,ValidationTargets,MaxEpoch,StepMonitor,InitialLearningRate} /.
+         {opts}/.Options[BackPropogation]
+
    Print["Epoch: ",Dynamic[epoch]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    Print[Dynamic[grOutput]];
@@ -130,30 +144,30 @@ GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,alg
       updateF[];
    ]);
 
-GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=
+GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts___]:=
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
-      (  gw=gradientF[wl,inputs,targets,lossF];
+      (  gw=gradientF[wl,inputs,targets,lossF,opts];
          wl=WeightDec[wl,\[Lambda]*gw];
          trainingLoss=lossF[wl,inputs,targets];)&,
       options];
 
-AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=
+AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts___]:=
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
-      (  gw=gradientF[wl,inputs,targets,lossF,options];
+      (  gw=gradientF[wl,inputs,targets,lossF,opts];
          {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
          wl=WeightDec[wl,\[Lambda]*gw];
          trainingLoss=lossF[wl,inputs,targets];)&,
       options];
 
 
-MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,options_:{}]:=(
+MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,ops___]:=(
    Print["Batch #:", Dynamic[batch], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  partialTrainingLoss={};batch=0;
          MapThread[
             (
             batch++;
-            gw=gradientF[wl,#1,#2,lossF,options];
+            gw=gradientF[wl,#1,#2,lossF,opts];
             wl=WeightDec[wl,\[Lambda]*gw];
             AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
          {Partition[inputs,100],Partition[targets,100]}];
