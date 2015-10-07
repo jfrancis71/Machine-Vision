@@ -286,7 +286,7 @@ WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]]
 *)
 SyntaxInformation[Convolve2DToFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,Convolve2DToFilterBank[filters_]]:=(
-   Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
+   Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
 Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
 LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}];
@@ -335,7 +335,8 @@ WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]];
 (*ConvolveFilterBankTo2D*)
 SyntaxInformation[ConvolveFilterBankTo2D]={"ArgumentsPattern"->{_,_}};
 ForwardPropogateLayer[inputs_,ConvolveFilterBankTo2D[bias_,kernels_]]:=(
-   AbortAssert[Length[inputs[[1]]]==Length[kernels],"ConvolveFilterBankTo2D::#Kernels not equal to #Features in input feature map"];
+   AbortAssert[Length[inputs[[1]]]==Length[kernels],
+      "ConvolveFilterBankTo2D::#Kernels ("<>ToString[Length[kernels]]<>") not equal to #Features ("<>ToString[Length[inputs[[1]]]]<>") in input feature map"];
    bias+Sum[ListCorrelate[{kernels[[kernel]]},inputs[[All,kernel]]],
       {kernel,1,Length[kernels]}]);
 Backprop[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
@@ -348,7 +349,7 @@ WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[net
 (*ConvolveFilterBankToFilterBank*)
 SyntaxInformation[ConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
-   Transpose[Map[LayerForwardPropogation[inputs,#]&,filters],{2,1,3,4}]
+   Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
 Backprop[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
    Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
