@@ -3,11 +3,17 @@
 (*
 
    Ref: https://code.google.com/p/cuda-convnet/
-   Ref: https://code.google.com/p/cuda-convnet/source/browse/trunk/example-layers/layers-18pct.cfg
+   https://code.google.com/p/cuda-convnet/source/browse/trunk/example-layers/layers-80sec.cfg
    Ref: Alex Krizhevsky
 
    Not completely faithful implementation.
-   He uses RELU and a contrast normalisation layer.
+   He uses RELU and has an extra 64 flat layer (64*4*4->64->10)
+   Claims 74% classification performance
+
+   Training Loss: .487
+   Validation Loss: .812
+
+   Classification Performance: 71.4%
 *)
 
 
@@ -45,7 +51,7 @@ ValidationHistory={};
 
 
 TrainNet5MB:=MiniBatchGradientDescent[
-      wl,ColTrainingImages,CIFAR10NetTrainingOutputs,
+      wl,ColTrainingImages[[1;;40000]],CIFAR10NetTrainingOutputs[[1;;40000]],
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
          ValidationInputs->ColValidationImages[[1;;500]],
