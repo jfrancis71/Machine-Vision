@@ -18,3 +18,12 @@ FaceDetection[image_]:=(
    rec=ForwardPropogate[{ImageData[ImageResize[image//Image,43]][[All,6;;-7]]},wl];
    {rey//DispImage,BarChart[rec,PlotRange->{0,1}]}
 )
+
+
+rectify[MathImage_]:=Partition[ColorConvert[ImageResize[MathImage,Scaled[32/Min[ImageDimensions[MathImage]]]],"GrayScale"]//ImageData//Reverse,{32,32},{1,1}]
+
+
+score[MathImage_]:=Max[ForwardPropogate[Flatten[rectify[MathImage],1],wl]];
+
+
+WebImportImages[url_]:=Import[url,"Images"];
