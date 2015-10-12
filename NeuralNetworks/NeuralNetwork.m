@@ -7,8 +7,8 @@ AbortAssert[bool_,message_]:=
    If[bool==False,
       Print[message];Abort[]];
 
-LayerName[s_Symbol]:=SymbolName[s]
-LayerName[h_]:=Head[h]
+LayerName[s_Symbol]:=ToString[SymbolName[s]]
+LayerName[h_]:=ToString[Head[h]]
 
 
 (*
@@ -20,7 +20,8 @@ LayerName[h_]:=Head[h]
 *)
 ForwardPropogateLayers[inputs_,network_]:=
 (* We don't include the inputs *)
-   Rest[FoldList[ForwardPropogateLayer,inputs,network]]
+   Rest[FoldList[
+      Timer["ForwardPropogateLayer::"<>LayerName[#2],ForwardPropogateLayer[#1,#2]]&,inputs,network]]
 
 ForwardPropogate[inputs_,network_]:=
    ForwardPropogateLayers[inputs,network][[-1]]
@@ -32,7 +33,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
 
    xL1A = (L1A/.{opts}/.Options[BackPropogation]);
 
-   L = ForwardPropogateLayers[inputs, currentParameters];
+   L = Timer["ForwardPropogateLayers",ForwardPropogateLayers[inputs, currentParameters]];
    networkLayers=Length[currentParameters];
 
    AbortAssert[Dimensions[L[[networkLayers]]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
@@ -43,6 +44,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
 (* layerIndex refers to layer being back propogated across
    ie computing delta's for layerIndex-1 given layerIndex *)
 
+      Timer["Backprop Layer "<>LayerName[currentParameters[[layerIndex]]],
       Which[
          MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
@@ -58,7 +60,7 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
          True,
             DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
-      ];
+      ];]
 
       AbortAssert[Dimensions[DeltaL[layerIndex-1]]==Dimensions[L[[layerIndex-1]]]];
       DeltaL[layerIndex-1]+=Sign[L[[layerIndex-1]]]*xL1A;
@@ -76,14 +78,16 @@ NNGrad[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
 
    AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
-   BackPropogation[currentParameters,inputs,targets,lossF,opts];
+   Timer["BackPropogation Total",
+   BackPropogation[currentParameters,inputs,targets,lossF,opts];];
 
+   Timer["LayerGad",
    Prepend[
       Table[
          LayerGrad[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]
          ,{layerIndex,2,Length[currentParameters]}],
       LayerGrad[currentParameters[[1]],inputs,DeltaL[1]]
-   ]
+   ]]
 )
 
 (*
