@@ -47,19 +47,19 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
       Timer["Backprop Layer "<>LayerName[currentParameters[[layerIndex]]],
       Which[
          MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Softmax],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Tanh],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],Logistic],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],ReLU],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
          MatchQ[currentParameters[[layerIndex]],MaxConvolveFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
          True,
-            DeltaL[layerIndex-1]=Backprop[currentParameters[[layerIndex]],DeltaL[layerIndex]];
+            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],DeltaL[layerIndex]];
       ];]
 
       AbortAssert[Dimensions[DeltaL[layerIndex-1]]==Dimensions[L[[layerIndex-1]]]];
@@ -84,9 +84,9 @@ NNGrad[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
    Timer["LayerGad",
    Prepend[
       Table[
-         LayerGrad[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]
+         GradLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]
          ,{layerIndex,2,Length[currentParameters]}],
-      LayerGrad[currentParameters[[1]],inputs,DeltaL[1]]
+      GradLayer[currentParameters[[1]],inputs,DeltaL[1]]
    ]]
 )
 
@@ -264,8 +264,8 @@ ForwardPropogateLayer[inputs_,FullyConnected1DTo1D[layerBiases_,layerWeights_]]:
    AbortAssert[(layerBiases//Length)==(layerWeights//Length),"FullyConnected1DTo1D::Weight-Weight Error"];
    Transpose[layerWeights.Transpose[inputs] + layerBiases]
 )
-Backprop[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=postLayerDeltaA.weights
-LayerGrad[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[Transpose[layerOutputDelta],{2}],Transpose[layerOutputDelta].layerInputs};
+BackPropogateLayer[FullyConnected1DTo1D[biases_,weights_],postLayerDeltaA_]:=postLayerDeltaA.weights
+GradLayer[FullyConnected1DTo1D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[Transpose[layerOutputDelta],{2}],Transpose[layerOutputDelta].layerInputs};
 WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
 (* For below justification, see http://arxiv.org/pdf/1206.5533v2.pdf page 15 *)
 FullyConnected1DTo1DInit[noFromNeurons_,noToNeurones_]:=
@@ -279,8 +279,8 @@ SyntaxInformation[Convolve2D]={"ArgumentsPattern"->{_,_}};
 ForwardPropogateLayer[inputs_,Convolve2D[layerBias_,layerKernel_]]:=(
    ListCorrelate[{layerKernel},inputs]+layerBias
 );
-Backprop[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1},0],{t,1,Length[postLayerDeltaA]}]
-LayerGrad[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]};
+BackPropogateLayer[Convolve2D[biases_,weights_],postLayerDeltaA_]:=Table[ListConvolve[weights,postLayerDeltaA[[t]],{+1,-1},0],{t,1,Length[postLayerDeltaA]}]
+GradLayer[Convolve2D[biases_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]};
 WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
 
 (*Convolve2DToFilterBankLayer*)
@@ -293,8 +293,8 @@ ForwardPropogateLayer[inputs_,Convolve2DToFilterBank[filters_]]:=(
    AbortAssert[(inputs[[1]]//Dimensions//Length)==2,"Convolve2DToFilterBank::inputs does not match 2D structure"];
    Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
-Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
-LayerGrad[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}];
+BackPropogateLayer[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
+GradLayer[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}];
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]];
 Convolve2DToFilterBankInit[noNewFilterBank_,filterSize_]:=
    Convolve2DToFilterBank[
@@ -307,8 +307,8 @@ SyntaxInformation[FilterBankTo2D]={"ArgumentsPattern"->{_,_}};
 ForwardPropogateLayer[inputs_,FilterBankTo2D[bias_,weights_]]:=(
    weights.Transpose[inputs,{2,1,3,4}]+bias
 )
-Backprop[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
-LayerGrad[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],
+BackPropogateLayer[FilterBankTo2D[bias_,weights_],postLayerDeltaA_]:=Transpose[Map[#*postLayerDeltaA&,weights],{2,1,3,4}]
+GradLayer[FilterBankTo2D[bias_,weights_],layerInputs_,layerOutputDelta_]:={Total[layerOutputDelta,3],
    Table[Total[layerOutputDelta*layerInputs[[All,w]],3],{w,1,Length[weights]}]};
 WeightDec[networkLayer_FilterBankTo2D,grad_]:=FilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
 
@@ -319,9 +319,9 @@ SyntaxInformation[FilterBankToFilterBank]={"ArgumentsPattern"->{_,_}};
 ForwardPropogateLayer[inputs_,FilterBankToFilterBank[biases_,weights_]]:=(
    Transpose[weights.Transpose[inputs]+biases]
 )
-Backprop[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
+BackPropogateLayer[FilterBankToFilterBank[biases_,weights_],postLayerDeltaA_]:=
    Total[Table[postLayerDeltaA[[t,o]]*weights[[o,f]],{t,1,Length[postLayerDeltaA]},{f,1,Length[weights[[1]]]},{o,1,Length[weights]}],{3}]
-LayerGrad[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
+GradLayer[FilterBankToFilterBank[biases_,weights_],layerInputs_,layerOutputDelta_]:={
    Table[Total[layerOutputDelta[[All,f]],3],{f,1,Length[layerOutputDelta[[1]]]}],
    Map[Flatten,Transpose[layerOutputDelta,{2,1,3,4}]].Transpose[Map[Flatten,Transpose[layerInputs,{2,1,3,4}]]]};
 WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
@@ -332,9 +332,9 @@ ForwardPropogateLayer[inputs_,Adaptor2DTo1D[width_]]:=(
    AbortAssert[(inputs[[1,1]]//Length)==width,"Adaptor2DTo1D::widths of inputs does not match Adaptor width"];
    Map[Flatten,inputs]
 );
-Backprop[Adaptor2DTo1D[width_],postLayerDeltaA_]:=
+BackPropogateLayer[Adaptor2DTo1D[width_],postLayerDeltaA_]:=
    Map[Partition[#,width]&,postLayerDeltaA];
-LayerGrad[Adaptor2DTo1D[width_],layerInputs_,layerOutputDelta_]:=
+GradLayer[Adaptor2DTo1D[width_],layerInputs_,layerOutputDelta_]:=
    Adaptor2DTo1D[width];
 WeightDec[networkLayer_Adaptor2DTo1D,grad_]:=Adaptor2DTo1D[networkLayer[[1]]];
 
@@ -345,9 +345,9 @@ ForwardPropogateLayer[inputs_,ConvolveFilterBankTo2D[bias_,kernels_]]:=(
       "ConvolveFilterBankTo2D::#Kernels ("<>ToString[Length[kernels]]<>") not equal to #Features ("<>ToString[Length[inputs[[1]]]]<>") in input feature map"];
    bias+Sum[ListCorrelate[{kernels[[kernel]]},inputs[[All,kernel]]],
       {kernel,1,Length[kernels]}]);
-Backprop[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
+BackPropogateLayer[ConvolveFilterBankTo2D[bias_,kernels_],postLayerDeltaA_]:=(
    Transpose[Table[ListConvolve[{kernels[[w]]},postLayerDeltaA,{+1,-1},0],{w,1,Length[kernels]}],{2,1,3,4}]);
-LayerGrad[ConvolveFilterBankTo2D[bias_,kernels_],layerInputs_,layerOutputDelta_]:=(
+GradLayer[ConvolveFilterBankTo2D[bias_,kernels_],layerInputs_,layerOutputDelta_]:=(
    (*{Total[layerOutputDelta,3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs}]]}*)
    {Total[layerOutputDelta,3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta,layerInputs[[All,w]]}]],{w,1,Length[kernels]}]})
 WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[networkLayer[[1]]-grad[[1]],networkLayer[[2]]-grad[[2]]];
@@ -357,9 +357,9 @@ SyntaxInformation[ConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
    Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
-Backprop[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
-   Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
-LayerGrad[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
+BackPropogateLayer[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
+   Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
+GradLayer[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
    Table[{Total[layerOutputDelta[[All,filterOutputIndex]],3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterOutputIndex]],layerInputs[[All,l]]}]],{l,1,Length[layerInputs[[1]]]}]},{filterOutputIndex,1,Length[filters]}]
 WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]];
 ConvolveFilterBankToFilterBankInit[noOldFilterBank_,noNewFilterBank_,filterSize_]:=
@@ -374,9 +374,9 @@ ForwardPropogateLayer[inputs_,MaxPoolingFilterBankToFilterBank]:=
    Map[Function[image,Map[Max,Partition[image,{2,2}],{2}]],inputs,{2}];
 UpSample[x_]:=Riffle[temp=Riffle[x,x]//Transpose;temp,temp]//Transpose;
 backRouting[previousZ_,nextA_]:=UnitStep[previousZ-Map[UpSample,nextA,{2}]];
-Backprop[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
+BackPropogateLayer[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputs_,postLayerDeltaA_]:=
    backRouting[layerInputs,layerOutputs]*Map[UpSample,postLayerDeltaA,{2}];
-LayerGrad[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
+GradLayer[MaxPoolingFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxPoolingFilterBankToFilterBank,grad_]:=MaxPoolingFilterBankToFilterBank;
 
 (*Adaptor3DTo1D*)
@@ -387,52 +387,52 @@ SyntaxInformation[Adaptor3DTo1D]={"ArgumentsPattern"->{_,_,_}};
 ForwardPropogateLayer[inputs_,Adaptor3DTo1D[features_,width_,height_]]:=(
    Map[Flatten,inputs]
 );
-Backprop[Adaptor3DTo1D[features_,width_,height_],postLayerDeltaA_]:=
+BackPropogateLayer[Adaptor3DTo1D[features_,width_,height_],postLayerDeltaA_]:=
    unflatten[Flatten[postLayerDeltaA],{Length[postLayerDeltaA],features,width,height}];
-LayerGrad[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:=
+GradLayer[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:=
    Adaptor3DTo1D[features,width,height];
 WeightDec[networkLayer_Adaptor3DTo1D,grad_]:=Adaptor3DTo1D[networkLayer[[1]],networkLayer[[2]],networkLayer[[3]]];
 
 (*Softmax*)
 SyntaxInformation[Softmax]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,Softmax]:=Map[Exp[#]/Total[Exp[#]]&,inputs];
-Backprop[Softmax,outputs_,postLayerDeltaA_]:=
+BackPropogateLayer[Softmax,outputs_,postLayerDeltaA_]:=
    Table[
       Sum[postLayerDeltaA[[n,i]]*outputs[[n,i]]*(KroneckerDelta[j,i]-outputs[[n,j]]),{i,1,Length[postLayerDeltaA[[1]]]}],
          {n,1,Length[postLayerDeltaA]},
       {j,1,Length[postLayerDeltaA[[1]]]}];
-LayerGrad[Softmax,layerInputs_,layerOutputDelta_]:={};
+GradLayer[Softmax,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Softmax,grad_]:=Softmax;
 
 (*Tanh*)
 ForwardPropogateLayer[inputs_,Tanh]:=Tanh[inputs];
-Backprop[Tanh,inputs_,postLayerDeltaA_]:=
+BackPropogateLayer[Tanh,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*Sech[inputs]^2;
-LayerGrad[Tanh,layerInputs_,layerOutputDelta_]:={};
+GradLayer[Tanh,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Tanh,grad_]:=Tanh;
 
 (*ReLU*)
 SyntaxInformation[ReLU]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,ReLU]:=UnitStep[inputs-0]*inputs;
-Backprop[ReLU,inputs_,postLayerDeltaA_]:=
+BackPropogateLayer[ReLU,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*UnitStep[inputs-0];
-LayerGrad[ReLU,layerInputs_,layerOutputDelta_]:={};
+GradLayer[ReLU,layerInputs_,layerOutputDelta_]:={};
 WeightDec[ReLU,grad_]:=ReLU;
 
 (*Logistic*)
 SyntaxInformation[Logistic]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,Logistic]:=1./(1.+Exp[-inputs]);
-Backprop[Logistic,inputs_,postLayerDeltaA_]:=
+BackPropogateLayer[Logistic,inputs_,postLayerDeltaA_]:=
    postLayerDeltaA*Exp[inputs]*(1+Exp[inputs])^-2;
-LayerGrad[Logistic,layerInputs_,layerOutputDelta_]:={};
+GradLayer[Logistic,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Logistic,grad_]:=Logistic;
 
 (*PadFilterBank*)
 SyntaxInformation[PadFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,PadFilterBank[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs,{2}]
-Backprop[PadFilterBank[padding_],postLayerDeltaA_]:=
+BackPropogateLayer[PadFilterBank[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,All,padding+1;;-padding-1,padding+1;;-padding-1]];
-LayerGrad[PadFilterBank,layerInputs_,layerOutputDelta_]:={};
+GradLayer[PadFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilterBank[padding_],grad_]:=PadFilterBank[padding];
 
 (* Ref: https://code.google.com/p/cuda-convnet/wiki/LayerParams# Local_response _normalization _layer _(same_map) *)
@@ -441,31 +441,31 @@ RNorm\[Beta]=.00005;RNorm\[Alpha]=.75;
 ForwardPropogateLayer[inputs_,RNorm]:=
    Map[(#*((1+(RNorm\[Alpha]/ListConvolve[ConstantArray[1.,{5,5}],ConstantArray[1.,#//Dimensions],{3,3},.0])*
       ListConvolve[ConstantArray[1.,{5,5}],#^2,{3,3},0.])^RNorm\[Beta])^-1)&,inputs,{2}];
-Backprop[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimplemented."];
+BackPropogateLayer[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimplemented."];
 
 (*SubsampleFilterBankToFilterBank*)
 SyntaxInformation[SubsampleFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,SubsampleFilterBankToFilterBank]:=Map[#[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}];
 UpSample1[x_]:=Riffle[temp=Riffle[x,.0*x]//Transpose;temp,temp*.0]//Transpose;
-Backprop[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
+BackPropogateLayer[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
    Map[UpSample1,postLayerDeltaA,{2}];
-LayerGrad[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
+GradLayer[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBank;
 
 (*PadFilter*)
 SyntaxInformation[PadFilter]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,PadFilter[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs]
-Backprop[PadFilter[padding_],postLayerDeltaA_]:=
+BackPropogateLayer[PadFilter[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,padding+1;;-padding-1,padding+1;;-padding-1]];
-LayerGrad[PadFilter,layerInputs_,layerOutputDelta_]:={};
+GradLayer[PadFilter,layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 
 (*MaxConvolveFilterBankToFilterBank*)
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
-Backprop[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
-   AbortAssert[Max[inputs]<1.4,"BackProp::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
+BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
+   AbortAssert[Max[inputs]<1.4,"BackPropogateLayer::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
 (*   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
    u2=Map[Max[Flatten[#]]&,u1,{4}];*)
    u3=Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,outputs,{2}];
@@ -473,7 +473,7 @@ Backprop[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
    u5=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,postLayerDeltaA,{2}];
    u6=u4*u5;
    u7=Map[Total[Flatten[#]]&,u6,{4}])
-LayerGrad[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
+GradLayer[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxConvolveFilterBankToFilterBank,grad_]:=MaxConvolveFilterBankToFilterBank;
 
 
