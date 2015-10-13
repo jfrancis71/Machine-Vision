@@ -454,7 +454,7 @@ WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBan
 
 (*PadFilter*)
 SyntaxInformation[PadFilter]={"ArgumentsPattern"->{_}};
-ForwardPropogateLayer[inputs_,PadFilter[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs]
+ForwardPropogateLayer[inputs_,PadFilter[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs];
 BackPropogateLayer[PadFilter[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,padding+1;;-padding-1,padding+1;;-padding-1]];
 GradLayer[PadFilter,layerInputs_,layerOutputDelta_]:={};

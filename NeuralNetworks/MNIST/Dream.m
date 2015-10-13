@@ -26,11 +26,11 @@ Dream[inputDims_,neuron_,opts___]:=(
    target=ReplacePart[ForwardPropogate[{dream},wl[[1;;neuronLayer]]][[1]]*.0,Rest[neuron]->1.0];
    For[sl=0,sl<=(MaxIterations/.{opts}/.Options[Dream]),sl++,
       BackPropogation[wl[[1;;neuronLayer]],{dream},{target},DreamLoss];
-      dw=Backprop[wl[[1]],DeltaL[1]];
+      dw=BackPropogateLayer[wl[[1]],DeltaL[1]];
       fw=UnitStep[dream-1.];
       ef=UnitStep[-dream];
       (*dream += (.01*dw[[1]]/Max[dw[[1]]]-fw+ef)*1.0*10^-1;*)
-      dream += .1*dw[[1]];
+      dream += .01*dw[[1]];
       (*dream = dream/Norm[dream];*)
       (*Clip[dream,{0.,1.}];*)
       error=DreamLoss[wl[[1;;-1]],{dream},{target}];
@@ -41,6 +41,6 @@ Dream[inputDims_,neuron_,opts___]:=(
 
 Salient[f_,image_]:=(
    BackPropogation[wl[[1;;-1]],{image},{f},DreamLoss];
-   dw=Backprop[wl[[1]],DeltaL[1]][[1]];
+   dw=BackPropogateLayer[wl[[1]],DeltaL[1]][[1]];
    dw/Max[dw]
 )
