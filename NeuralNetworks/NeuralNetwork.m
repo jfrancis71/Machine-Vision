@@ -290,6 +290,7 @@ WeightDec[networkLayer_Convolve2D,grad_]:=Convolve2D[networkLayer[[1]]-grad[[1]]
 *)
 SyntaxInformation[Convolve2DToFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,Convolve2DToFilterBank[filters_]]:=(
+   AbortAssert[(inputs[[1]]//Dimensions//Length)==2,"Convolve2DToFilterBank::inputs does not match 2D structure"];
    Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
 Backprop[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[Backprop[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
@@ -328,6 +329,7 @@ WeightDec[networkLayer_FilterBankToFilterBank,grad_]:=FilterBankToFilterBank[net
 (*Adaptor2DTo1D*)
 SyntaxInformation[Adaptor2DTo1D]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,Adaptor2DTo1D[width_]]:=(
+   AbortAssert[(inputs[[1,1]]//Length)==width,"Adaptor2DTo1D::widths of inputs does not match Adaptor width"];
    Map[Flatten,inputs]
 );
 Backprop[Adaptor2DTo1D[width_],postLayerDeltaA_]:=
