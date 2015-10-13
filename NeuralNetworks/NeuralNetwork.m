@@ -443,11 +443,10 @@ Backprop[RNorm,inputs_,postLayerDeltaA_]:=AbortAssert[0==1,"RNorm Backprop unimp
 
 (*SubsampleFilterBankToFilterBank*)
 SyntaxInformation[SubsampleFilterBankToFilterBank]={"ArgumentsPattern"->{}};
-ForwardPropogateLayer[inputs_,SubsampleFilterBankToFilterBank]:=Map[#[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}]
+ForwardPropogateLayer[inputs_,SubsampleFilterBankToFilterBank]:=Map[#[[1;;-1;;2,1;;-1;;2]]&,inputs,{2}];
+UpSample1[x_]:=Riffle[temp=Riffle[x,.0*x]//Transpose;temp,temp*.0]//Transpose;
 Backprop[SubsampleFilterBankToFilterBank,postLayerDeltaA_]:=
-   Table[If[OddQ[r]&&OddQ[c],postLayerDeltaA[[w,f,1+((r-1)/2),1+((c-1)/2)]],.0],
-      {w,1,Length[postLayerDeltaA]},{f,1,Length[postLayerDeltaA[[1]]]},
-      {r,1,2*Length[postLayerDeltaA[[1,1]]]},{c,1,2*Length[postLayerDeltaA[[1,1,1]]]}];
+   Map[UpSample1,postLayerDeltaA,{2}];
 LayerGrad[SubsampleFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[SubsampleFilterBankToFilterBank,grad_]:=SubsampleFilterBankToFilterBank;
 
