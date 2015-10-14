@@ -495,5 +495,5 @@ CheckDeltaSensitivity[levelCheck_:6,cellCheck_:{200,16,3,2},targets_]:={
 
 
 Size[net_,input_]:=(
-   Print["# of Parameters ",Level[wl,{-1}]//Length]; (*Slightly approx due to symbol vs function ie overcount Tanh etc *)
-   Print["# of Neurons ",ForwardPropogateLayers[{input},wl]//Flatten//Length];)
+   Print["# of Parameters ",Level[net,{-1}]//Length]; (*Slightly approx due to symbol vs function ie overcount Tanh etc *)
+   Print["# of Neurons ",ForwardPropogateLayers[{input},net]//Flatten//Length];)
