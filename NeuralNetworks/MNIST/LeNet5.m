@@ -28,48 +28,23 @@ Validation Classification: 96.7%
 
 
 MNISTLeNet5={
-   Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25]
-}],Tanh,
+   Convolve2DToFilterBankInit[6,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
-   ConvolveFilterBankToFilterBank[Table[
-      ConvolveFilterBankTo2D[0,{
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]}/25],
-      {f,1,16}]
-   ],Tanh,
+   ConvolveFilterBankToFilterBankInit[6,16,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[16,5,5],
-   FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*400}],400]-.5)/4000],
+   FullyConnected1DTo1DInit[16*5*5,120],Tanh,
+   FullyConnected1DTo1DInit[120,84],Tanh,
+   FullyConnected1DTo1DInit[84,10],
    Softmax
 };
 
 
-MNISTLeNet5TrainingInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[1;;10000]]*1.];
-MNISTLeNet5TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;10000]]];
-
-MNISTLeNet5ValidationInputs=Map[ArrayPad[#,{2,2}]&,TrainingImages[[50001;;55000]]*1.];
-MNISTLeNet5ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;55000]]];
-
-
-LeNet5Train:=(
-   name="MNIST\\LeNet5";
-   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin[GITBaseDir,name,".wdx"]];
-   AdaptiveGradientDescent[
-      wl,MNISTLeNet5TrainingInputs,MNISTLeNet5TrainingOutputs,
+TrainLeNet5:=MiniBatchGradientDescent[
+      wl,TrainingImages,TrainingTargets,
       NNGrad,ClassificationLoss,
-        {MaxLoop->500000,
-         UpdateFunction->CheckpointWebMonitor[name,5],
-         ValidationInputs->MNISTLeNet5ValidationInputs,
-         ValidationTargets->MNISTLeNet5ValidationOutputs,
+        {MaxEpoch->500000,
+         ValidationInputs->ValidationImages,
+         ValidationTargets->ValidationTargets,
+         StepMonitor->NNCheckpoint["MNIST\\LeNet5"],
          InitialLearningRate->\[Lambda]}];
-)

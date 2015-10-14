@@ -16,7 +16,7 @@ LFW=Join[
 (* corresponds to 1054 total faces, now 2515 *)
 
 
-images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\*\\"];
+images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\**\\"];
 
 
 patches=Flatten[Map[Partition[#,{32,32}]&,images],2];

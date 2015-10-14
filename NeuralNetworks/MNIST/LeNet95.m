@@ -7,7 +7,7 @@ http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf
 
 Network Architecture: Large Fully Connected Multi-Layer Neural Network
                       400-300-10
-
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REWRITE RESULTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
 They claim 1.6% test result
 
 Our Results:
@@ -17,6 +17,7 @@ Training Classification: 99.9%
 
 Validation Loss: .090
 Validation Classification: 97.3%
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxx
 *)
 
 
@@ -27,28 +28,23 @@ Validation Classification: 97.3%
 
 
 MNISTLeNet95Network={
-   Adaptor2DTo1D[20],
-   FullyConnected1DTo1D[ConstantArray[0.,300],Partition[Table[Random[],{300*400}]/400.,400]],Tanh,
-   FullyConnected1DTo1D[ConstantArray[0.,10],Partition[Table[Random[],{3000}]/300.,300]],
+   Adaptor2DTo1D[28],
+   FullyConnected1DTo1DInit[28*28,300],Tanh,
+   FullyConnected1DTo1DInit[300,10],
    Softmax};
 
 
-MNISTLeNet95TrainingInputs=TrainingImages[[1;;50000,5;;24,5;;24]]*1.;
-MNISTLeNet95TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;50000]]];
+wl=MNISTLeNet95Network;
+TrainingHistory={};
+ValidationHistory={};
+\[Lambda]=.01;
 
-MNISTLeNet95ValidationInputs=TrainingImages[[50001;;60000,5;;24,5;;24]]*1.;
-MNISTLeNet95ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;60000]]];
 
-
- LeNet95Train:=(
-   name="MNIST\\LeNet95";
-   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin[GITBaseDir,name,".wdx"]];
-   AdaptiveGradientDescent[
-      wl,MNISTLeNet95TrainingInputs,MNISTLeNet95TrainingOutputs,
+TrainLeNet95:=MiniBatchGradientDescent[
+      wl,TrainingImages,TrainingTargets,
       NNGrad,ClassificationLoss,
-        {MaxLoop->500000,
-         UpdateFunction->CheckpointWebMonitor[name,100],
-         ValidationInputs->MNISTLeNet95ValidationInputs,
-         ValidationTargets->MNISTLeNet95ValidationOutputs,
+        {MaxEpoch->200,
+         ValidationInputs->ValidationInputs,
+         ValidationTargets->ValidationTargets,
+         StepMonitor->NNCheckpoint["MNIST\\LeNet95"],
          InitialLearningRate->\[Lambda]}];
-)

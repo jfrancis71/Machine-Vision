@@ -27,44 +27,27 @@ Validation Classification: 97.2%
 
 SeedRandom[1234];
 MNISTLeNet1={
-   Convolve2DToFilterBank[{
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25],
-      Convolve2D[0,Partition[Table[Random[],{25}]-.5,5]/25]
-}],Tanh,
+   Convolve2DToFilterBankInit[4,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
-   ConvolveFilterBankToFilterBank[Table[
-      ConvolveFilterBankTo2D[0,{
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25,
-         Partition[Table[Random[],{25}]-.5,5]/25}/4],
-      {f,0,11}]
-   ],Tanh,
+   ConvolveFilterBankToFilterBankInit[4,12,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[12,4,4],
-   FullyConnected1DTo1D[Table[Random[],{10}],(Partition[Table[Random[],{10*192}],192]-.5)/1920],
+   FullyConnected1DTo1DInit[12*4*4,10],
    Softmax
 };
 
 
-MNISTLeNet1TrainingInputs=TrainingImages[[1;;10000,1;;28,1;;28]]*1.;
-MNISTLeNet1TrainingOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[1;;10000]]];
+wl=MNISTLeNet1;
+TrainingHistory={};
+ValidationHistory={};
+\[Lambda]=.01;
 
-MNISTLeNet1ValidationInputs=TrainingImages[[50001;;55000,1;;28,1;;28]]*1.;
-MNISTLeNet1ValidationOutputs=Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels[[50001;;55000]]];
 
-
-LeNet1Train:=(
-   name="MNIST\\LeNet1";
-   {TrainingHistory,ValidationHistory,wl,\[Lambda]}=Import[StringJoin["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\",name,".wdx"]];
-   AdaptiveGradientDescent[
-      wl,MNISTLeNet1TrainingInputs,MNISTLeNet1TrainingInputs,
+TrainLeNet1:=MiniBatchGradientDescent[
+      wl,TrainingImages,TrainingTargets,
       NNGrad,ClassificationLoss,
-        {MaxLoop->500000,
-         UpdateFunction->CheckpointWebMonitor[name,100],
-         ValidationInputs->MNISTLeNet1ValidationInputs,
-         ValidationTargets->MNISTLeNet1ValidationOutputs,
+        {MaxEpoch->500000,
+         ValidationInputs->ValidationImages,
+         ValidationTargets->ValidationTargets,
+         StepMonitor->NNCheckpoint["MNIST\\LeNet1"],
          InitialLearningRate->\[Lambda]}];
-)
