@@ -28,6 +28,7 @@ Validation Classification: 96.7%
 
 
 MNISTLeNet5={
+   PadFilter[2],
    Convolve2DToFilterBankInit[6,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    ConvolveFilterBankToFilterBankInit[6,16,5],Tanh,
@@ -38,6 +39,12 @@ MNISTLeNet5={
    FullyConnected1DTo1DInit[84,10],
    Softmax
 };
+
+
+wl=MNISTLeNet5;
+TrainingHistory={};
+ValidationHistory={};
+\[Lambda]=.01;
 
 
 TrainLeNet5:=MiniBatchGradientDescent[
