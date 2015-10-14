@@ -68,7 +68,7 @@ TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts___]:=(
       net,data,data,
       NoisyTiedGrad,TieLoss[lossF],
         {MaxEpoch->(MaxIterations/.{opts}/.Options[TrainAutoencoder]),
-         InitialLearningRate->.1}];
+         InitialLearningRate->.01}];
    {wl[[1;;2]],TieNet[wl][[3;;4]]})
 
 
