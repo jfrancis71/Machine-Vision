@@ -31,7 +31,7 @@ Options[BackPropogation] = { L1A->0.0 };
 SyntaxInformation[L1A]={"ArgumentsPattern"->{}};
 BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
 
-   xL1A = (L1A/.{opts}/.Options[BackPropogation]);
+   {xL1A} = (L1A/.{opts}/.Options[BackPropogation]);
 
    L = Timer["ForwardPropogateLayers",ForwardPropogateLayers[inputs, currentParameters]];
    networkLayers=Length[currentParameters];
@@ -133,7 +133,7 @@ GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,alg
    validationLoss=\[Infinity];
    {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} =
       ({ValidationInputs,ValidationTargets,MaxEpoch,StepMonitor,InitialLearningRate} /.
-         {opts}/.Options[BackPropogation])[[1]];
+         {opts}/.Options[GenericGradientDescent])[[1]];
 
    Print["Epoch: ",Dynamic[epoch]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
    If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
