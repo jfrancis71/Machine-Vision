@@ -42,10 +42,10 @@ ValidationHistory={};
 
 
 TrainLogistic:=MiniBatchGradientDescent[
-      wl,TrainingImages,TrainingTargets,
+      wl,TrainingImages,MNISTTrainingTargets,
       NNGrad,ClassificationLoss,
         {MaxEpoch->200,
-         ValidationInputs->ValidationInputs,
-         ValidationTargets->ValidationTargets,
+         ValidationInputs->ValidationImages,
+         ValidationTargets->MNISTValidationTargets,
          StepMonitor->NNCheckpoint["MNIST\\Logistic"],
          InitialLearningRate->\[Lambda]}];

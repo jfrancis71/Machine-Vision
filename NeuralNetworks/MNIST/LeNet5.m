@@ -48,10 +48,10 @@ ValidationHistory={};
 
 
 TrainLeNet5:=MiniBatchGradientDescent[
-      wl,TrainingImages,TrainingTargets,
+      wl,TrainingImages,MNISTTrainingTargets,
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
          ValidationInputs->ValidationImages,
-         ValidationTargets->ValidationTargets,
+         ValidationTargets->MNISTValidationTargets,
          StepMonitor->NNCheckpoint["MNIST\\LeNet5"],
          InitialLearningRate->\[Lambda]}];

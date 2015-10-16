@@ -44,10 +44,10 @@ ValidationHistory={};
 
 
 TrainLeNet1:=MiniBatchGradientDescent[
-      wl,TrainingImages,TrainingTargets,
+      wl,TrainingImages,MNISTTrainingTargets,
       NNGrad,ClassificationLoss,
-        {MaxEpoch->500000,
+        {MaxEpoch->200,
          ValidationInputs->ValidationImages,
-         ValidationTargets->ValidationTargets,
+         ValidationTargets->MNISTValidationTargets,
          StepMonitor->NNCheckpoint["MNIST\\LeNet1"],
          InitialLearningRate->\[Lambda]}];

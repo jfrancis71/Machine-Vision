@@ -31,9 +31,9 @@ ValidationLabels = ReadMINSTLabelFile["C:\\Users\\Julian\\ImageDataSetsPublic\\M
 TestLabels = ReadMINSTLabelFile["C:\\Users\\Julian\\ImageDataSetsPublic\\MNIST\\t10k-labels-idx1-ubyte"];
 
 (* Converting to the 1 of K target format *)
-TrainingTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels];
-ValidationTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
-TestTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TestLabels];
+MNISTTrainingTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TrainingLabels];
+MNISTValidationTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,ValidationLabels];
+MNISTTestTargets = Map[ReplacePart[ConstantArray[0,10],(#+1)->1]&,TestLabels];
 
 
 (*func is a function which takes an array of size*size and
