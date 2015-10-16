@@ -29,9 +29,9 @@ ForwardPropogate[inputs_,network_]:=
 
 Options[BackPropogation] = { L1A->0.0 };
 SyntaxInformation[L1A]={"ArgumentsPattern"->{}};
-BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
+BackPropogation[currentParameters_,inputs_,targets_,lossF_,OptionsPattern[]]:=(
 
-   {xL1A} = (L1A/.{opts}/.Options[BackPropogation]);
+   xL1A = OptionValue[L1A];
 
    L = Timer["ForwardPropogateLayers",ForwardPropogateLayers[inputs, currentParameters]];
    networkLayers=Length[currentParameters];
@@ -74,12 +74,12 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
    targets has shape T*O where O is the number of output units
 *)
 Options[NNGrad] = {};
-NNGrad[currentParameters_,inputs_,targets_,lossF_,opts___]:=(
+NNGrad[currentParameters_,inputs_,targets_,lossF_,opts:OptionsPattern[]]:=(
 
    AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
    Timer["BackPropogation Total",
-   BackPropogation[currentParameters,inputs,targets,lossF,opts];];
+   BackPropogation[currentParameters,inputs,targets,lossF,FilterRules[{opts}, Options[BackPropogation]]];];
 
    Timer["LayerGad",
    Prepend[
