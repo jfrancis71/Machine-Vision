@@ -72,6 +72,17 @@ TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts___]:=(
    {wl[[1;;2]],TieNet[wl][[3;;4]]})
 
 
+PreTrainStackedAutoencoder[dat_?MatrixQ,layers_?VectorQ,opts___]:=
+   If[Length[layers]>=2,
+      Module[{
+         codec=TrainAutoencoder[First[layers],First[Rest[layers]],dat,RegressionLoss1D,opts]},
+(* Slightly odd nesting because of dependancy of second definition on first *)
+         Module[{
+            codecs=PreTrainStackedAutoencoder[ForwardPropogate[dat,codec[[1]]],Rest[layers],opts]},
+            {Join[codec[[1]],codecs[[1]]],Join[codecs[[2]],codec[[2]]]}]],
+   {{},{}}]
+
+
 TrainStackedAutoencoder[dat_]:=(
    TrainingHistory={};
 
