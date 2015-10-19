@@ -3,28 +3,32 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
-LFWADir="C:\\Users\\julian\\ImageDataSetsPublic\\LFW-A\\lfw2\\A*";
+LFWDir="C:\\Users\\julian\\ImageDataSetsPublic\\LFW\\lfw\\";
 
 
-files=FileNames[LFWADir<>"\\*.jpg"];
+LFW=Join[
+   ReadImagesFromDirectory[LFWDir<>"\\A*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\B*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\C*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\D*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\E*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\F*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\G*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\H*\\",32],
+   ReadImagesFromDirectory[LFWDir<>"\\I*\\",32]
+];
 
 
-(* corresponds to 1054 total faces *)
-
-
-images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\30062014"];
+images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\**\\"];
 
 
 patches=Flatten[Map[Partition[#,{32,32}]&,images],2];
 
 
-(* There are 2512 patches *)
+RawTrainingImages=Join[LFW[[1;;5000]],patches[[1;;5000]]];
 
 
-RawTrainingImages=Join[LFW,patches[[1;;1000]]];
-
-
-RawTrainingLabels=Join[ConstantArray[1,LFW//Length],ConstantArray[0,patches[[1;;1000]]//Length]];
+RawTrainingLabels=Join[ConstantArray[1,5000],ConstantArray[0,5000]];
 
 
 SeedRandom[1234];

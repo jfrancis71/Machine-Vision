@@ -38,10 +38,10 @@ ValidationHistory={};
 
 
 TrainFaceNet:=MiniBatchGradientDescent[
-      wl,FaceImages[[1;;1800]],FaceLabels[[1;;1800]],
+      wl,FaceImages[[1;;2000]],FaceLabels[[1;;2000]],
       NNGrad,CrossEntropyLoss,
         {MaxEpoch->500000,
-         ValidationInputs->FaceImages[[1801;;2000]],
-         ValidationTargets->FaceLabels[[1801;;2000]],
+         ValidationInputs->FaceImages[[9001;;10000]],
+         ValidationTargets->FaceLabels[[9001;;10000]],
          UpdateFunction->NNCheckpoint["Face\\FaceNet"],
          InitialLearningRate->\[Lambda]}];

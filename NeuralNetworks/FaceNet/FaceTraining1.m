@@ -14,7 +14,7 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/FaceNet/FaceData1.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/FaceNet/FaceData.m"
 
 
 SeedRandom[1234];
@@ -38,10 +38,10 @@ ValidationHistory={};
 
 
 TrainFaceNet:=MiniBatchGradientDescent[
-      wl,FaceImages[[1;;1800]],FaceLabels[[1;;1800]],
+      wl,FaceImages[[1;;9000]],FaceLabels[[1;;9000]],
       NNGrad,CrossEntropyLoss,
         {MaxEpoch->500000,
-         ValidationInputs->FaceImages[[1801;;2000]],
-         ValidationTargets->FaceLabels[[1801;;2000]],
+         ValidationInputs->FaceImages[[9001;;10000]],
+         ValidationTargets->FaceLabels[[9001;;10000]],
          UpdateFunction->NNCheckpoint["Face\\FaceNet1"],
          InitialLearningRate->\[Lambda]}];
