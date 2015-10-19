@@ -127,36 +127,34 @@ SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationTargets]={"ArgumentsPattern"->{}};
 SyntaxInformation[InitialLearningRate]={"ArgumentsPattern"->{}};
-GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,opts___]:=(
+GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,opts:OptionsPattern[]]:=(
 
    trainingLoss=\[Infinity];
    validationLoss=\[Infinity];
-   {validationInputs,validationTargets,maxEpoch,updateF,\[Lambda]} =
-      ({ValidationInputs,ValidationTargets,MaxEpoch,StepMonitor,InitialLearningRate} /.
-         {opts}/.Options[GenericGradientDescent])[[1]];
 
+   \[Lambda] = OptionValue[InitialLearningRate];
    Print["Epoch: ",Dynamic[epoch]," Training Loss ",Dynamic[trainingLoss], " \[Lambda]=",Dynamic[\[Lambda]]];
-   If[validationInputs!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
+   If[OptionValue[ValidationInputs]!={},Print[" Validation Loss ",Dynamic[validationLoss]]];
    Print[Dynamic[grOutput]];
-   For[wl=initialParameters;epoch=1,epoch<=maxEpoch,epoch++,
+   For[wl=initialParameters;epoch=1,epoch<=OptionValue[MaxEpoch],epoch++,
       algoF[];
-      If[validationInputs!={},
+      If[OptionValue[ValidationInputs]!={},
         (*Note the validation can be done here as it is assumed it is small enough to compute in memory*)
-         validationLoss=lossF[wl,validationInputs,validationTargets];
+         validationLoss=lossF[wl,OptionValue[ValidationInputs],OptionValue[ValidationTargets]];
          AppendTo[ValidationHistory,validationLoss];,
          0];
       AppendTo[TrainingHistory,trainingLoss];
-      updateF[];
+      OptionValue[StepMonitor][];
    ]);
 
-GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts___]:=
+GradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  gw=gradientF[wl,inputs,targets,lossF,opts];
          wl=WeightDec[wl,\[Lambda]*gw];
          trainingLoss=lossF[wl,inputs,targets];)&,
       opts];
 
-AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts___]:=
+AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  gw=gradientF[wl,inputs,targets,lossF,opts];
          {\[Lambda],trainingLoss}=LineSearch[{\[Lambda],gw,trainingLoss},lossF[WeightDec[wl,#],inputs,targets]&];
@@ -165,7 +163,7 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       opts];
 
 
-MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts___]:=(
+MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=(
    Print["Batch #:", Dynamic[batch], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  partialTrainingLoss={};batch=0;

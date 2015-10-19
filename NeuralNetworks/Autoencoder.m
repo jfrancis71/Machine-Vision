@@ -54,10 +54,10 @@ TieLoss[RegressionLoss1D]:=TiedRegressionLoss1D
 TieLoss[_]:=AbortAssert[0,"TieLoss: Unrecognised loss function"];
 
 
-Options[TrainAutoencoder] = { MaxIterations -> 2000 };
+Options[TrainAutoencoder] = {};
 
 
-TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts___]:=(
+TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts:OptionsPattern[]]:=(
    SeedRandom[1234];
    net={
       FullyConnected1DTo1DInit[in,out],
@@ -67,12 +67,11 @@ TrainAutoencoder[in_Integer,out_Integer,data_,lossF_,opts___]:=(
    MiniBatchGradientDescent[
       net,data,data,
       NoisyTiedGrad,TieLoss[lossF],
-        {MaxEpoch->(MaxIterations/.{opts}/.Options[TrainAutoencoder]),
-         InitialLearningRate->.01}];
+        opts];
    {wl[[1;;2]],TieNet[wl][[3;;4]]})
 
 
-PreTrainStackedAutoencoder[dat_?MatrixQ,layers_?VectorQ,opts___]:=
+PreTrainStackedAutoencoder[dat_?MatrixQ,layers_?VectorQ,opts:OptionsPattern[]]:=
    If[Length[layers]>=2,
       Module[{
          codec=TrainAutoencoder[First[layers],First[Rest[layers]],dat,RegressionLoss1D,opts]},
@@ -83,22 +82,22 @@ PreTrainStackedAutoencoder[dat_?MatrixQ,layers_?VectorQ,opts___]:=
    {{},{}}]
 
 
-TrainStackedAutoencoder[dat_]:=(
+TrainStackedAutoencoder[dat_,opts:OptionsPattern[]]:=(
    TrainingHistory={};
 
    AbortAssert[MatrixQ[dat],"TrainStackedAutoencoder::Data must be flat."];
 
    layer1Dat=dat;
-   {encoder1,decoder1}=TrainAutoencoder[layer1Dat[[1]]//Length,500,layer1Dat,CrossEntropyLoss];
+   {encoder1,decoder1}=TrainAutoencoder[layer1Dat[[1]]//Length,500,layer1Dat,CrossEntropyLoss,opts];
 
    layer2Dat=ForwardPropogate[layer1Dat,encoder1];
-   {encoder2,decoder2}=TrainAutoencoder[500,250,layer2Dat,RegressionLoss1D];
+   {encoder2,decoder2}=TrainAutoencoder[500,250,layer2Dat,RegressionLoss1D,opts];
 
    layer3Dat=ForwardPropogate[layer2Dat,encoder2];
-   {encoder3,decoder3}=TrainAutoencoder[250,125,layer3Dat,RegressionLoss1D];
+   {encoder3,decoder3}=TrainAutoencoder[250,125,layer3Dat,RegressionLoss1D,opts];
 
    layer4Dat=ForwardPropogate[layer3Dat,encoder3];
-   {encoder4,decoder4}=TrainAutoencoder[125,64,layer4Dat,RegressionLoss1D];
+   {encoder4,decoder4}=TrainAutoencoder[125,64,layer4Dat,RegressionLoss1D,opts];
 
    {encoder,decoder}={Flatten[{encoder1,encoder2,encoder3,encoder4}],Flatten[{decoder1,decoder2,decoder3,decoder4}//Reverse]};
 )
