@@ -27,3 +27,14 @@ score[MathImage_]:=Max[ForwardPropogate[Flatten[rectify[MathImage],1],wl]];
 
 
 WebImportImages[url_]:=Import[url,"Images"];
+
+
+(* Quite primitive, will require that the scaling for the image is appropriate or
+   altering the scale factor below
+*)
+FaceMap[image_]:=(
+   im=ImageData[ColorConvert[ImageResize[image,{2592,1944}/16],"GrayScale"]]//Reverse;
+   parts=Partition[im,{32,32},{1,1}];
+   lineDens=ForwardPropogate[parts[[50]],wl][[All,1]];
+   dens=Monitor[Table[ForwardPropogate[parts[[l]],wl][[All,1]],{l,1,91}],l];
+)
