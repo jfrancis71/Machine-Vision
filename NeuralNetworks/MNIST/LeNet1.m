@@ -9,13 +9,13 @@ Network Architecture: Convolutional Network, see Figure 1 in above paper
 
 They claim 1.7% test result
 
-Our Results: (Training set size, 10,000)
-Iteration: 991, approx 12 hours
-Training Loss: .025
-Training Classification: 99.6%
+Our Results:
+Iteration: 200
+Training Loss: .044
+Training Classification: 1.4%
 
-Validation Loss: .096
-Validation Classification: 97.2%
+Validation Loss: .139
+Validation Classification: 1.8%
 *)
 
 

@@ -6,18 +6,18 @@
 http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
 
 Network Architecture: Convolutional Network, see Figure 2 in above paper
-I think we're missing a final convolutional layer, not sure what it did in original paper
-as layer too small to fit filter.
 
 They claim .9% test result
 
 Our Results:
-Iteration: 421
-Training Loss: .084
-Training Classification: 97.7%
+Iteration: 200
+Training Loss: .011
+Training Classification: .004%
 
-Validation Loss: .118
-Validation Classification: 96.7%
+Validation Loss: .111
+Validation Classification: 1.8%
+
+Looks like we may have slightly overtrained
 *)
 
 

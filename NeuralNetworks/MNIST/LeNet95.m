@@ -7,17 +7,18 @@ http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf
 
 Network Architecture: Large Fully Connected Multi-Layer Neural Network
                       400-300-10
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REWRITE RESULTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+
 They claim 1.6% test result
 
 Our Results:
-Iteration: 3201
-Training Loss: .010
-Training Classification: 99.9%
+Iteration: 200
+Training Loss: .05
+Training Classification: 1.3%
 
-Validation Loss: .090
-Validation Classification: 97.3%
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxx
+Validation Loss: .15
+Validation Classification: 2.6%
+
+Comment: Looks like more training possible
 *)
 
 

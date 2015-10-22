@@ -11,14 +11,14 @@ Network Architecture: Linear Network
 They claim 8.4% test result (i.e. 91.6% correct)
 
 Our Results:
-Iteration: 
-Training Loss: 
-Training Classification: 
+Iteration: 200
+Training Loss: .271
+Training Error: 7.6%
 
-Validation Loss: 
-Validation Classification: 
+Validation Loss: .256
+Validation Error: 4.8%
 
-
+Comment: Looks like we could train some more from graph.
 *)
 
 
