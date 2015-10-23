@@ -43,5 +43,5 @@ TrainFaceNet:=MiniBatchGradientDescent[
         {MaxEpoch->500000,
          ValidationInputs->FaceImages[[9001;;10000]],
          ValidationTargets->FaceLabels[[9001;;10000]],
-         UpdateFunction->NNCheckpoint["Face\\FaceNet1"],
+         StepMonitor->NNCheckpoint["Face\\FaceNet1"],
          InitialLearningRate->\[Lambda]}];
