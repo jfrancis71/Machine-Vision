@@ -462,13 +462,14 @@ WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
+Needs["Developer`"];
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
    AbortAssert[Max[inputs]<1.4,"BackPropogateLayer::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
 (*   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
    u2=Map[Max[Flatten[#]]&,u1,{4}];*)
-   Timer["MaxConvolveFilterBankToFilterBank::u3",u3=Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,outputs,{2}]];
+   Timer["MaxConvolveFilterBankToFilterBank::u3",u3=ToPackedArray[Map[Partition[#,{3,3},{1,1},{-2,+2},1.5]&,outputs,{2}]]];
    Timer["MaxConvolveFilterBankToFilterBank::u4",u4=UnitStep[inputs-u3]];
-   Timer["MaxConvolveFilterBankToFilterBank::u5",u5=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,postLayerDeltaA,{2}]];
+   Timer["MaxConvolveFilterBankToFilterBank::u5",u5=ToPackedArray[Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,postLayerDeltaA,{2}]]];
    Timer["MaxConvolveFilterBankToFilterBank::u6",u6=u4*u5];
    Timer["MaxConvolveFilterBankToFilterBank::u7",u7=Map[Total[Flatten[#]]&,u6,{4}]])
 GradLayer[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
