@@ -81,10 +81,10 @@ NNGrad[currentParameters_,inputs_,targets_,lossF_,opts:OptionsPattern[]]:=(
    Timer["BackPropogation Total",
    BackPropogation[currentParameters,inputs,targets,lossF,FilterRules[{opts}, Options[BackPropogation]]];];
 
-   Timer["LayerGad",
+   Timer["LayerGrad",
    Prepend[
       Table[
-         GradLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]
+         Timer["LayerGrad::"<>LayerName[currentParameters[[layerIndex]]],GradLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]]
          ,{layerIndex,2,Length[currentParameters]}],
       GradLayer[currentParameters[[1]],inputs,DeltaL[1]]
    ]]
