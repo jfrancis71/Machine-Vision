@@ -244,6 +244,9 @@ MaxConvolveFilterBankToFilterBank - Each filter in the filter bank is convolved 
 *)
 
 
+Needs["Developer`"];
+
+
 (*FullyConnected1D Layer*)
 (*
    Layer L has U units and preceeding layer has P units
@@ -352,9 +355,18 @@ WeightDec[networkLayer_ConvolveFilterBankTo2D,grad_]:=ConvolveFilterBankTo2D[net
 
 (*ConvolveFilterBankToFilterBank*)
 SyntaxInformation[ConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{_}};
-ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
-   Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
-);
+(* Ref: http://www.jimmyren.com/papers/aaai_vcnn.pdf
+   On Vectorization of deep convolutional neural networks for vision tasks
+   Jimmy Ren, Li Xu, 2015
+*)
+ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(i1=inputs;i2=filters;
+   i3=(Map[Flatten,
+         Transpose[Map[Partition[#,{5,5},{1,1}]&,inputs,{2}],{1,4,2,3,5,6}],{3}].
+      Transpose[Map[Flatten,filters[[All,2]]]]);
+
+   i4=Transpose[i3,{1,3,4,2}];
+   Do[i4[[All,t]]=i4[[All,t]]+filters[[All,1]][[t]],{t,1,Length[i4[[1]]]}];i4
+)
 BackPropogateLayer[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
    Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
 GradLayer[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
@@ -462,7 +474,7 @@ WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
-Needs["Developer`"];
+
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
    AbortAssert[Max[inputs]<1.4,"BackPropogateLayer::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];
 (*   u1=Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}];
