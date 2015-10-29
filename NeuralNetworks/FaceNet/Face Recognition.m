@@ -38,3 +38,6 @@ FaceMap[image_]:=(
    lineDens=ForwardPropogate[parts[[50]],wl][[All,1]];
    dens=Monitor[Table[ForwardPropogate[parts[[l]],wl][[All,1]],{l,1,91}],l];
 )
+
+
+FaceUI:=CameraRecognition[Function[image,{"                ",(im1=Map[Reverse,image[[64-31;;64+31;;2,64-31;;64+31;;2]]]);BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1}],im1//DispImage}]];

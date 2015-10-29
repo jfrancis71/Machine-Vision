@@ -442,7 +442,7 @@ SyntaxInformation[PadFilterBank]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,PadFilterBank[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs,{2}]
 BackPropogateLayer[PadFilterBank[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,All,padding+1;;-padding-1,padding+1;;-padding-1]];
-GradLayer[PadFilterBank,layerInputs_,layerOutputDelta_]:={};
+GradLayer[PadFilterBank[padding_],layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilterBank[padding_],grad_]:=PadFilterBank[padding];
 
 (* Ref: https://code.google.com/p/cuda-convnet/wiki/LayerParams# Local_response _normalization _layer _(same_map) *)
@@ -467,12 +467,12 @@ SyntaxInformation[PadFilter]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,PadFilter[padding_]]:=Map[ArrayPad[#,padding,.0]&,inputs];
 BackPropogateLayer[PadFilter[padding_],postLayerDeltaA_]:=
    postLayerDeltaA[[All,padding+1;;-padding-1,padding+1;;-padding-1]];
-GradLayer[PadFilter,layerInputs_,layerOutputDelta_]:={};
+GradLayer[PadFilter[padding_],layerInputs_,layerOutputDelta_]:={};
 WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 
 (*MaxConvolveFilterBankToFilterBank*)
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
-ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max[Flatten[#]]&,
+ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=Map[Max,
    Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}];
 
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
