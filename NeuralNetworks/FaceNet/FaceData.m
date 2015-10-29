@@ -6,29 +6,22 @@
 LFWDir="C:\\Users\\julian\\ImageDataSetsPublic\\LFW\\lfw\\";
 
 
-LFW=Join[
-   ReadImagesFromDirectory[LFWDir<>"\\A*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\B*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\C*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\D*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\E*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\F*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\G*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\H*\\",32],
-   ReadImagesFromDirectory[LFWDir<>"\\I*\\",32]
-];
+LFW=ReadImagesFromDirectory[LFWDir<>"\\*\\",32];
 
 
-images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\**\\"];
+images=ReadImagesFromDirectory["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Coolpix\\*\\"];
 
 
 patches=Flatten[Map[Partition[#,{32,32}]&,images],2];
 
 
-RawTrainingImages=Join[LFW[[1;;5000]],patches[[1;;5000]]];
+(* Very small imbalance in favour of LWF. Approx 13,000 positives. Training around 26,000 *)
 
 
-RawTrainingLabels=Join[ConstantArray[1,5000],ConstantArray[0,5000]];
+RawTrainingImages=Join[LFW,patches];
+
+
+RawTrainingLabels=Join[ConstantArray[1,Length[LFW]],ConstantArray[0,Length[patches]]];
 
 
 SeedRandom[1234];

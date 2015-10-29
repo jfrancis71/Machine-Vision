@@ -14,9 +14,6 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
-(* Training using the 10,000 examples version of FaceData *)
-
-
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/FaceNet/FaceData.m"
 
 
@@ -41,10 +38,10 @@ ValidationHistory={};
 
 
 TrainFaceNet:=MiniBatchGradientDescent[
-      wl,FaceImages[[1;;9000]],FaceLabels[[1;;9000]],
+      wl,FaceImages[[1;;-1001]],FaceLabels[[1;;-1001]],
       NNGrad,CrossEntropyLoss,
         {MaxEpoch->500000,
-         ValidationInputs->FaceImages[[9001;;10000]],
-         ValidationTargets->FaceLabels[[9001;;10000]],
-         StepMonitor->NNCheckpoint["Face\\FaceNet1"],
+         ValidationInputs->FaceImages[[-1000;;-1]],
+         ValidationTargets->FaceLabels[[-1000;;-1]],
+         StepMonitor->NNCheckpoint["Face\\FaceNet2"],
          InitialLearningRate->\[Lambda]}];
