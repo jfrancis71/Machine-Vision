@@ -379,7 +379,10 @@ ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(i1=inp
 BackPropogateLayer[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_]:=
    Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
 GradLayer[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
-   Table[{Total[layerOutputDelta[[All,filterOutputIndex]],3],Table[Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterOutputIndex]],layerInputs[[All,l]]}]],{l,1,Length[layerInputs[[1]]]}]},{filterOutputIndex,1,Length[filters]}]
+   Table[{
+      Total[layerOutputDelta[[All,filterOutputIndex]],3],
+      ListCorrelate[Transpose[{layerOutputDelta[[All,filterOutputIndex]]},{2,1,3,4}],layerInputs][[1]]},
+      {filterOutputIndex,1,Length[filters]}]
 WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]];
 ConvolveFilterBankToFilterBankInit[noOldFilterBank_,noNewFilterBank_,filterSize_]:=
    ConvolveFilterBankToFilterBank[
