@@ -23,8 +23,9 @@ ForwardPropogateLayers[inputs_,network_]:=
    Rest[FoldList[
       Timer["ForwardPropogateLayer::"<>LayerName[#2],ForwardPropogateLayer[#1,#2]]&,inputs,network]]
 
-ForwardPropogate[inputs_,network_]:=
-   ForwardPropogateLayers[inputs,network][[-1]]
+ForwardPropogate[inputs_,network_]:=MemoryConstrained[
+   ForwardPropogateLayers[inputs,network][[-1]],
+   If[$VersionNumber<9,3 10^9,10^10]]
 
 
 Options[BackPropogation] = { L1A->0.0 };
@@ -220,6 +221,10 @@ ClassificationPerformance[network_,inputs_,targets_]:=
 ];
 
 
+Classify[inputs_,wl_]:=Module[{outputs=ForwardPropogate[inputs,wl]},
+   Table[Position[outputs[[t]],Max[outputs[[t]]]][[1,1]],{t,1,Length[inputs]}]-1];
+
+
 (*Layer Types
 
 FullyConnected1DTo1D - Vector of weights required for each neurone in subsequent layer
@@ -295,7 +300,11 @@ ForwardPropogateLayer[inputs_,Convolve2DToFilterBank[filters_]]:=(
    Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
 BackPropogateLayer[Convolve2DToFilterBank[filters_],postLayerDeltaA_]:=Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
-GradLayer[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=Table[{Total[layerOutputDelta[[All,filterIndex]],3],Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},{filterIndex,1,Length[filters]}];
+GradLayer[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
+   Table[{
+         Total[layerOutputDelta[[All,filterIndex]],3],
+         Apply[Plus,MapThread[ListCorrelate,{layerOutputDelta[[All,filterIndex]],layerInputs}]]},
+      {filterIndex,1,Length[filters]}];
 WeightDec[networkLayer_Convolve2DToFilterBank,grad_]:=Convolve2DToFilterBank[WeightDec[networkLayer[[1]],grad]];
 Convolve2DToFilterBankInit[noNewFilterBank_,filterSize_]:=
    Convolve2DToFilterBank[
