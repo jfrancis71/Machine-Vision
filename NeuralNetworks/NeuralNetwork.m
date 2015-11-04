@@ -123,11 +123,14 @@ LineSearch[{\[Lambda]_,v_,current_},objectiveF_]:=
 NullFunction[]=Function[{},(Null)];
 Options[GenericGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,
-   ValidationInputs->{},ValidationTargets->{}};
+   ValidationInputs->{},ValidationTargets->{},
+   Momentum->0.0
+};
 SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationTargets]={"ArgumentsPattern"->{}};
 SyntaxInformation[InitialLearningRate]={"ArgumentsPattern"->{}};
+SyntaxInformation[Momentum]={"ArgumentsPattern"->{}};
 GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,opts:OptionsPattern[]]:=(
 
    trainingLoss=\[Infinity];
@@ -164,15 +167,25 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
       opts];
 
 
+Options[MiniBatchGradientDescent] = { MaxEpoch -> 20000,
+   StepMonitor->NullFunction, InitialLearningRate->.01,
+   ValidationInputs->{},ValidationTargets->{},
+   Momentum->0.0
+};
+(* http://www.cs.toronto.edu/~fritz/absps/momentum.pdf *)
+(* On the importance of initialization and momentum in deep learning *)
+(* Sutskever, Martens, Dahl, Hinton (2013) *)
 MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=(
    Print["Batch #:", Dynamic[batch], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
+   velocity=0.0;
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  partialTrainingLoss={};batch=0;
          MapThread[
             (
             batch++;
             gw=gradientF[wl,#1,#2,lossF,opts];
-            wl=WeightDec[wl,\[Lambda]*gw];
+            velocity = OptionValue[Momentum]*velocity + \[Lambda]*gw; (* Note look at paper, this is more CM than Nesterov *)
+            wl=WeightDec[wl,velocity];
             AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
          {Partition[inputs,100],Partition[targets,100]}];
          trainingLoss = Mean[partialTrainingLoss])&,
@@ -383,7 +396,7 @@ GradLayer[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta
       Total[layerOutputDelta[[All,filterOutputIndex]],3],
       ListCorrelate[Transpose[{layerOutputDelta[[All,filterOutputIndex]]},{2,1,3,4}],layerInputs][[1]]},
       {filterOutputIndex,1,Length[filters]}]
-WeightDec[networkLayer_ConvolveFilterBankToFilterBank,grad_]:=ConvolveFilterBankToFilterBank[WeightDec[networkLayer[[1]],grad]];
+WeightDec[ConvolveFilterBankToFilterBank[filters_],grad_]:=ConvolveFilterBankToFilterBank[WeightDec[filters,grad]];
 ConvolveFilterBankToFilterBankInit[noOldFilterBank_,noNewFilterBank_,filterSize_]:=
    ConvolveFilterBankToFilterBank[
       Table[ConvolveFilterBankTo2D[0.,
