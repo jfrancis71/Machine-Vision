@@ -40,4 +40,7 @@ FaceMap[image_]:=(
 )
 
 
-FaceUI:=CameraRecognition[Function[image,{"                ",(im1=Map[Reverse,image[[64-31;;64+31;;2,64-31;;64+31;;2]]]);BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1}],im1//DispImage}]];
+FaceUI:=CameraRecognition[Function[image,{
+"                ",
+(im1=Map[Reverse,image[[64-31;;64+31;;2,64-31;;64+31;;2]]]);
+BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1}],im1//DispImage,Abs[Salient[{1},im1]]//DispImage}]];
