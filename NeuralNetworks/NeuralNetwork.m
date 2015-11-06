@@ -124,13 +124,15 @@ NullFunction[]=Function[{},(Null)];
 Options[GenericGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,
    ValidationInputs->{},ValidationTargets->{},
-   Momentum->0.0
+   Momentum->0.0,
+   MomentumType->"CM"
 };
 SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationTargets]={"ArgumentsPattern"->{}};
 SyntaxInformation[InitialLearningRate]={"ArgumentsPattern"->{}};
 SyntaxInformation[Momentum]={"ArgumentsPattern"->{}};
+SyntaxInformation[MomentumType]={"ArgumentsPattern"->{}};
 GenericGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,algoF_,opts:OptionsPattern[]]:=(
 
    trainingLoss=\[Infinity];
@@ -170,21 +172,22 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
 Options[MiniBatchGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,
    ValidationInputs->{},ValidationTargets->{},
-   Momentum->0.0
+   Momentum->0.0,
+   MomentumType->"CM"
 };
 (* http://www.cs.toronto.edu/~fritz/absps/momentum.pdf *)
 (* On the importance of initialization and momentum in deep learning *)
 (* Sutskever, Martens, Dahl, Hinton (2013) *)
 MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=(
    Print["Batch #:", Dynamic[batch], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
-   velocity=0.0;
+   velocity=0.0;initMB=0;
    GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
       (  partialTrainingLoss={};batch=0;
          MapThread[
             (
             batch++;
-            gw=gradientF[wl,#1,#2,lossF,opts];
-            velocity = OptionValue[Momentum]*velocity + \[Lambda]*gw; (* Note look at paper, this is more CM than Nesterov *)
+            gw=If[MomentumType!="Nesterov"||initMB==0,gradientF[wl,#1,#2,lossF,opts],gradientF[WeightDec[wl,OptionValue[Momentum]*velocity],#1,#2,lossF,opts]];
+            velocity = OptionValue[Momentum]*velocity + \[Lambda]*gw; initMB=1;
             wl=WeightDec[wl,velocity];
             AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
          {Partition[inputs,100],Partition[targets,100]}];
