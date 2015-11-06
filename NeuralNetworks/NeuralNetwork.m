@@ -186,7 +186,7 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
          MapThread[
             (
             batch++;
-            gw=If[MomentumType!="Nesterov"||initMB==0,gradientF[wl,#1,#2,lossF,opts],gradientF[WeightDec[wl,OptionValue[Momentum]*velocity],#1,#2,lossF,opts]];
+            gw=If[OptionValue[MomentumType]!="Nesterov"||initMB==0,gradientF[wl,#1,#2,lossF,opts],gradientF[WeightDec[wl,OptionValue[Momentum]*velocity],#1,#2,lossF,opts]];
             velocity = OptionValue[Momentum]*velocity + \[Lambda]*gw; initMB=1;
             wl=WeightDec[wl,velocity];
             AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
