@@ -23,7 +23,8 @@ Map[Function[{flat},Partition[flat,32]],Map[Partition[#,1024]&,Map[Rest,Partitio
 CIFARFiles={"c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_1.bin",
    "c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_2.bin",
    "c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_3.bin",
-   "c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_4.bin"
+   "c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_4.bin",
+   "c:\\Users\\Julian\\ImageDataSetsPublic\\CIFAR-10\\data_batch_5.bin"
 };
 
 
