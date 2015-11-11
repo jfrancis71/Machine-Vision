@@ -40,7 +40,7 @@ FaceMap[image_]:=(
 )
 
 
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/MNIST/Dream.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/Dream.m"
 
 
 NNRead["FaceScrub\\GenderNet"];GenderNet=wl;
