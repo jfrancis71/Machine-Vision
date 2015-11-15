@@ -237,7 +237,7 @@ ClassificationPerformance[network_,inputs_,targets_]:=
 ];
 
 
-Classify[inputs_,wl_]:=Module[{outputs=ForwardPropogate[inputs,wl]},
+NNClassify[inputs_,wl_]:=Module[{outputs=ForwardPropogate[inputs,wl]},
    Table[Position[outputs[[t]],Max[outputs[[t]]]][[1,1]],{t,1,Length[inputs]}]-1];
 
 
