@@ -55,6 +55,9 @@ FaceUI[mirror_Symbol:True]:=CameraRecognition[
       BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1},ChartStyle->Blend[{Pink,Blue},gender]],im1//DispImage,Abs[Salient[{1},im1]]//DispImage}]];
 
 
+GetPatch[image_,coords_]:=image[[coords[[2]]-16;;coords[[2]]+15,coords[[1]]-16;;coords[[1]]+15]]
+
+
 (* Note, padding the image at beginning is not the same as padding arrays at each stage of neural net pipeline. Difference is biases of neurones.
 Secondly, just doing convolution on whole image is not equivelant to either of above. Because the patch is incorporating information from outside the filter field. This is neither the same as zero's nor biases.
 Could try learning with L1 neural activity. Have no idea if this is helpful or not.
@@ -67,5 +70,7 @@ PlotFace[image_?MatrixQ]:=(
    pos=Position[final,q_/;q>.5];
    npos=Map[({#[[1]],#[[2]]}-{1,1})*8+{14,14}&,pos];
    cpos=Map[{16+#[[2]],16+#[[1]]}&,npos];
-   Show[image//DispImage,OutlineGraphics[BoundingRectangles[cpos,{16,16}]]]
+   zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]}&,wl]];
+   genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatches[image,#]&,zpos],GenderNet][[All,1]],{}];
+   Show[image//DispImage,MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}]]
 )
