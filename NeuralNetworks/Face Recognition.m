@@ -70,7 +70,7 @@ PlotFace[image_?MatrixQ]:=(
    pos=Position[final,q_/;q>.5];
    npos=Map[({#[[1]],#[[2]]}-{1,1})*8+{14,14}&,pos];
    cpos=Map[{16+#[[2]],16+#[[1]]}&,npos];
-   zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]}&,wl]];
-   genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatches[image,#]&,zpos],GenderNet][[All,1]],{}];
+   zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]},wl][[1,1]]>.5&];
+   genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatch[image,#]&,zpos],GenderNet][[All,1]],{}];
    Show[image//DispImage,MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}]]
 )
