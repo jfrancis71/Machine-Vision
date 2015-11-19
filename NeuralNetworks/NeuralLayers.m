@@ -262,9 +262,9 @@ WeightDec[PadFilter[padding_],grad_]:=PadFilter[padding];
 SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 installed=False;
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=
-   If[installed&&Dimensions[inputs][[2;;4]]!={32,32,32},
-      Map[Max,Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}],
-      Map[Max,NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0]],{4}]];
+   If[installed,
+      Map[Max,NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0]],{4}],
+      Map[Max,Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}]];
 
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
    AbortAssert[Max[inputs]<1.4,"BackPropogateLayer::MaxConvolveFilterBankToFilterBank algo not designed for inputs > 1.4"];

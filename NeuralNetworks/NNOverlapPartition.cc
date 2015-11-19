@@ -26,26 +26,31 @@ constantzero ( WolframLibraryData libData, mint Argc, MArgument *Args, MArgument
 }
 
 void
-work( double (*inputs)[100][32][34][34], double (*outputs)[100][32][32][32][3][3], const int* dims )
+work( double *inputs, double *outputs, const mint* dims )
 {
-   int sizeInputs = sizeof( double )*34*34;
-   int sizeOutputs = sizeof( double )*32*32;
+   int OY = (dims[3]-2)*3*3;
+   int OF = (dims[2]-2)*(dims[3]-2)*3*3;
+   int OL = dims[1]*(dims[2]-2)*(dims[3]-2)*3*3;
+   int IY = dims[3];
+   int IF = dims[2]*dims[3];
+   int IL = (dims[1]*dims[2]*dims[3]);
 
    for ( int l = 0 ; l < dims[0]; l++ )
-      for ( int f = 0 ; f < 32 ; f++ )
-         for ( int y = 0 ; y < 32 ; y++ )
-            for ( int x = 0 ; x < 32 ; x++ )
-               for ( int sy = -1 ; sy < 2 ; sy++ )
-                  for ( int sx = -1 ; sx < 2 ; sx++ )
-                     //outputs[l,f,y,x,sy,sx] = inputs[l,f,y+sy,x+sx];
-                     (*outputs)[l][y][x][sy+1][sx+1] = (*inputs)[l][f][y+sy+1][x+sx+1];
+      for ( int f = 0 ; f < dims[1] ; f++ )
+         for ( int y = 0 ; y < dims[2]-2 ; y++ )
+            for ( int x = 0 ; x < dims[3]-2 ; x++ )
+               for ( int sy = 0 ; sy < 3 ; sy++ )
+                  for ( int sx = 0 ; sx < 3 ; sx++ )
+                     //(*outputs)[l][y][x][sy+1][sx+1] = (*inputs)[l][f][y+sy+1][x+sx+1];
+                     outputs[OL*l + OF*(f) + OY*(y) + (3*3)*(x) + 3*(sy) + sx] =
+						inputs[IL*l + IF*(f) + IY*(y+sy) + (x+sx)];
 }
 
 /*
-   Input: 100*32*34*34 array of doubles
-   Output: 100*32*32*32*3*3 array of doubles
+   Input: N*F*(Y+2)*(X+2) array of doubles
+   Output: N*F*Y*X*3*3 array of doubles
 
-   Requires: the data part of the input is 32*32 padded on either side by .0 (hence 34*34)
+   Requires: the data part of the input is Y*X padded on either side by .0 (hence Y+2*X+2)
 */
 DLLEXPORT int
 NNCPUExtensionOverlappingPartition( WolframLibraryData libData, mint Argc, MArgument *Args, MArgument Res )
@@ -63,8 +68,8 @@ NNCPUExtensionOverlappingPartition( WolframLibraryData libData, mint Argc, MArgu
           
    dimsOutput[0] = dims[0];
    dimsOutput[1] = dims[1];
-   dimsOutput[2] = 32;
-   dimsOutput[3] = 32;
+   dimsOutput[2] = dims[2]-2;
+   dimsOutput[3] = dims[3]-2;
    dimsOutput[4] = 3;
    dimsOutput[5] = 3;
 
