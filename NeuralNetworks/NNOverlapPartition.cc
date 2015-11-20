@@ -37,20 +37,29 @@ work( double *inputs, double *outputs, const mint* dims, int side )
    int IL = (dims[1]*dims[2]*dims[3]);
 
 
+   int outputOffset, inputOffset;
+   int dof, dif;
    for ( int l = 0 ; l < dims[0]; l++ )
       for ( int f = 0 ; f < dims[1] ; f++ )
+      {
+         outputOffset = OL*l + OF*(f);
+         inputOffset = IL*l + IF*(f);
+
          for ( int y = 0 ; y < dims[2]-2*side ; y++ )
             for ( int x = 0 ; x < dims[3]-2*side ; x++ )
-               for ( int sy = -side ; sy < 1+side ; sy++ )
-                  for ( int sx = -side ; sx < 1+side ; sx++ )
-                     //(*outputs)[l][y][x][sy+1][sx+1] = (*inputs)[l][f][y+sy+1][x+sx+1];
-                     outputs[OL*l + OF*(f) + OY*(y) + (filterLength*filterLength)*(x) + filterLength*(sy+side) + sx+side] =
-						inputs[IL*l + IF*(f) + IY*(y+sy+side) + (x+sx+side)];
+               for ( int sy = 0; sy < filterLength ; sy++ )
+               { 
+                  dof = outputOffset + OY*(y) + (filterLength*filterLength)*(x) + filterLength*(sy);
+                  dif = inputOffset + IY*(y+sy) + x;
+                  for ( int sx = 0 ; sx < filterLength ; sx++ )
+                     outputs[dof + sx] = inputs[dif + sx];
+               }
+      }
 }
 
 /*
-   Input: N*F*(Y+2)*(X+2) array of doubles
-   Output: N*F*Y*X*3*3 array of doubles
+   Input: N*F*(Y+2*SIDE)*(X+2*SIDE) array of doubles
+   Output: N*F*Y*X*FLENGTH*FLENGTH array of doubles
 
    Requires: the data part of the input is Y*X padded on either side by .0 (hence Y+2*X+2)
 */
