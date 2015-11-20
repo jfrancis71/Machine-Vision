@@ -7,15 +7,22 @@ $CCompiler = {"Compiler"->CCompilerDriver`GenericCCompiler`GenericCCompiler, "Co
 
 
 src=ReadList["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\NNOverlapPartition.cc",Record,RecordSeparators->{}][[1]];
+lib=CreateLibrary[src,"NNOverlapPartition","Debug"->True]
 
 
-lib=CreateLibrary[src,"NNOverlapPartition"]
+NNOverlapPartition=LibraryFunctionLoad[lib, "NNCPUExtensionOverlappingPartition",{{Real,4},Integer},{Real,6}];
 
 
-NNOverlapPartition=LibraryFunctionLoad[lib, "NNCPUExtensionOverlappingPartition",{{Real,4}},{Real,6}]
+NNMaxListable=LibraryFunctionLoad[lib, "NNCPUExtensionMaxListable",{{Real,6}},{Real,4}];
 
 
 installed=True;
 
 
-unload:=(LibraryFunctionUnload[NNOverlapPartition];installed=False;)
+unload:=(
+   LibraryFunctionUnload[NNOverlapPartition];
+   LibraryFunctionUnload[NNMaxListable];
+   installed=False;)
+
+
+unload

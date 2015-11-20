@@ -95,3 +95,61 @@ NNCPUExtensionOverlappingPartition( WolframLibraryData libData, mint Argc, MArgu
    MArgument_setMTensor ( Res, outputTensor );
    return LIBRARY_NO_ERROR;
 }
+
+/*
+   Input: N*F*Y*X*FLENGTH*FLENGTH array of doubles
+   Output: N*F*Y*X array of doubles
+
+   
+*/
+DLLEXPORT int
+NNCPUExtensionMaxListable( WolframLibraryData libData, mint Argc, MArgument *Args, MArgument Res )
+{
+   MTensor inputTensor = MArgument_getMTensor (Args[0]);
+   double* inputs = libData -> MTensor_getRealData ( inputTensor );
+   mint const* dims;
+   dims = libData->MTensor_getDimensions( inputTensor );
+
+   MTensor outputTensor;
+   mint type = MType_Real;
+   mint dimsOutput[4];
+   mint rank = 4;
+   int err;
+
+   mint runLength = MArgument_getInteger(Args[1]);
+   int side = (runLength-1)/2; //refers to how far filter extends from centre, e.g. 5*5 filter extends 2 from centre
+
+   dimsOutput[0] = dims[0];
+   dimsOutput[1] = dims[1];
+   dimsOutput[2] = dims[2];
+   dimsOutput[3] = dims[3];
+
+   err = libData -> MTensor_new ( type, rank, dimsOutput, &outputTensor);
+   double* output = libData -> MTensor_getRealData ( outputTensor );
+
+   double tmp;
+   int c1 = dims[1]*dims[2]*dims[3]*dims[4]*dims[5];
+   int c2 = dims[2]*dims[3]*dims[4]*dims[5];
+   int c3 = dims[3]*dims[4]*dims[5];
+   int c4 = dims[4]*dims[5];
+
+   for ( int n = 0 ; n < dims[0] ; n++ )
+      for ( int f = 0 ; f < dims[1] ; f++ )
+         for ( int y = 0 ; y < dims[2] ; y++ )
+            for ( int x = 0 ; x < dims[3] ; x++ )
+            {
+               double max = -10.0;
+
+               for ( int sy = 0 ; sy < dims[4] ; sy++ )
+                  for ( int sx = 0 ; sx < dims[5] ; sx++ )
+{   tmp = inputs[n*c1 + f*c2 + y*c3 + x*c4 + sy*dims[5] + sx];
+                     if ( tmp > max )
+                        max = tmp;
+}
+
+               output[n*dims[1]*dims[2]*dims[3] + f*dims[2]*dims[3] + y*dims[3] + x] = max;
+            }
+  
+   MArgument_setMTensor ( Res, outputTensor );
+   return LIBRARY_NO_ERROR;
+}
