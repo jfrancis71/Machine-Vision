@@ -143,9 +143,12 @@ SyntaxInformation[ConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{_}};
    On Vectorization of deep convolutional neural networks for vision tasks
    Jimmy Ren, Li Xu, 2015
 *)
-ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(i1=inputs;i2=filters;
+ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
+   i2=If[installed,
+         NNOverlapPartition[inputs,5],
+         Map[Partition[#,{5,5},{1,1}]&,inputs,{2}]];
    i3=(Map[Flatten,
-         Transpose[Map[Partition[#,{5,5},{1,1}]&,inputs,{2}],{1,4,2,3,5,6}],{3}].
+         Transpose[i2,{1,4,2,3,5,6}],{3}].
       Transpose[Map[Flatten,filters[[All,2]]]]);
 
    i4=Transpose[i3,{1,3,4,2}];
@@ -263,7 +266,7 @@ SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 installed=False;
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=
    If[installed,
-      Map[Max,NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0]],{4}],
+      Map[Max,NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0],3],{4}],
       Map[Max,Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}]];
 
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(

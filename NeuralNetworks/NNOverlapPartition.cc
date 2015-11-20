@@ -26,24 +26,26 @@ constantzero ( WolframLibraryData libData, mint Argc, MArgument *Args, MArgument
 }
 
 void
-work( double *inputs, double *outputs, const mint* dims )
+work( double *inputs, double *outputs, const mint* dims, int side )
 {
-   int OY = (dims[3]-2)*3*3;
-   int OF = (dims[2]-2)*(dims[3]-2)*3*3;
-   int OL = dims[1]*(dims[2]-2)*(dims[3]-2)*3*3;
+   int filterLength = side*2+1;
+   int OY = (dims[3]-2*side)*filterLength*filterLength;
+   int OF = (dims[2]-2*side)*(dims[3]-2*side)*filterLength*filterLength;
+   int OL = dims[1]*(dims[2]-2*side)*(dims[3]-2*side)*filterLength*filterLength;
    int IY = dims[3];
    int IF = dims[2]*dims[3];
    int IL = (dims[1]*dims[2]*dims[3]);
 
+
    for ( int l = 0 ; l < dims[0]; l++ )
       for ( int f = 0 ; f < dims[1] ; f++ )
-         for ( int y = 0 ; y < dims[2]-2 ; y++ )
-            for ( int x = 0 ; x < dims[3]-2 ; x++ )
-               for ( int sy = 0 ; sy < 3 ; sy++ )
-                  for ( int sx = 0 ; sx < 3 ; sx++ )
+         for ( int y = 0 ; y < dims[2]-2*side ; y++ )
+            for ( int x = 0 ; x < dims[3]-2*side ; x++ )
+               for ( int sy = -side ; sy < 1+side ; sy++ )
+                  for ( int sx = -side ; sx < 1+side ; sx++ )
                      //(*outputs)[l][y][x][sy+1][sx+1] = (*inputs)[l][f][y+sy+1][x+sx+1];
-                     outputs[OL*l + OF*(f) + OY*(y) + (3*3)*(x) + 3*(sy) + sx] =
-						inputs[IL*l + IF*(f) + IY*(y+sy) + (x+sx)];
+                     outputs[OL*l + OF*(f) + OY*(y) + (filterLength*filterLength)*(x) + filterLength*(sy+side) + sx+side] =
+						inputs[IL*l + IF*(f) + IY*(y+sy+side) + (x+sx+side)];
 }
 
 /*
@@ -65,18 +67,21 @@ NNCPUExtensionOverlappingPartition( WolframLibraryData libData, mint Argc, MArgu
    mint dimsOutput[6];
    mint rank = 6;
    int err;
-          
+
+   mint runLength = MArgument_getInteger(Args[1]);
+   int side = (runLength-1)/2; //refers to how far filter extends from centre, e.g. 5*5 filter extends 2 from centre
+
    dimsOutput[0] = dims[0];
    dimsOutput[1] = dims[1];
-   dimsOutput[2] = dims[2]-2;
-   dimsOutput[3] = dims[3]-2;
-   dimsOutput[4] = 3;
-   dimsOutput[5] = 3;
+   dimsOutput[2] = dims[2]-2*side;
+   dimsOutput[3] = dims[3]-2*side;
+   dimsOutput[4] = runLength;
+   dimsOutput[5] = runLength;
 
    err = libData -> MTensor_new ( type, rank, dimsOutput, &outputTensor);
    double* ptr = libData -> MTensor_getRealData ( outputTensor );
 
-   work( inputs, ptr, dims );
+   work( inputs, ptr, dims, side );
   
    MArgument_setMTensor ( Res, outputTensor );
    return LIBRARY_NO_ERROR;
