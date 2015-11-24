@@ -96,6 +96,38 @@ NNCPUExtensionOverlappingPartition( WolframLibraryData libData, mint Argc, MArgu
    return LIBRARY_NO_ERROR;
 }
 
+void
+MaxListable( double* inputs, double* outputs, const mint* dims )
+{
+   double tmp;
+   int c1 = dims[1]*dims[2]*dims[3]*dims[4]*dims[5];
+   int c2 = dims[2]*dims[3]*dims[4]*dims[5];
+   int c3 = dims[3]*dims[4]*dims[5];
+   int c4 = dims[4]*dims[5];
+   int offset;
+   double max;
+   int syoffset;
+
+   for ( int n = 0 ; n < dims[0] ; n++ )
+      for ( int f = 0 ; f < dims[1] ; f++ )
+         for ( int y = 0 ; y < dims[2] ; y++ )
+            for ( int x = 0 ; x < dims[3] ; x++ )
+            {
+               max = -10.0;
+			   offset = n*c1 + f*c2 + y*c3 + x*c4;
+
+               for ( int sy = 0 ; sy < dims[4] ; sy++ )
+                  for ( int sx = 0 ; sx < dims[5] ; sx++ )
+{   tmp = inputs[offset + sy*dims[5] + sx];
+                     if ( tmp > max )
+                        max = tmp;
+}
+
+               outputs[n*dims[1]*dims[2]*dims[3] + f*dims[2]*dims[3] + y*dims[3] + x] = max;
+            }
+
+}
+
 /*
    Input: N*F*Y*X*FLENGTH*FLENGTH array of doubles
    Output: N*F*Y*X array of doubles
@@ -127,28 +159,7 @@ NNCPUExtensionMaxListable( WolframLibraryData libData, mint Argc, MArgument *Arg
    err = libData -> MTensor_new ( type, rank, dimsOutput, &outputTensor);
    double* output = libData -> MTensor_getRealData ( outputTensor );
 
-   double tmp;
-   int c1 = dims[1]*dims[2]*dims[3]*dims[4]*dims[5];
-   int c2 = dims[2]*dims[3]*dims[4]*dims[5];
-   int c3 = dims[3]*dims[4]*dims[5];
-   int c4 = dims[4]*dims[5];
-
-   for ( int n = 0 ; n < dims[0] ; n++ )
-      for ( int f = 0 ; f < dims[1] ; f++ )
-         for ( int y = 0 ; y < dims[2] ; y++ )
-            for ( int x = 0 ; x < dims[3] ; x++ )
-            {
-               double max = -10.0;
-
-               for ( int sy = 0 ; sy < dims[4] ; sy++ )
-                  for ( int sx = 0 ; sx < dims[5] ; sx++ )
-{   tmp = inputs[n*c1 + f*c2 + y*c3 + x*c4 + sy*dims[5] + sx];
-                     if ( tmp > max )
-                        max = tmp;
-}
-
-               output[n*dims[1]*dims[2]*dims[3] + f*dims[2]*dims[3] + y*dims[3] + x] = max;
-            }
+   MaxListable( inputs, output, dims );
   
    MArgument_setMTensor ( Res, outputTensor );
    return LIBRARY_NO_ERROR;

@@ -10,10 +10,10 @@ src=ReadList["C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetwor
 lib=CreateLibrary[src,"NNOverlapPartition","Debug"->True]
 
 
-NNOverlapPartition=LibraryFunctionLoad[lib, "NNCPUExtensionOverlappingPartition",{{Real,4},Integer},{Real,6}];
+NNOverlapPartition=LibraryFunctionLoad[lib, "NNCPUExtensionOverlappingPartition",{{Real,4,"Constant"},Integer},{Real,6}];
 
 
-NNMaxListable=LibraryFunctionLoad[lib, "NNCPUExtensionMaxListable",{{Real,6}},{Real,4}];
+NNMaxListable=LibraryFunctionLoad[lib, "NNCPUExtensionMaxListable",{{Real,6,"Constant"}},{Real,4}];
 
 
 installed=True;

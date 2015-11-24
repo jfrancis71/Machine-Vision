@@ -266,7 +266,7 @@ SyntaxInformation[MaxConvolveFilterBankToFilterBank]={"ArgumentsPattern"->{}};
 installed=False;
 ForwardPropogateLayer[inputs_,MaxConvolveFilterBankToFilterBank]:=
    If[installed,
-      Map[Max,NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0],3],{4}],
+      NNMaxListable[NNOverlapPartition[ArrayPad[inputs,{{0,0},{0,0},{1,1},{1,1}},-2.0],3]],
       Map[Max,Map[Partition[#,{3,3},{1,1},{-2,+2},-2.0]&,inputs,{2}],{4}]];
 
 BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerDeltaA_]:=(
