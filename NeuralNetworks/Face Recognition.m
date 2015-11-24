@@ -52,7 +52,7 @@ FaceUI[mirror_Symbol:True]:=CameraRecognition[
       "                ",
       (im1=Map[If[mirror,Reverse,#&],image[[64-31;;64+31;;2,64-31;;64+31;;2]]]);
       gender=ForwardPropogate[{im1},GenderNet][[1,1]];
-      BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1},ChartStyle->Blend[{Pink,Blue},gender]],im1//DispImage,Abs[Salient[{1},im1]]//DispImage}]];
+      BarChart[ForwardPropogate[{im1},wl],PlotRange->{0,1},ChartStyle->Blend[{Pink,Blue},gender]],im1//DispImage}]];
 
 
 GetPatch[image_,coords_]:=image[[coords[[2]]-16;;coords[[2]]+15,coords[[1]]-16;;coords[[1]]+15]]
