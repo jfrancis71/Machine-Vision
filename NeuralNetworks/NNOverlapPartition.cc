@@ -1,4 +1,5 @@
 #include "WolframLibrary.h"
+#include <stdlib.h>
 
 DLLEXPORT mint
 WolframLibrary_getVersion()
@@ -128,11 +129,26 @@ MaxListable( double* inputs, double* outputs, const mint* dims )
 
 }
 
+void
+MaxConvolve( double *inputs, double *outputs, const mint* inputDims )
+{
+   mint dims[6];
+   dims[0] = inputDims[0];
+   dims[1] = inputDims[1];
+   dims[2] = inputDims[2]-2;
+   dims[3] = inputDims[3]-2;
+   dims[4] = 3;
+   dims[5] = 3;
+
+   double* intermediateOutputs = (double*)(malloc( inputDims[0]*inputDims[1]*inputDims[2]*inputDims[3]*3*3*sizeof(double) ));
+
+   work( inputs, intermediateOutputs, inputDims, 1 );
+   MaxListable( intermediateOutputs, outputs, dims );
+}
+
 /*
    Input: N*F*Y*X*FLENGTH*FLENGTH array of doubles
    Output: N*F*Y*X array of doubles
-
-   
 */
 DLLEXPORT int
 NNCPUExtensionMaxListable( WolframLibraryData libData, mint Argc, MArgument *Args, MArgument Res )
