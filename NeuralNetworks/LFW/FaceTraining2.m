@@ -14,7 +14,7 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/FaceNet/FaceData.m"
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/LFW/FaceData.m"
 
 
 SeedRandom[1234];
