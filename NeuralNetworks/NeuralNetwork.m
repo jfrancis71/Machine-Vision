@@ -126,7 +126,8 @@ Options[GenericGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,
    ValidationInputs->{},ValidationTargets->{},
    Momentum->0.0,
-   MomentumType->"CM"
+   MomentumType->"CM",
+   L1A->0.0
 };
 SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
 SyntaxInformation[ValidationInputs]={"ArgumentsPattern"->{}};
@@ -174,7 +175,8 @@ Options[MiniBatchGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,
    ValidationInputs->{},ValidationTargets->{},
    Momentum->0.0,
-   MomentumType->"CM"
+   MomentumType->"CM",
+   L1A->0.0
 };
 (* http://www.cs.toronto.edu/~fritz/absps/momentum.pdf *)
 (* On the importance of initialization and momentum in deep learning *)
