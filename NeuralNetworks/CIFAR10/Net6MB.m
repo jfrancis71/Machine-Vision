@@ -13,7 +13,7 @@
    Training Loss: .497
    Validation Loss: .787
 
-   Classification Performance: 75.3%
+   Classification Performance: 74.2%
 *)
 
 
@@ -54,8 +54,8 @@ TrainNet6MB:=MiniBatchGradientDescent[
       wl,ColTrainingImages[[1;;49000]],CIFAR10NetTrainingOutputs[[1;;49000]],
       NNGrad,ClassificationLoss,
         {MaxEpoch->500000,
-         ValidationInputs->ColValidationImages[[-1000;;-1]],
-         ValidationTargets->CIFAR10NetValidationOutputs[[-1000;;-1]],
+         ValidationInputs->ColTrainingImages[[-1000;;-1]],
+         ValidationTargets->CIFAR10NetTrainingOutputs[[-1000;;-1]],
          StepMonitor->NNCheckpoint["CIFAR10\\Net6MB"],
          Momentum->0.9,MomentumType->"Nesterov",
          InitialLearningRate->\[Lambda]}];
