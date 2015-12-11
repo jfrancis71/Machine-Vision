@@ -62,15 +62,16 @@ GetPatch[image_,coords_]:=image[[coords[[2]]-16;;coords[[2]]+15,coords[[1]]-16;;
 Secondly, just doing convolution on whole image is not equivelant to either of above. Because the patch is incorporating information from outside the filter field. This is neither the same as zero's nor biases.
 Could try learning with L1 neural activity. Have no idea if this is helpful or not.
 Manually reset bias?
-*)
+*)conv[old_]:=old/(300 - 299 * old)
 MyNew=Delete[wl,{{1},{5},{9}}];
-PlotFace[image_?MatrixQ]:=(
+GraphicsFace[image_?MatrixQ]:=(
    proc1=ForwardPropogate[{image},MyNew[[1;;-4]]];
    final=Table[ForwardPropogate[Flatten[proc1[[1,All,yp;;yp+4-1,xp;;xp+4-1]]].MyNew[[-2,2,1]]+-7.503736,MyNew[[-1;;-1]]],{yp,1,Length[proc1[[1,1]]]-4},{xp,1,Length[proc1[[1,1,1]]]-4}];
    pos=Position[final,q_/;q>.5];
    npos=Map[({#[[1]],#[[2]]}-{1,1})*8+{14,14}&,pos];
    cpos=Map[{16+#[[2]],16+#[[1]]}&,npos];
-   zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]},wl][[1,1]]>.5&];
+   zpos=Select[cpos,conv[ForwardPropogate[{GetPatch[image,#]},wl][[1,1]]]>.5&];
    genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatch[image,#]&,zpos],GenderNet][[All,1]],{}];
-   Show[image//DispImage,MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}]]
-)
+   MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}])
+PlotFace[image_?MatrixQ]:=
+   Show[image//DispImage,GraphicsFace[image],Graphics[Map[Scale[#[[1]],1/.75,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],280*.75]]]]]]
