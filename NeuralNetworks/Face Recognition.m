@@ -74,4 +74,4 @@ GraphicsFace[image_?MatrixQ]:=(
    genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatch[image,#]&,zpos],GenderNet][[All,1]],{}];
    MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}])
 PlotFace[image_?MatrixQ]:=
-   Show[image//DispImage,GraphicsFace[image],Graphics[Map[Scale[#[[1]],1/.75,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],280*.75]]]]]]
+   Show[image//DispImage,GraphicsFace[image],Graphics[Map[Scale[#[[1]],1/.75,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.75]]]]]]
