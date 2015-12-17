@@ -21,12 +21,16 @@ str=Import["C:\\Users\\julian\\ImageDataSetsPublic\\GTSRB\\GTSRB\\Final_Training
 SeedRandom[1234];
 
 
-Dynamic[s]
+Dynamic[{e,s}]
 
 
-trafficSigns=Table[
-rd=ReadList[StringToStream[str[[s]]],Word,WordSeparators->{";"}];
-pt=Import["C:\\Users\\julian\\ImageDataSetsPublic\\GTSRB\\GTSRB\\Final_Training\\Images\\00017\\"<>rd[[1]]];
+rdDat=Table[ReadList[StringToStream[str[[s]]],Word,WordSeparators->{";"}],{s,1,Length[str]}];
+ptDat=Table[Import["C:\\Users\\julian\\ImageDataSetsPublic\\GTSRB\\GTSRB\\Final_Training\\Images\\00017\\"<>rdDat[[s,1]]],{s,1,Length[str]}];
+
+
+trafficSignsRep=Table[
+rd=rdDat[[s]];
+pt=ptDat[[s]];
 cols=Map[FromDigits,rd[[4;;7]]];
 bb=cols;
 size=bb[[3]]-bb[[1]];
@@ -38,10 +42,14 @@ size=bb[[3]]-bb[[1]];
    ImageData[ColorConvert[ImageResize[NNImageTrim[img,
          {{centx-(size/2),centy-(size/2)},{centx+(size/2),centy+(size/2)}}
          ],{32,32}],"GrayScale"],DataReversed->True],
+{e,1,100},
 {s,1,Length[str]}];
 
 
-images=ReadImagesFromDirectory["C:\\Users\\julian\\ImageDataSetsPublic\\Distractors\\Img*2*"];
+trafficSigns=Flatten[trafficSignsRep,1];
+
+
+images=ReadImagesFromDirectory["C:\\Users\\julian\\ImageDataSetsPublic\\Distractors\\*"];
 
 
 patches=Flatten[Map[Partition[#,{32,32}]&,images],2];
@@ -84,12 +92,15 @@ ValidationHistory={};
 \[Lambda]=.01;
 
 
+Length[GTSRBImages]
+
+
 TrainGTSRBNet:=MiniBatchGradientDescent[
-      wl,GTSRBImages[[1;;5000]],GTSRBLabels[[1;;5000]],
+      wl,GTSRBImages[[1;;-1000]],GTSRBLabels[[1;;-1000]],
       NNGrad,CrossEntropyLoss,
         {MaxEpoch->500000,
-         ValidationInputs->GTSRBImages[[-586;;-1]],
-         ValidationTargets->GTSRBLabels[[-586;;-1]],
+         ValidationInputs->GTSRBImages[[-1000;;-1]],
+         ValidationTargets->GTSRBLabels[[-1000;;-1]],
          StepMonitor->NNCheckpoint["GTSRB\\GTSRB"],
          Momentum->.9,MomentumType->"Nesterov",
          InitialLearningRate->\[Lambda]}];
