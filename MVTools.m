@@ -174,8 +174,14 @@ SetAttributes[Timer,HoldAll];
 SetAttributes[MVProfile,HoldFirst]
 
 
-CameraRecognition[program_,imageWidth_:128]:=(Print[Dynamic[out]];While[True,PreemptProtect[out=program[currentImg=StandardiseImage[CurrentImage[],imageWidth]]]])
-MobileRecognition[program_,imageWidth_:128]:=(Print[Dynamic[out]];While[True,out=program[currentImg=StandardiseImage[Import["http://192.168.0.3/image.jpg"],imageWidth]];Pause[0.2]])
+CameraRecognition[program_,imageWidth_:128]:=(
+   Print[Dynamic[out]];
+   While[True,PreemptProtect[
+      out=program[currentImg=StandardiseImage[CurrentImage[],imageWidth]]]]);
+MobileRecognition[program_,stationNo_Integer,imageWidth_:128]:=(
+   Print[Dynamic[out]];
+   While[True,PreemptProtect[
+      out=program[currentImg=StandardiseImage[Import["http://192.168.0."<>ToString[stationNo]<>"/image.jpg"],imageWidth]]]]);
 
 
 Options[GradientDescent]={
