@@ -1,5 +1,8 @@
 (* ::Package:: *)
 
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
+
+
 NNRead["ChessPieces\\ChessPiecesMultiple"]
 
 
@@ -8,3 +11,6 @@ MobileRecognition[
    {ForwardPropogate[{piece},wl],currentImg//DispImage}
    )&
 ]
+
+
+
