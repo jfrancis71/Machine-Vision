@@ -170,6 +170,9 @@ AdaptiveGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,op
          trainingLoss=lossF[wl,inputs,targets];)&,
       opts];
 
+NNGradientDescent[network_,inputs_,targets_,gradF_,lossF_,opts_]:=
+   GradientDescent[network,NNGrad[#,inputs,targets,lossF]&,Function[{x,y},WeightDec[x,-y]],opts]
+
 
 Options[MiniBatchGradientDescent] = { MaxEpoch -> 20000,
    StepMonitor->NullFunction, InitialLearningRate->.01,

@@ -178,6 +178,17 @@ CameraRecognition[program_,imageWidth_:128]:=(Print[Dynamic[out]];While[True,Pre
 MobileRecognition[program_,imageWidth_:128]:=(Print[Dynamic[out]];While[True,out=program[currentImg=StandardiseImage[Import["http://192.168.0.3/image.jpg"],imageWidth]];Pause[0.2]])
 
 
+Options[GradientDescent]={
+   InitialLearningRate->.01,
+   MaxEpoch->10
+};
+
+GradientDescent[initialState_,gradF_,plusF_,opts:OptionsPattern[]]:=(
+   For[state=initialState;epoch=0,epoch<=OptionValue[MaxEpoch],epoch++,
+      state = plusF[state,-OptionValue[InitialLearningRate]*gradF[state]]];
+   state)
+
+
 On[Assert];
 Test1=Table[Random[],{i,1,6},{j,1,6}];
 Assert[Dimensions[StandardiseImage[Test1//Image,36]][[2]]==36];
