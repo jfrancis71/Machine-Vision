@@ -17,7 +17,7 @@ final=Table[ForwardPropogate[Flatten[proc1[[1,All,yp;;yp+4-1,xp;;xp+4-1]]].MyNew
 pos=Position[final,q_/;q>.000001];
 npos=Map[({#[[1]],#[[2]]}-{1,1})*8+{14,14}&,pos];
 cpos=Map[{16+#[[2]],16+#[[1]]}&,npos];
-zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]},wl][[1,1]]>.9995&];
+zpos=Select[cpos,ForwardPropogate[{GetPatch[image,#]},wl][[1,1]]>.999&];
 Show[image//DispImage,MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,zpos}]])
 
 
@@ -28,6 +28,30 @@ imgy2=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vis
 
 
 imgy3=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0774.JPG",200];
+
+
+imgy4=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0775.JPG",460];
+
+
+imgy5=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0776.JPG",400];
+
+
+imgy6=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0777.JPG",460];
+
+
+imgy7=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0778.JPG",190];
+
+
+imgy8=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0779.JPG",200];
+
+
+imgy9=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0780.JPG",320];
+
+
+imgy10=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0781.JPG",320];
+
+
+imgy11=StandardiseImage["C:\\Users\\julian\\Google Drive\\Personal\\Pictures\\Vision Experiments\\Traffic signs\\IMG_0782.JPG",360];
 
 
 Demo[]:=(
