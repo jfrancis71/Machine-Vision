@@ -186,12 +186,21 @@ MobileRecognition[program_,stationNo_Integer,imageWidth_:128]:=(
 
 Options[GradientDescent]={
    InitialLearningRate->.01,
-   MaxEpoch->10
+   MaxEpoch->10,
+   Momentum->0.0,
+   MomentumType->"CM"
 };
 
+(* http://www.cs.toronto.edu/~fritz/absps/momentum.pdf *)
+(* On the importance of initialization and momentum in deep learning *)
+(* Sutskever, Martens, Dahl, Hinton (2013) *)
 GradientDescent[initialState_,gradF_,plusF_,opts:OptionsPattern[]]:=(
+   init = 0;velocity=0.0;
    For[state=initialState;epoch=0,epoch<=OptionValue[MaxEpoch],epoch++,
-      state = plusF[state,-OptionValue[InitialLearningRate]*gradF[state]]];
+      gw=If[OptionValue[MomentumType]!="Nesterov"||init==0,gradF[state],gradF[plusF[state,OptionValue[Momentum]*velocity]]];
+      velocity = OptionValue[Momentum]*velocity + -OptionValue[InitialLearningRate]*gw; init=1;
+      state = plusF[state,velocity];
+      ];
    state)
 
 
