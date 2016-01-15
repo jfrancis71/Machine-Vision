@@ -20,17 +20,9 @@ Dream[inputDims_,neuron_,opts:OptionsPattern[]]:=(
    dream=Array[.5&,inputDims];
    neuronLayer=neuron[[1]];
    target=ReplacePart[ForwardPropogate[{dream},wl[[1;;neuronLayer]]][[1]]*.0,Rest[neuron]->1.0];
-   For[sl=0,sl<=OptionValue[MaxIterations],sl++,
-      BackPropogation[wl[[1;;neuronLayer]],{dream},{target},DreamLoss];
-      dw=BackPropogateLayer[wl[[1]],DeltaL[1]];
-      fw=UnitStep[dream-1.];
-      ef=UnitStep[-dream];
-      (*dream += (.01*dw[[1]]/Max[dw[[1]]]-fw+ef)*1.0*10^-1;*)
-      dream += OptionValue[InitialLearningRate]*dw[[1]];
-      (*dream = dream/Norm[dream];*)
-      (*Clip[dream,{0.,1.}];*)
-      error=DreamLoss[wl[[1;;-1]],{dream},{target}];
-];
+   dream=GradientDescent[dream,(
+      BackPropogation[wl[[1;;neuronLayer]],{#},{target},DreamLoss];
+      dw=BackPropogateLayer[wl[[1]],DeltaL[1]];First[dw])&,(#1-#2)&,opts];
    dream
 )
 
