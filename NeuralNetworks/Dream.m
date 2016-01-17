@@ -30,5 +30,5 @@ Dream[inputDims_,neuron_,opts:OptionsPattern[]]:=(
 Salient[f_,image_]:=(
    BackPropogation[wl[[1;;-1]],{image},{f},DreamLoss];
    dw=BackPropogateLayer[wl[[1]],DeltaL[1]][[1]];
-   dw/Max[dw]
+   Abs[dw]/Max[Abs[dw]]
 )
