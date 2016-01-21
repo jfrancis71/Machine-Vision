@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     73550,       1563]
-NotebookOptionsPosition[     71687,       1495]
-NotebookOutlinePosition[     72031,       1510]
-CellTagsIndexPosition[     71988,       1507]
+NotebookDataLength[     79847,       1712]
+NotebookOptionsPosition[     77282,       1623]
+NotebookOutlinePosition[     77841,       1644]
+CellTagsIndexPosition[     77736,       1639]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -75,7 +75,8 @@ Cell[BoxData[
         RowBox[{"-", "4"}], "+", "x"}], ")"}], "2"]}]], " ", 
    "w3"}]}]], "Output",
  CellChangeTimes->{{3.661946341982235*^9, 3.6619464097126026`*^9}, 
-   3.6619465930076776`*^9, 3.662004535818384*^9, 3.6620083447902365`*^9}]
+   3.6619465930076776`*^9, 3.662004535818384*^9, 3.6620083447902365`*^9, 
+   3.662018233607815*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -115,9 +116,8 @@ Cell[BoxData[
 Cell[BoxData[
  TagBox[
   StyleBox[
-   DynamicModuleBox[{$CellContext`w1$$ = 
-    0.5549999999999999, $CellContext`w2$$ = 
-    0.49, $CellContext`w3$$ = -0.06999999999999995, Typeset`show$$ = True, 
+   DynamicModuleBox[{$CellContext`w1$$ = 0.565, $CellContext`w2$$ = 
+    0.31000000000000005`, $CellContext`w3$$ = 1., Typeset`show$$ = True, 
     Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
     Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
     "\"untitled\"", Typeset`specs$$ = {{
@@ -125,15 +125,15 @@ Cell[BoxData[
       Hold[$CellContext`w2$$], -1, 1}, {
       Hold[$CellContext`w3$$], -1, 1}}, Typeset`size$$ = {360., {117., 121.}},
      Typeset`update$$ = 0, Typeset`initDone$$, Typeset`skipInitDone$$ = 
-    True, $CellContext`w1$655$$ = 0, $CellContext`w2$656$$ = 
-    0, $CellContext`w3$657$$ = 0}, 
+    True, $CellContext`w1$652$$ = 0, $CellContext`w2$653$$ = 
+    0, $CellContext`w3$654$$ = 0}, 
     DynamicBox[Manipulate`ManipulateBoxes[
      1, StandardForm, 
       "Variables" :> {$CellContext`w1$$ = -1, $CellContext`w2$$ = -1, \
 $CellContext`w3$$ = -1}, "ControllerVariables" :> {
-        Hold[$CellContext`w1$$, $CellContext`w1$655$$, 0], 
-        Hold[$CellContext`w2$$, $CellContext`w2$656$$, 0], 
-        Hold[$CellContext`w3$$, $CellContext`w3$657$$, 0]}, 
+        Hold[$CellContext`w1$$, $CellContext`w1$652$$, 0], 
+        Hold[$CellContext`w2$$, $CellContext`w2$653$$, 0], 
+        Hold[$CellContext`w3$$, $CellContext`w3$654$$, 0]}, 
       "OtherVariables" :> {
        Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
         Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
@@ -145,7 +145,7 @@ $CellContext`w3$$, $CellContext`x]], {$CellContext`x, 0, 6},
       "Specifications" :> {{$CellContext`w1$$, -1, 1}, {$CellContext`w2$$, -1,
           1}, {$CellContext`w3$$, -1, 1}}, "Options" :> {}, 
       "DefaultOptions" :> {}],
-     ImageSizeCache->{411., {189., 196.}},
+     ImageSizeCache->{411., {227., 234.}},
      SingleEvaluation->True],
     Deinitialization:>None,
     DynamicModuleValues:>{},
@@ -159,7 +159,7 @@ $CellContext`w3$$, $CellContext`x]], {$CellContext`x, 0, 6},
  CellChangeTimes->{{3.661946428193713*^9, 3.6619464441587987`*^9}, 
    3.661946474588972*^9, 3.661946526503296*^9, 3.662004970900298*^9, 
    3.6620050442996264`*^9, 3.6620051658591657`*^9, 3.6620051990377216`*^9, 
-   3.66200835234265*^9}]
+   3.66200835234265*^9, 3.662018241338338*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -1019,7 +1019,7 @@ Cell[BoxData[
 
 Cell[BoxData[
  DynamicBox[ToBoxes[$CellContext`t1, StandardForm],
-  ImageSizeCache->{64., {0., 8.}}]], "Output",
+  ImageSizeCache->{16., {0., 8.}}]], "Output",
  CellChangeTimes->{{3.6619480903260837`*^9, 3.661948115651799*^9}, {
   3.661948229464742*^9, 3.661948274885544*^9}}]
 }, Open  ]],
@@ -1423,11 +1423,11 @@ Cell[BoxData[
 Cell[BoxData[
  TagBox[
   StyleBox[
-   DynamicModuleBox[{$CellContext`p1$$ = {2.23, 1.41}, $CellContext`p2$$ = {
-    2.4250000000000003`, 2.21}, $CellContext`p3$$ = {2.845, 1.48}, 
-    Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
-    Typeset`bookmarkMode$$ = "Menu", Typeset`animator$$, Typeset`animvar$$ = 
-    1, Typeset`name$$ = "\"untitled\"", Typeset`specs$$ = {{{
+   DynamicModuleBox[{$CellContext`p1$$ = {3.125, 1.25}, $CellContext`p2$$ = {
+    3.16, 1.75}, $CellContext`p3$$ = {3.46, 4.95}, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{{
        Hold[$CellContext`p1$$], {2, 1}}, Automatic}, {{
        Hold[$CellContext`p2$$], {3, 1}}, Automatic}, {{
        Hold[$CellContext`p3$$], {4, 1}}, Automatic}}, Typeset`size$$ = {
@@ -1491,6 +1491,134 @@ $CellContext`t3, $CellContext`x]], {$CellContext`x, 0, 6},
    3.6620045452446327`*^9, 3.662004597673295*^9, 3.662004633786281*^9, 
    3.662004667473448*^9, 3.6620056415227566`*^9, 3.662005680633336*^9, 
    3.662005717818909*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"t1", ",", "t2", ",", "t3"}], "}"}]], "Input",
+ CellChangeTimes->{{3.66201839882335*^9, 3.6620184008308563`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"24.546931743029543`", ",", 
+   RowBox[{"-", "9.024683332882592`"}], ",", "3.736954022524692`"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.6620184012318573`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"?", "FindMinimum"}]], "Input",
+ CellChangeTimes->{{3.6620184641235657`*^9, 3.662018468189578*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox["\<\"\\!\\(\\*RowBox[{\\\"FindMinimum\\\", \\\"[\\\", \
+RowBox[{StyleBox[\\\"f\\\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"x\\\", \
+\\\"TI\\\"]}], \\\"]\\\"}]\\) searches for a local minimum in \
+\\!\\(\\*StyleBox[\\\"f\\\", \\\"TI\\\"]\\), starting from an automatically \
+selected point.\\n\\!\\(\\*RowBox[{\\\"FindMinimum\\\", \\\"[\\\", \
+RowBox[{StyleBox[\\\"f\\\", \\\"TI\\\"], \\\",\\\", RowBox[{\\\"{\\\", \
+RowBox[{StyleBox[\\\"x\\\", \\\"TI\\\"], \\\",\\\", \
+SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"0\\\", \
+\\\"TR\\\"]]}], \\\"}\\\"}]}], \\\"]\\\"}]\\) searches for a local minimum in \
+\\!\\(\\*StyleBox[\\\"f\\\", \\\"TI\\\"]\\), starting from the point \
+\\!\\(\\*RowBox[{StyleBox[\\\"x\\\", \\\"TI\\\"], \\\"=\\\", \
+SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"0\\\", \
+\\\"TR\\\"]]}]\\). \\n\\!\\(\\*RowBox[{\\\"FindMinimum\\\", \\\"[\\\", \
+RowBox[{StyleBox[\\\"f\\\", \\\"TI\\\"], \\\",\\\", RowBox[{\\\"{\\\", \
+RowBox[{RowBox[{\\\"{\\\", RowBox[{StyleBox[\\\"x\\\", \\\"TI\\\"], \
+\\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"0\\\", \
+\\\"TR\\\"]]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", \
+RowBox[{StyleBox[\\\"y\\\", \\\"TI\\\"], \\\",\\\", \
+SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"0\\\", \
+\\\"TR\\\"]]}], \\\"}\\\"}], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \
+\\\"TR\\\"]}], \\\"}\\\"}]}], \\\"]\\\"}]\\) searches for a local minimum in \
+a function of several variables. \\n\\!\\(\\*RowBox[{\\\"FindMinimum\\\", \
+\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", RowBox[{StyleBox[\\\"f\\\", \
+\\\"TI\\\"], \\\",\\\", StyleBox[\\\"cons\\\", \\\"TI\\\"]}], \\\"}\\\"}], \\\
+\",\\\", RowBox[{\\\"{\\\", RowBox[{RowBox[{\\\"{\\\", RowBox[{StyleBox[\\\"x\
+\\\", \\\"TI\\\"], \\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
+StyleBox[\\\"0\\\", \\\"TR\\\"]]}], \\\"}\\\"}], \\\",\\\", \
+RowBox[{\\\"{\\\", RowBox[{StyleBox[\\\"y\\\", \\\"TI\\\"], \\\",\\\", \
+SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"0\\\", \
+\\\"TR\\\"]]}], \\\"}\\\"}], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \
+\\\"TR\\\"]}], \\\"}\\\"}]}], \\\"]\\\"}]\\) searches for a local minimum \
+subject to the constraints \\!\\(\\*StyleBox[\\\"cons\\\", \\\"TI\\\"]\\).\\n\
+\\!\\(\\*RowBox[{\\\"FindMinimum\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\\\", \
+RowBox[{StyleBox[\\\"f\\\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"cons\\\", \\\
+\"TI\\\"]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", \
+RowBox[{StyleBox[\\\"x\\\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"y\\\", \
+\\\"TI\\\"], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \
+\\\"}\\\"}]}], \\\"]\\\"}]\\) starts from a point within the region defined \
+by the constraints.\"\>", "MSG"], "\[NonBreakingSpace]", 
+  ButtonBox[
+   StyleBox["\[RightSkeleton]", "SR"],
+   Active->True,
+   BaseStyle->"Link",
+   ButtonData->"paclet:ref/FindMinimum"]}]], "Print", "PrintUsage",
+ CellChangeTimes->{3.6620184701830845`*^9},
+ CellTags->"Info-84a8fb65-5610-4c7a-b10b-37099564b3b0"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FindMinimum", "[", 
+  RowBox[{
+   RowBox[{"-", 
+    RowBox[{"Exp", "[", 
+     RowBox[{"-", 
+      RowBox[{"f", "[", 
+       RowBox[{"w1", ",", "w2", ",", "w3", ",", "3.4"}], "]"}]}], "]"}]}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{"w1", ",", "w2", ",", "w3"}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.66201847782261*^9, 3.662018508664208*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "ovfl"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Overflow occurred in computation. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/ovfl\\\", ButtonNote -> \
+\\\"General::ovfl\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.662018509041709*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"FindMinimum", "::", "nrnum"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"The function value \[NoBreak]\\!\\(Overflow[]\\)\[NoBreak] \
+is not a real number at \[NoBreak]\\!\\({w1, w2, w3}\\)\[NoBreak] = \
+\[NoBreak]\\!\\({\\(\\(-1.2916323838199212`*^15\\)\\), \
+\\(\\(-7.813920575729839`*^15\\)\\), \\(\\(-6.397497077458827`*^15\\)\\)}\\)\
+\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/FindMinimum\\\", ButtonNote -> \
+\\\"FindMinimum::nrnum\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6620185090817094`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+   "-", "1.0333585205904338134997`0.9427540162719349*^446292989859103"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"w1", "\[Rule]", 
+      RowBox[{"-", "1.1742112580181017`*^14"}]}], ",", 
+     RowBox[{"w2", "\[Rule]", 
+      RowBox[{"-", "7.103564159754394`*^14"}]}], ",", 
+     RowBox[{"w3", "\[Rule]", 
+      RowBox[{"-", "5.815906434053474`*^14"}]}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.6620185090917096`*^9}]
 }, Open  ]]
 },
 WindowSize->{1920, 1118},
@@ -1502,68 +1630,89 @@ StyleDefinitions->"Default.nb"
 
 (* Internal cache information *)
 (*CellTagsOutline
-CellTagsIndex->{}
+CellTagsIndex->{
+ "Info-84a8fb65-5610-4c7a-b10b-37099564b3b0"->{
+  Cell[72239, 1516, 3046, 47, 119, "Print",
+   CellTags->"Info-84a8fb65-5610-4c7a-b10b-37099564b3b0"]}
+ }
 *)
 (*CellTagsIndex
-CellTagsIndex->{}
+CellTagsIndex->{
+ {"Info-84a8fb65-5610-4c7a-b10b-37099564b3b0", 77609, 1633}
+ }
 *)
 (*NotebookFileOutline
 Notebook[{
 Cell[558, 20, 124, 2, 31, "Input"],
 Cell[CellGroupData[{
 Cell[707, 26, 773, 24, 33, "Input"],
-Cell[1483, 52, 773, 25, 36, "Output"]
+Cell[1483, 52, 799, 26, 36, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[2293, 82, 1100, 30, 31, "Input"],
-Cell[3396, 114, 2366, 47, 402, "Output"]
+Cell[2319, 83, 1100, 30, 31, "Input"],
+Cell[3422, 115, 2368, 46, 478, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[5799, 166, 1298, 36, 52, "Input"],
-Cell[7100, 204, 11999, 208, 227, "Output"]
+Cell[5827, 166, 1298, 36, 52, "Input"],
+Cell[7128, 204, 11999, 208, 227, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[19136, 417, 3112, 78, 132, "Input"],
-Cell[22251, 497, 7437, 127, 163, "Output"]
+Cell[19164, 417, 3112, 78, 132, "Input"],
+Cell[22279, 497, 7437, 127, 163, "Output"]
 }, Open  ]],
-Cell[29703, 627, 7358, 126, 163, "Input"],
-Cell[37064, 755, 7328, 126, 163, "Input"],
-Cell[44395, 883, 7362, 127, 163, "Input"],
+Cell[29731, 627, 7358, 126, 163, "Input"],
+Cell[37092, 755, 7328, 126, 163, "Input"],
+Cell[44423, 883, 7362, 127, 163, "Input"],
 Cell[CellGroupData[{
-Cell[51782, 1014, 184, 3, 31, "Input"],
-Cell[51969, 1019, 229, 4, 31, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[52235, 1028, 119, 2, 31, "Input"],
-Cell[52357, 1032, 159, 3, 31, "Output"]
+Cell[51810, 1014, 184, 3, 31, "Input"],
+Cell[51997, 1019, 229, 4, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[52553, 1040, 132, 2, 31, "Input"],
-Cell[52688, 1044, 294, 9, 31, "Output"]
+Cell[52263, 1028, 119, 2, 31, "Input"],
+Cell[52385, 1032, 159, 3, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[53019, 1058, 98, 1, 31, "Input"],
-Cell[53120, 1061, 174, 4, 31, "Output"]
+Cell[52581, 1040, 132, 2, 31, "Input"],
+Cell[52716, 1044, 294, 9, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[53331, 1070, 281, 7, 31, "Input"],
-Cell[53615, 1079, 7723, 139, 242, "Output"]
+Cell[53047, 1058, 98, 1, 31, "Input"],
+Cell[53148, 1061, 174, 4, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[61375, 1223, 398, 10, 31, "Input"],
-Cell[61776, 1235, 339, 7, 31, "Output"]
+Cell[53359, 1070, 281, 7, 31, "Input"],
+Cell[53643, 1079, 7723, 139, 242, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[62152, 1247, 98, 1, 31, "Input"],
-Cell[62253, 1250, 198, 4, 31, "Output"]
+Cell[61403, 1223, 398, 10, 31, "Input"],
+Cell[61804, 1235, 339, 7, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[62488, 1259, 94, 1, 31, "Input"],
-Cell[62585, 1262, 2404, 69, 63, "Output"]
+Cell[62180, 1247, 98, 1, 31, "Input"],
+Cell[62281, 1250, 198, 4, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[65026, 1336, 3224, 84, 192, "Input"],
-Cell[68253, 1422, 3418, 70, 330, "Output"]
+Cell[62516, 1259, 94, 1, 31, "Input"],
+Cell[62613, 1262, 2404, 69, 63, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[65054, 1336, 3224, 84, 192, "Input"],
+Cell[68281, 1422, 3403, 70, 330, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[71721, 1497, 152, 3, 31, "Input"],
+Cell[71876, 1502, 201, 5, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[72114, 1512, 122, 2, 31, "Input"],
+Cell[72239, 1516, 3046, 47, 119, "Print",
+ CellTags->"Info-84a8fb65-5610-4c7a-b10b-37099564b3b0"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[75322, 1568, 375, 11, 31, "Input"],
+Cell[75700, 1581, 413, 9, 21, "Message"],
+Cell[76116, 1592, 660, 13, 30, "Message"],
+Cell[76779, 1607, 487, 13, 33, "Output"]
 }, Open  ]]
 }
 ]
