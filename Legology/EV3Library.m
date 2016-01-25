@@ -41,7 +41,7 @@ moderatedPower=If[Abs[power]>100,100*Sign[power],power];
    Map[SerialWrite[mybrick, #] &, message]
    );
 
-EV3StartMotor[motor_] := EV3StartMotor( motor, 16^^10 );
+EV3StartMotor[motor_] := EV3StartMotor[ motor, 16^^10 ];
 
 
 EV3StepMotor[motor_]:=(
@@ -54,9 +54,9 @@ EV3StepMotor[motor_]:=(
      motor, (*Port*)
      16^^81,20,(*Power*)
      00,
-     16^^82,10,00,
+     16^^82,200,00,
      16^^82,16^^00,00,
-     01};
+     00};
    message = Map[FromCharacterCode, telegram];
    Map[SerialWrite[mybrick, #] &, message]
 )
