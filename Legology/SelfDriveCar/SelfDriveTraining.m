@@ -48,11 +48,11 @@ ValidationHistory={};
 
 
 TrainSelfDriveNet:=MiniBatchGradientDescent[
-      wl,SelfDriveImages[[1;;700]],SelfDriveLabels[[1;;700]],
+      wl,SelfDriveImages[[1;;2900]],SelfDriveLabels[[1;;2900]],
       NNGrad,CrossEntropyLoss,
         {MaxEpoch->500000,
-         ValidationInputs->SelfDriveImages[[701;;-1]],
-         ValidationTargets->SelfDriveLabels[[701;;-1]],
-         StepMonitor->NNCheckpoint["SelfDrive\\SelfDriveNet1"],
+         ValidationInputs->SelfDriveImages[[2901;;-1]],
+         ValidationTargets->SelfDriveLabels[[2901;;-1]],
+         StepMonitor->NNCheckpoint["SelfDrive\\SelfDriveNet2"],
          Momentum->.9,MomentumType->"Nesterov",
          InitialLearningRate->\[Lambda]}];
