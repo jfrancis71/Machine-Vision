@@ -38,7 +38,7 @@ RemoteControlCarTraining[image_]:=(
       AppendTo[TrainingImages,image];
       If[Abs[state[[2]]]<.5,
          EV3Forward[];AppendTo[TrainingCommands,0],
-         If[state[[2]]<-.5,EV3Left[];AppendTo[TrainingCommands,-1],EV3Right[];AppendTo[TrainingCommands,+1]]]
+         If[state[[2]]<=-.5,EV3Left[];AppendTo[TrainingCommands,-1],EV3Right[];AppendTo[TrainingCommands,+1]]]
       ,EV3Stop[]];
    Pause[.2];
    cut=SessionTime[];
@@ -58,3 +58,10 @@ RemoteControlCarDrive[image_]:=(
 ];
 Pause[0.2];
 out)
+
+
+(*MobileRecognition[
+Function[image,
+Export["c:\users\julian\carcam.wdx",image];
+RemoteControlCarDrive[image]]
+,5,{32,32}]*)
