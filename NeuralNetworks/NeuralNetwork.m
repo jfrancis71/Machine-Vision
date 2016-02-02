@@ -81,7 +81,7 @@ NNGrad[currentParameters_,inputs_,targets_,lossF_,opts:OptionsPattern[]]:=(
    AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
 
    Timer["BackPropogation Total",
-   BackPropogation[currentParameters,inputs,targets,lossF,FilterRules[{opts}, Options[BackPropogation]]];];
+      BackPropogation[Dropout[currentParameters,inputs],inputs,targets,lossF,FilterRules[{opts}, Options[BackPropogation]]];];
 
    Timer["LayerGrad",
    Prepend[

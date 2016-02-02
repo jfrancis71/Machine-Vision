@@ -21,6 +21,7 @@ RNorm - Local contrast normalisation layer
 SubsampleFilterBankToFilterBank - subsamples the filter bank by 2.
 PadFilter - Padding for filter
 MaxConvolveFilterBankToFilterBank - Each filter in the filter bank is convolved with max operation, neighbourhood 1 (ie 1 on either side)
+Dropout - Implements dropout
 *)
 
 
@@ -189,8 +190,7 @@ ForwardPropogateLayer[inputs_,Adaptor3DTo1D[features_,width_,height_]]:=(
 );
 BackPropogateLayer[Adaptor3DTo1D[features_,width_,height_],postLayerDeltaA_]:=
    unflatten[Flatten[postLayerDeltaA],{Length[postLayerDeltaA],features,width,height}];
-GradLayer[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:=
-   Adaptor3DTo1D[features,width,height];
+GradLayer[Adaptor3DTo1D[features_,width_,height_],layerInputs_,layerOutputDelta_]:={};
 WeightDec[networkLayer_Adaptor3DTo1D,grad_]:=Adaptor3DTo1D[networkLayer[[1]],networkLayer[[2]],networkLayer[[3]]];
 
 (*Softmax*)
@@ -280,3 +280,20 @@ BackPropogateLayer[MaxConvolveFilterBankToFilterBank,inputs_,outputs_,postLayerD
    Timer["MaxConvolveFilterBankToFilterBank::u7",u7=Map[Total[Flatten[#]]&,u6,{4}]])
 GradLayer[MaxConvolveFilterBankToFilterBank,layerInputs_,layerOutputDelta_]:={};
 WeightDec[MaxConvolveFilterBankToFilterBank,grad_]:=MaxConvolveFilterBankToFilterBank;
+
+
+(*
+   Ref: https://www.cs.toronto.edu/~hinton/absps/JMLRdropout.pdf
+*)
+SyntaxInformation[DropoutLayer]={"ArgumentsPattern"->{_,_}};
+SyntaxInformation[DropoutLayerMask]={"ArgumentsPattern"->{_}};
+Dropout[layer_,inputs_]:=layer;
+Dropout[net_List,inputs_]:=Map[Dropout[#,inputs]&,net];
+Dropout[DropoutLayer[dims_,dropoutProb_],inputs_]:=
+   DropoutLayerMask[Table[RandomInteger[],{Length[inputs]},dims]];
+ForwardPropogateLayer[inputs_,DropoutLayer[_,_]]:=0.5*inputs;
+ForwardPropogateLayer[inputs_,DropoutLayerMask[mask_]]:=inputs*mask;
+BackPropogateLayer[DropoutLayerMask[mask_],postLayerDeltaA_]:=mask*postLayerDeltaA;
+GradLayer[DropoutLayerMask[mask_],layerInputs_,layerOutputDelta_]:={};
+GradLayer[DropoutLayer[_,_],layerInputs_,layerOutputDelta_]:={};
+WeightDec[networkLayer_DropoutLayer,grad_]:=DropoutLayer[networkLayer[[1]],networkLayer[[2]]];
