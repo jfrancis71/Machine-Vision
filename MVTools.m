@@ -204,6 +204,14 @@ GradientDescent[initialState_,gradF_,plusF_,opts:OptionsPattern[]]:=(
    state)
 
 
+(*
+   Alexey Popkov - From Stackoverflow 17 Aug 2011
+*)
+myByteCount[symbolName_String]:=Replace[ToHeldExpression[symbolName],Hold[x__]:>If[MemberQ[Attributes[x],Protected|ReadProtected],Sequence@@{},{ByteCount[Through[{OwnValues,DownValues,UpValues,SubValues,DefaultValues,FormatValues,NValues}[Unevaluated@x,Sort->False]]],symbolName}]];
+
+MemoryReport[]:=With[{listing=myByteCount/@Names[]},Labeled[Grid[Reverse@Take[Sort[listing],-100],Frame->True,Alignment->Left],Column[{Style["ByteCount for symbols without attributes Protected and ReadProtected in all contexts",16,FontFamily->"Times"],Style[Row@{"Total: ",Total[listing[[All,1]]]," bytes for ",Length[listing]," symbols"},Bold]},Center,1.5],Top]]
+
+
 On[Assert];
 Test1=Table[Random[],{i,1,6},{j,1,6}];
 Assert[Dimensions[StandardiseImage[Test1//Image,36]][[2]]==36];
