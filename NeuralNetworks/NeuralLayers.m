@@ -75,7 +75,7 @@ ForwardPropogateLayer[inputs_,Convolve2DToFilterBank[filters_]]:=(
    AbortAssert[(inputs[[1]]//Dimensions//Length)==2,"Convolve2DToFilterBank::inputs does not match 2D structure"];
    Transpose[Map[ForwardPropogateLayer[inputs,#]&,filters],{2,1,3,4}]
 );
-BackPropogateLayer[Convolve2DToFilterBank[filters_],postLayerDeltaA_,_,_]:=Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}]
+BackPropogateLayer[Convolve2DToFilterBank[filters_],postLayerDeltaA_,inputs_,outputs_]:=Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]],inputs,outputs],{f,1,Length[filters]}]
 GradLayer[Convolve2DToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
    Table[{
          Total[layerOutputDelta[[All,filterIndex]],3],
@@ -155,8 +155,8 @@ ForwardPropogateLayer[inputs_,ConvolveFilterBankToFilterBank[filters_]]:=(
    i4=Transpose[i3,{1,3,4,2}];
    Do[i4[[All,t]]=i4[[All,t]]+filters[[All,1]][[t]],{t,1,Length[i4[[1]]]}];i4
 )
-BackPropogateLayer[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_,_,_]:=
-   Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]]],{f,1,Length[filters]}];
+BackPropogateLayer[ConvolveFilterBankToFilterBank[filters_],postLayerDeltaA_,inputs_,outputs_]:=
+   Sum[BackPropogateLayer[filters[[f]],postLayerDeltaA[[All,f]],inputs,outputs],{f,1,Length[filters]}];
 GradLayer[ConvolveFilterBankToFilterBank[filters_],layerInputs_,layerOutputDelta_]:=
    Table[{
       Total[layerOutputDelta[[All,filterOutputIndex]],3],

@@ -29,30 +29,34 @@ ForwardPropogate[inputs_,network_]:=MemoryConstrained[
    If[$VersionNumber<9,3 10^9,10^10]]
 
 
-Options[BackPropogation] = { L1A->0.0 };
+Options[BackPropogateLayers] = { L1A->0.0 };
 SyntaxInformation[L1A]={"ArgumentsPattern"->{}};
-BackPropogation[currentParameters_,inputs_,targets_,lossF_,OptionsPattern[]]:=(
-
+BackPropogateLayers[currentParameters_,neuronActivations_,finalLayerDelta_,OptionsPattern[]]:=(
+   
    xL1A = OptionValue[L1A];
-
-   L = Timer["ForwardPropogateLayers",ForwardPropogateLayers[inputs, currentParameters]];
    networkLayers=Length[currentParameters];
 
-   AbortAssert[Dimensions[L[[networkLayers]]]==Dimensions[targets],"BackPropogation::Dimensions of outputs and targets should match"];
-
-   DeltaL[networkLayers]=DeltaLoss[lossF,L[[networkLayers]],targets];
+   delta = Table[$Failed,{Length[currentParameters]}];
+   delta[[-1]] = finalLayerDelta;
 
    For[layerIndex=networkLayers,layerIndex>1,layerIndex--,
 (* layerIndex refers to layer being back propogated across
    ie computing delta's for layerIndex-1 given layerIndex *)
 
       Timer["Backprop Layer "<>LayerName[currentParameters[[layerIndex]]],
-         DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],DeltaL[layerIndex],L[[layerIndex-1]],L[[layerIndex]]];
+         delta[[layerIndex-1]]=
+            BackPropogateLayer[
+               currentParameters[[layerIndex]],
+               delta[[layerIndex]],
+               neuronActivations[[layerIndex-1]],
+               neuronActivations[[layerIndex]]];
       ]
 
-      AbortAssert[Dimensions[DeltaL[layerIndex-1]]==Dimensions[L[[layerIndex-1]]]];
-      DeltaL[layerIndex-1]+=Sign[L[[layerIndex-1]]]*xL1A;
+      AbortAssert[Dimensions[delta[[layerIndex-1]]]==Dimensions[neuronActivations[[layerIndex-1]]]];
+      delta[[layerIndex-1]]+=Sign[neuronActivations[[layerIndex-1]]]*xL1A;
    ];
+
+   delta
 )
 
 (*
@@ -64,17 +68,25 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,OptionsPattern[]]:=(
 Options[NNGrad] = {};
 NNGrad[currentParameters_,inputs_,targets_,lossF_,opts:OptionsPattern[]]:=(
 
-   AbortAssert[Length[inputs]==Length[targets],"NNGrad::# of Training Labels should equal # of Training Inputs"];
+   AbortAssert[Length[inputs]==Length[targets],
+      "NNGrad::# of Training Labels should equal # of Training Inputs"];
 
-   Timer["BackPropogation Total",
-      BackPropogation[Dropout[currentParameters,inputs],inputs,targets,lossF,FilterRules[{opts}, Options[BackPropogation]]];];
+   L = Timer["ForwardPropogateLayers",ForwardPropogateLayers[inputs, currentParameters]];
+   AbortAssert[Dimensions[L[[-1]]]==Dimensions[targets],
+      "NNGrad::Dimensions of outputs and targets should match"];
+
+   Timer["BackPropogate Total",
+      xDelta = BackPropogateLayers[
+         Dropout[currentParameters,inputs],L,
+         DeltaLoss[lossF,L[[-1]],targets],
+         FilterRules[{opts}, Options[BackPropogateLayers]]];];
 
    Timer["LayerGrad",
    Prepend[
       Table[
-         Timer["LayerGrad::"<>LayerName[currentParameters[[layerIndex]]],GradLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]]]
+         Timer["LayerGrad::"<>LayerName[currentParameters[[layerIndex]]],GradLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],xDelta[[layerIndex]]]]
          ,{layerIndex,2,Length[currentParameters]}],
-      GradLayer[currentParameters[[1]],inputs,DeltaL[1]]
+      GradLayer[currentParameters[[1]],inputs,xDelta[[1]]]
    ]]
 )
 
