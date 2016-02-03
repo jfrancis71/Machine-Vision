@@ -47,22 +47,8 @@ BackPropogation[currentParameters_,inputs_,targets_,lossF_,OptionsPattern[]]:=(
    ie computing delta's for layerIndex-1 given layerIndex *)
 
       Timer["Backprop Layer "<>LayerName[currentParameters[[layerIndex]]],
-      Which[
-         MatchQ[currentParameters[[layerIndex]],MaxPoolingFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
-         MatchQ[currentParameters[[layerIndex]],Softmax],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex]],DeltaL[layerIndex]];,
-         MatchQ[currentParameters[[layerIndex]],Tanh],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
-         MatchQ[currentParameters[[layerIndex]],Logistic],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
-         MatchQ[currentParameters[[layerIndex]],ReLU],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],DeltaL[layerIndex]];,
-         MatchQ[currentParameters[[layerIndex]],MaxConvolveFilterBankToFilterBank],
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],L[[layerIndex-1]],L[[layerIndex]],DeltaL[layerIndex]];,
-         True,
-            DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],DeltaL[layerIndex]];
-      ];]
+         DeltaL[layerIndex-1]=BackPropogateLayer[currentParameters[[layerIndex]],DeltaL[layerIndex],L[[layerIndex-1]],L[[layerIndex]]];
+      ]
 
       AbortAssert[Dimensions[DeltaL[layerIndex-1]]==Dimensions[L[[layerIndex-1]]]];
       DeltaL[layerIndex-1]+=Sign[L[[layerIndex-1]]]*xL1A;
