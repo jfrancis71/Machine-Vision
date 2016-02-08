@@ -30,3 +30,13 @@ XORTrain:=AdaptiveGradientDescent[XORNetwork,XORInputs,XOROutputs,NNGrad,Regress
 MultInputs=Flatten[Table[{a,b},{a,0,1,.1},{b,0,1,.1}],1];MultInputs//MatrixForm;
 MultOutputs=Map[{#[[1]]*#[[2]]}&,MultInputs];MultOutputs//MatrixForm;
 MultTrain:=AdaptiveGradientDescent[XORNetwork,MultInputs,MultOutputs,NNGrad,RegressionLoss2D,{MaxEoch->500000}];
+
+
+(*Learning circle function*)
+circleNetwork={
+   FullyConnected1DTo1DInit[2,4],Tanh,
+   FullyConnected1DTo1DInit[4,1],Logistic
+};
+circleInputs=Flatten[Transpose[{Table[{x,y},{x,-1,1,0.1},{y,-1,+1,0.1}]}],2];circleInputs//MatrixForm;
+circleOutputs=1.*Map[{Boole[#[[1]]+#[[2]]>1]}&,circleInputs^2];circleOutputs//MatrixForm;
+circleTrain:=GradientDescent[circleNetwork,circleInputs,circleOutputs,NNGrad,CrossEntropyLoss,{MaxEpoch->500000}];
