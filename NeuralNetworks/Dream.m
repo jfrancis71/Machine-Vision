@@ -21,14 +21,16 @@ Dream[inputDims_,neuron_,opts:OptionsPattern[]]:=(
    neuronLayer=neuron[[1]];
    target=ReplacePart[ForwardPropogate[{dream},wl[[1;;neuronLayer]]][[1]]*.0,Rest[neuron]->1.0];
    dream=GradientDescent[dream,(
-      BackPropogation[wl[[1;;neuronLayer]],{#},{target},DreamLoss];
-      dw=BackPropogateLayer[wl[[1]],DeltaL[1]];First[dw])&,(#1-#2)&,opts];
+      L=ForwardPropogateLayers[{#},wl[[1;;neuronLayer]]];
+      deltan=BackPropogateLayers[wl[[1;;neuronLayer]],L,DeltaLoss[DreamLoss,L[[-1]],{target}]];
+      dw=BackPropogateLayer[wl[[1]],deltan[[1]],_,_];First[dw])&,(#1-#2)&,opts];
    dream
 )
 
 
 Salient[f_,image_]:=(
-   BackPropogation[wl[[1;;-1]],{image},{f},DreamLoss];
-   dw=BackPropogateLayer[wl[[1]],DeltaL[1]][[1]];
+   L=ForwardPropogateLayers[{image},wl[[1;;-1]]];
+   deltan=BackPropogateLayers[wl[[1;;-1]],L,DeltaLoss[DreamLoss,L[[-1]],{f}]];
+   dw=BackPropogateLayer[wl[[1]],deltan[[1]],_,_][[1]];
    Abs[dw]/Max[Abs[dw]]
 )
