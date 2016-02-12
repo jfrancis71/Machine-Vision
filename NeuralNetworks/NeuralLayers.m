@@ -303,15 +303,16 @@ WeightDec[networkLayer_DropoutLayer,grad_]:=DropoutLayer[networkLayer[[1]],netwo
 (*
 Original Example
 samples=Table[mydata=RandomVariate[ParetoDistribution[1,3],100];1/100 Sum[Log[Abs[Nearest[mydata,mydata[[i]],20][[20]]-mydata[[i]]]],{i,1,100}] - PolyGamma[20] + PolyGamma[100] + Log[2],{1000}];
-Ref: https://www.cs.tut.fi/~timhome/tim/tim/core/differential_entropy_kl_details.htm
+Ref: http://www.cs.tut.fi/~timhome/tim/tim/core/differential_entropy_kl_details.htm
 Above link currently timing out
 *)
+NNEntropyList[samples_/;Length[samples]>=100]:=
+   1/Length[samples] Sum[Log[Abs[Nearest[samples,samples[[i]],20][[20]]-samples[[i]]]],{i,1,Length[samples]}] - PolyGamma[20] + PolyGamma[100] + Log[2]
+
 SyntaxInformation[NNEntropy]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,NNEntropy[_]]:=(
    NNENT=Table[
-      Sum[
-         Log[Abs[Nearest[inputs[[All,f]],inputs[[ex,f]],20][[20]]-inputs[[ex,f]]]],
-         {ex,1,Length[inputs]}],
+      NNEntropyList[inputs[[All,f]]],
       {f,1,Length[inputs[[1]]]}];
    inputs)
 BackPropogateLayer[NNEntropy[\[Lambda]_],postLayerDeltaA_,inputs_,_]:=
