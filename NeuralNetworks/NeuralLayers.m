@@ -299,8 +299,27 @@ GradLayer[DropoutLayer[_,_],layerInputs_,layerOutputDelta_]:={};
 WeightDec[networkLayer_DropoutLayer,grad_]:=DropoutLayer[networkLayer[[1]],networkLayer[[2]]];
 
 
-(*UNTESTED*)
-ForwardPropogateLayer[inputs_,Composite[{net1_,net2_}]]:=
-   {ForwardPropogateLayers[inputs,net1],ForwardPropogateLayers[inputs,net2]};
-BackPropogateLayer[Composite[{net1_,net2_}],postLayerDeltaA_,_,_]:=
-   {BackPropogateLayer[net1,postLayerDeltaA],BackPropogateLayer[net2,postLayerDeltaA]}
+(*Entropy*)
+(*
+Original Example
+samples=Table[mydata=RandomVariate[ParetoDistribution[1,3],100];1/100 Sum[Log[Abs[Nearest[mydata,mydata[[i]],20][[20]]-mydata[[i]]]],{i,1,100}] - PolyGamma[20] + PolyGamma[100] + Log[2],{1000}];
+Ref: https://www.cs.tut.fi/~timhome/tim/tim/core/differential_entropy_kl_details.htm
+Above link currently timing out
+*)
+SyntaxInformation[NNEntropy]={"ArgumentsPattern"->{_}};
+ForwardPropogateLayer[inputs_,NNEntropy[_]]:=(
+   NNENT=Table[
+      Sum[
+         Log[Abs[Nearest[inputs[[All,f]],inputs[[ex,f]],20][[20]]-inputs[[ex,f]]]],
+         {ex,1,Length[inputs]}],
+      {f,1,Length[inputs[[1]]]}];
+   inputs)
+BackPropogateLayer[NNEntropy[\[Lambda]_],postLayerDeltaA_,inputs_,_]:=
+   postLayerDeltaA + Table[
+         nr=Nearest[inputs[[All,f]],inputs[[ex,f]],20][[20]];
+         diff=nr-inputs[[ex,f]];
+         If[diff!=0,\[Lambda]*If[diff>0,-1,+1]*(1/Abs[diff]),0.],
+      {ex,1,Length[inputs]},
+      {f,1,Length[inputs[[1]]]}]
+GradLayer[NNEntropy,layerInputs_,layerOutputDelta_]:={};
+WeightDec[NNEntropy[\[Lambda]_],grad_]:=NNEntropy[\[Lambda]];
