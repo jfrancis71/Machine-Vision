@@ -62,6 +62,15 @@ GetPatch[image_,coords_]:=image[[coords[[2]]-16;;coords[[2]]+15,coords[[1]]-16;;
 Secondly, just doing convolution on whole image is not equivelant to either of above. Because the patch is incorporating information from outside the filter field. This is neither the same as zero's nor biases.
 Could try learning with L1 neural activity. Have no idea if this is helpful or not.
 Manually reset bias?
+
+Note to do this correctly would require:
+Stride implementations for both convolution and maxpooling
+Would also need to back out the 0 padding by subtracting the border.
+
+As it is algorithm is correct for a stride of 8*8, ie algorithm effectively operates on a subsampled grid,
+subsampling block 8*8. Not ridiculous as this is about the amount of translation invariance built into the
+training process.
+
 *)conv[old_]:=old/(300 - 299 * old)
 MyNew=Delete[wl,{{1},{5},{9}}];
 GraphicsFace[image_?MatrixQ]:=(
