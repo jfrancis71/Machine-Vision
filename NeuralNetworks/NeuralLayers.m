@@ -220,8 +220,9 @@ GradLayer[ReLU,layerInputs_,layerOutputDelta_]:={};
 WeightDec[ReLU,grad_]:=ReLU;
 
 (*Logistic*)
+LogisticFn[inputs_]:=1./(1.+Exp[-inputs])
 SyntaxInformation[Logistic]={"ArgumentsPattern"->{}};
-ForwardPropogateLayer[inputs_,Logistic]:=1./(1.+Exp[-inputs]);
+ForwardPropogateLayer[inputs_,Logistic]:=LogisticFn[inputs];
 BackPropogateLayer[Logistic,postLayerDeltaA_,inputs_,_]:=
    postLayerDeltaA*Exp[inputs]*(1+Exp[inputs])^-2;
 GradLayer[Logistic,layerInputs_,layerOutputDelta_]:={};
@@ -303,7 +304,7 @@ WeightDec[networkLayer_DropoutLayer,grad_]:=DropoutLayer[networkLayer[[1]],netwo
 (*
 Original Example
 samples=Table[mydata=RandomVariate[ParetoDistribution[1,3],100];1/100 Sum[Log[Abs[Nearest[mydata,mydata[[i]],20][[20]]-mydata[[i]]]],{i,1,100}] - PolyGamma[20] + PolyGamma[100] + Log[2],{1000}];
-Ref: http://www.cs.tut.fi/~timhome/tim/tim/core/differential_entropy_kl_details.htm
+Ref: http://www.cs.tut.fi/~timhome/tim/tim/core/differential_entropy_kl _details.htm
 Above link currently timing out
 *)
 NNEntropyList[samples_/;Length[samples]>=100]:=
