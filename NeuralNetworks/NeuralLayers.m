@@ -52,6 +52,9 @@ WeightDec[networkLayer_FullyConnected1DTo1D,grad_]:=FullyConnected1DTo1D[network
 (* For below justification, see http://arxiv.org/pdf/1206.5533v2.pdf page 15 *)
 FullyConnected1DTo1DInit[noFromNeurons_,noToNeurones_]:=
    FullyConnected1DTo1D[ConstantArray[0.,noToNeurones],Table[Random[]-.5,{noToNeurones},{noFromNeurons}]/Sqrt[noFromNeurons]]
+NNPrint[FullyConnected1DTo1D[layerBiases_,layerWeights_]]:=(
+   AbortAssert[Length[layerBiases]==Length[layerWeights]];
+   Print["FullyConnected:"<>ToString[Length[layerWeights[[1]]]]<>"->"<>ToString[Length[layerWeights]]];)
 
 (*Convolve2DLayer*)
 (*
@@ -227,6 +230,7 @@ BackPropogateLayer[Logistic,postLayerDeltaA_,inputs_,_]:=
    postLayerDeltaA*Exp[inputs]*(1+Exp[inputs])^-2;
 GradLayer[Logistic,layerInputs_,layerOutputDelta_]:={};
 WeightDec[Logistic,grad_]:=Logistic;
+NNPrint[Logistic]:=Print["Logistic"];
 
 (*PadFilterBank*)
 SyntaxInformation[PadFilterBank]={"ArgumentsPattern"->{_}};
@@ -325,3 +329,19 @@ BackPropogateLayer[NNEntropy[\[Lambda]_],postLayerDeltaA_,inputs_,_]:=
       {f,1,Length[inputs[[1]]]}]
 GradLayer[NNEntropy,layerInputs_,layerOutputDelta_]:={};
 WeightDec[NNEntropy[\[Lambda]_],grad_]:=NNEntropy[\[Lambda]];
+
+
+(*
+   Ref: Andrew Ng Course notes CS294A
+        https://web.stanford.edu/class/cs294a/sparseAutoencoder.pdf
+*)
+SyntaxInformation[Sparse]={"ArgumentsPattern"->{_,_}};
+ForwardPropogateLayer[inputs_,Sparse[_,_]]:=(
+   AbortAssert[Total[UnitStep[Flatten[w3=-inputs]]]==0,"Sparse::Sparsity only implemented for positive neurons"];
+   SparseCache=Mean[inputs];
+   inputs);
+BackPropogateLayer[Sparse[\[Beta]_,\[Rho]_],postLayerDeltaA_,inputs_,_]:=(
+(*   AbortAssert[Dimensions[tmp1=postLayerDeltaA]\[Equal]Dimensions[SparseCache],"BackPropogateLayer::Sparse delta and sparse cache inconsistent"];*)
+   w2=postLayerDeltaA + ConstantArray[\[Beta]*(-\[Rho]/SparseCache + (1-\[Rho])/(1-SparseCache)),{100}])
+GradLayer[Sparse[_,_],_,_]:={};
+WeightDec[Sparse[\[Beta]_,\[Rho]_],grad_]:=Sparse[\[Beta],\[Rho]];
