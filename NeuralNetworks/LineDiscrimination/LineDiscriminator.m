@@ -1,15 +1,18 @@
 (* ::Package:: *)
 
+(* This project was a failure. Nothing useful learned within 66 epochs. *)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
 generateExample[num_]:=Graphics[{
-GrayLevel[Random[]],
-Opacity[0.2],Rectangle[{-1,-1},{+1,+1}],
-Opacity[1],
-GrayLevel[Random[]],
-Rotate[Line[{{0,-1},{0,+1}}],Random[]*2*\[Pi],{0,0}],
-If[num==2,Rotate[Line[{{0,-1},{0,+1}}],Random[]*2*\[Pi],{0,0}],{}]
+   GrayLevel[Random[]],
+   Opacity[0.2],Rectangle[{-1,-1},{+1,+1}],
+   Opacity[1],
+   GrayLevel[Random[]],
+   Rotate[Line[{{0,-1},{0,+1}}],Random[]*2*\[Pi],{0,0}],
+   If[num==2,Rotate[Line[{{0,-1},{0,+1}}],Random[]*2*\[Pi],{0,0}],{}]
 }
 ]
 
@@ -53,5 +56,5 @@ Train:=MiniBatchGradientDescent[
          ValidationInputs->data[[19001;;-1]],
          ValidationTargets->labels[[19001;;-1]],
          StepMonitor->NNMonitor,
-Momentum->0.9,MomentumType->"Nesterov",
+         Momentum->0.9,MomentumType->"Nesterov",
          InitialLearningRate->\[Lambda]}];
