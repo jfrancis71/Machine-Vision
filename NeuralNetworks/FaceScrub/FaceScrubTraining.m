@@ -8,6 +8,20 @@
 
    Not completely faithful implementation.
    He uses RELU and a contrast normalisation layer.
+
+   Note, there still appears to be room for further training.
+   Also the data set could be tidied up further. There are still some questionable
+   examples.
+
+   For Training:
+   Cross Entropy: .0077
+   False positives: 85(/120844) = .07%
+   False negatives: 368(/83507) = .4%
+
+   For validation:
+   Cross Entropy: .008
+   False positives: 0(/577) = 0%
+   False negatives: 3(/424) = .7%
 *)
 
 
