@@ -24,9 +24,15 @@ ForwardPropogateLayers[inputs_,network_]:=
    Rest[FoldList[
       Timer["ForwardPropogateLayer::"<>LayerName[#2],ForwardPropogateLayer[#1,#2]]&,inputs,network]]
 
+MemForwardPropogate[data_,net_]:=
+Flatten[Map[ForwardPropogate[#,net]&,Partition[data,100]],1]
+
 ForwardPropogate[inputs_,network_]:=MemoryConstrained[
    ForwardPropogateLayers[inputs,network][[-1]],
-   If[$VersionNumber<9,3 10^9,10^10]]
+   If[$VersionNumber<9,3 10^9,10^10]];
+
+MemForwardPropogate[data_,net_]:=
+   Flatten[Map[ForwardPropogate[#,net]&,Partition[data,100]],1]
 
 
 Options[BackPropogateLayers] = { L1A->0.0 };
