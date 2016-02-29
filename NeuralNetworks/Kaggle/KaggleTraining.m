@@ -15,22 +15,22 @@ KaggleNet={
    PadFilterBank[2],ConvolveFilterBankToFilterBankInit[32,64,5],Tanh,
    MaxPoolingFilterBankToFilterBank,
    Adaptor3DTo1D[64,4,4],
-   FullyConnected1DTo1DInit[64*4*4,1],
-   Logistic
+   FullyConnected1DTo1DInit[64*4*4,4]
 };
 
 
 wl=KaggleNet;
 TrainingHistory={};
 ValidationHistory={};
-\[Lambda]=.01;
+\[Lambda]=.0001;
 
 
 TrainKaggleNet:=MiniBatchGradientDescent[
-      wl,FaceImages[[1;;-1001]],FaceLabels[[1;;-1001]],
-      NNGrad,CrossEntropyLoss,
+      wl,FaceImages[[1;;-501]],FaceLabels[[1;;-501]],
+      NNGrad,RegressionLoss1D,
         {MaxEpoch->500000,
-         ValidationInputs->FaceImages[[-1000;;-1]],
-         ValidationTargets->FaceLabels[[-1000;;-1]],
+         ValidationInputs->FaceImages[[-500;;-1]],
+         ValidationTargets->FaceLabels[[-500;;-1]],
          StepMonitor->NNCheckpoint["Kaggle\\KaggleNet"],
+         Momentum->0.9,MomentumType->"Nesterov",
          InitialLearningRate->\[Lambda]}];
