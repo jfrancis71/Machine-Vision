@@ -1,5 +1,8 @@
 (* ::Package:: *)
 
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
+
+
 PlotNNFaceRecognition[image_]:=( 
 (* We don't convolve with whole image. Issue appears regarding the padding around our filter operations *)
 
@@ -83,4 +86,13 @@ GraphicsFace[image_?MatrixQ]:=(
    genders=If[Length[zpos]>=1,ForwardPropogate[Map[GetPatch[image,#]&,zpos],GenderNet][[All,1]],{}];
    MapThread[OutlineGraphics[BoundingRectangles[{#1},{16,16}],Blend[{Pink,Blue},#2]]&,{zpos,genders}])
 PlotFace[image_?MatrixQ]:=
-   Show[image//DispImage,GraphicsFace[image],Graphics[Map[Scale[#[[1]],1/.75,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.75]]]]]]
+   Show[image//DispImage,
+      GraphicsFace[image],
+      Graphics[Map[Scale[#[[1]],1/.8,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.8]]]]],
+      Graphics[Map[Scale[#[[1]],1/.64,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.64]]]]],
+      Graphics[Map[Scale[#[[1]],1/.51,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.51]]]]],
+      Graphics[Map[Scale[#[[1]],1/.41,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.41]]]]],
+      Graphics[Map[Scale[#[[1]],1/.33,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.33]]]]],
+      Graphics[Map[Scale[#[[1]],1/.26,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.26]]]]],
+      Graphics[Map[Scale[#[[1]],1/.21,{0,0}]&,GraphicsFace[ImageData[ImageResize[Image[image],Length[image[[1]]]*.21]]]]]
+   ]
