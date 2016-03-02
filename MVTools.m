@@ -184,24 +184,44 @@ MobileRecognition[program_,stationNo_Integer,imageWidth_:128]:=(
       out=program[currentImg=StandardiseImage[Import["http://192.168.0."<>ToString[stationNo]<>"/image.jpg"],imageWidth]]]]);
 
 
-Options[GradientDescent]={
-   InitialLearningRate->.01,
-   MaxEpoch->10,
-   Momentum->0.0,
-   MomentumType->"CM"
-};
-
 (* http://www.cs.toronto.edu/~fritz/absps/momentum.pdf *)
 (* On the importance of initialization and momentum in deep learning *)
 (* Sutskever, Martens, Dahl, Hinton (2013) *)
-GradientDescent[initialState_,gradF_,plusF_,opts:OptionsPattern[]]:=(
+SyntaxInformation[Momentum]={"ArgumentsPattern"->{}};
+SyntaxInformation[MomentumType]={"ArgumentsPattern"->{}};
+SyntaxInformation[LearningRate]={"ArgumentsPattern"->{}};
+SyntaxInformation[MaxEpoch]={"ArgumentsPattern"->{}};
+SyntaxInformation[IterationMonitor]={"ArgumentsPattern"->{}};
+SyntaxInformation[EpochMonitor]={"ArgumentsPattern"->{}};
+SyntaxInformation[IterationFunctions]={"ArgumentsPattern"->{}};
+NullFunction[]=Function[{},(Null)];
+Options[GradientDescent]={
+   LearningRate->.01,
+   MaxEpoch->10,
+   Momentum->0.0,
+   MomentumType->"CM",
+   EpochMonitor->NullFunction, (* Function to be evaluated at end of each epoch *)
+   IterationFunctions->{} (* List of functions to be evaluated as iteration proceeds.
+      Each is passed current state, ie f(x) type of calculation *)
+};
+
+GradientDescent[initialState_,gradF_,plusF_,opts:OptionsPattern[]]:=
+   GradientDescent[initialState,{gradF},plusF,opts];
+
+GradientDescent[initialState_,gradFunctions_List,plusF_,opts:OptionsPattern[]]:=(
    init = 0;velocity=0.0;
    For[state=initialState;epoch=0,epoch<=OptionValue[MaxEpoch],epoch++,
-      gw=If[OptionValue[MomentumType]!="Nesterov"||init==0,gradF[state],gradF[plusF[state,OptionValue[Momentum]*velocity]]];
-      velocity = OptionValue[Momentum]*velocity + -OptionValue[InitialLearningRate]*gw; init=1;
-      state = plusF[state,velocity];
+      For[iter=1,iter<=Length[gradFunctions],iter++,
+         gw=If[OptionValue[MomentumType]!="Nesterov"||init==0,
+            gradFunctions[[iter]][state],
+            gradFunctions[[iter]][plusF[state,OptionValue[Momentum]*velocity]]];
+         velocity = OptionValue[Momentum]*velocity + -OptionValue[LearningRate]*gw; init=1;
+         state = plusF[state,velocity];
+         If[Length[OptionValue[IterationFunctions]]>0,OptionValue[IterationFunctions][[iter]][state]];
+         ];
+      OptionValue[EpochMonitor][];
       ];
-   state)
+   state);
 
 
 (*

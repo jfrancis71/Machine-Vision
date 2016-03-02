@@ -12,7 +12,7 @@ sqNetwork={
 };
 sqInputs=Transpose[{Table[x,{x,-1,1,0.1}]}];sqInputs//MatrixForm;
 sqOutputs=sqInputs^2;sqOutputs//MatrixForm;
-sqTrain:=AdaptiveGradientDescent[sqNetwork,sqInputs,sqOutputs,NNGrad,RegressionLoss2D,{MaxEpoch->500000}];
+sqTrain:=NNGradientDescent[sqNetwork,sqInputs,sqOutputs,NNGrad,RegressionLoss2D,{MaxEpoch->500000}];
 
 
 (*See Parallel Distributed Processing Volume 1: Foundations, PDP Research Group, page 332 Figure 4*)
