@@ -166,26 +166,13 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
       EpochMonitor->((
          AppendTo[ValidationHistory,lossF[state,OptionValue[ValidationInputs],OptionValue[ValidationTargets]]];
          AppendTo[TrainingHistory,Mean[partialTrainingLoss]];partialTrainingLoss={};
-         OptionValue[StepMonitor][])&)
+         trainingLoss=Last[TrainingHistory];
+         validationLoss=Last[ValidationHistory];
+         OptionValue[StepMonitor][])&),
+      MaxEpoch->20000
 }];
    wl=state;
 );
-(*MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,opts:OptionsPattern[]]:=(
-   Print["Batch #:", Dynamic[], " Partial: ",Dynamic[partialTrainingLoss[[-1]]]];
-   velocity=0.0;initMB=0;
-   GenericGradientDescent[initialParameters,inputs,targets,gradientF,lossF,
-      (  partialTrainingLoss={};batch=0;
-         MapThread[
-            (
-            batch++;
-            gw=If[OptionValue[MomentumType]!="Nesterov"||initMB==0,gradientF[wl,#1,#2,lossF,opts],gradientF[WeightDec[wl,OptionValue[Momentum]*velocity],#1,#2,lossF,opts]];
-            velocity = OptionValue[Momentum]*velocity + \[Lambda]*gw; initMB=1;
-            wl=WeightDec[wl,velocity];
-            AppendTo[partialTrainingLoss,lossF[wl,#1,#2]];)&,
-         {Partition[inputs,100],Partition[targets,100]}];
-         trainingLoss = Mean[partialTrainingLoss])&,
-      opts];)
-*)
 
 
 Checkpoint[f_,skip_:10]:=Function[{},If[Mod[epoch,skip]==1,f[],0]]
