@@ -40,3 +40,61 @@ circleNetwork={
 circleInputs=Flatten[Transpose[{Table[{x,y},{x,-1,1,0.1},{y,-1,+1,0.1}]}],2];circleInputs//MatrixForm;
 circleOutputs=1.*Map[{Boole[#[[1]]+#[[2]]>1]}&,circleInputs^2];circleOutputs//MatrixForm;
 circleTrain:=GradientDescent[circleNetwork,circleInputs,circleOutputs,NNGrad,CrossEntropyLoss,{MaxEpoch->500000}];
+
+
+(*
+   We fail to learn any useful solution using either of these two networks.
+*)
+parityInputs=Tuples[{0,1},8];
+parityOutputs=Map[{Boole[EvenQ[Total[#]]]}&,parityInputs];
+parityNetwork={
+   FullyConnected1DTo1DInit[8,256],
+   Logistic,
+   FullyConnected1DTo1DInit[256,1],
+   Logistic
+};
+parityNetwork={
+   FullyConnected1DTo1DInit[8,8],Tanh,
+   FullyConnected1DTo1DInit[8,4],Tanh,
+   FullyConnected1DTo1DInit[4,4],Tanh,
+   FullyConnected1DTo1DInit[4,2],Tanh,
+   FullyConnected1DTo1DInit[2,2],Tanh,
+   FullyConnected1DTo1DInit[2,1],Logistic
+};
+parityNetwork={
+   FullyConnected1DTo1DInit[8,8],
+   Logistic,
+   FullyConnected1DTo1DInit[8,1],
+   Logistic
+};
+solvedParityNet={
+(* Idea comes form Parallel Distributed Processing p .334 
+   by Rumelhard, Hinton and Williams
+   Can manually encode, but can't train
+*)
+   FullyConnected1DTo1D[Table[5+-i*10,{i,1,8}],Table[10,{i,1,8},{j,1,8}]],
+   Logistic,
+   FullyConnected1DTo1D[{5},
+      {Table[If[EvenQ[i],+10,-10],{i,1,8}]}],
+   Logistic
+};
+parityTrain:=
+   NNGradientDescent[parityNetwork,parityInputs,parityOutputs,NNGrad,CrossEntropyLoss,{MaxEpoch->50000000,LearningRate->.5,Momentum->0.9,MomentumType->"Nesterov"}];
+
+
+(*
+   Another PDP example, page 340
+   Note, we train using just 200 examples. It sucessfully generalises to the other 56 (of which 3 were symmetric)
+*)
+symInputs=Tuples[{0,1},8];
+symOutputs=Map[
+   {Boole[#[[1;;4]]==Reverse[#[[5;;8]]]]}&
+   ,symInputs];
+symNetwork={
+   FullyConnected1DTo1DInit[8,2],
+   Logistic,
+   FullyConnected1DTo1DInit[2,1],
+   Logistic};
+SeedRandom[1234];
+samp=RandomSample[Transpose[{symInputs,symOutputs}]];
+symTrain:=NNGradientDescent[symNetwork,samp[[1;;200,1]],samp[[1;;200,2]],NNGrad,CrossEntropyLoss,{MaxEpoch->50000000,LearningRate->.5,Momentum->0.9,MomentumType->"Nesterov"}];
