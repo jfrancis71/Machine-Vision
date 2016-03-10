@@ -61,7 +61,10 @@ FaceUI[mirror_Symbol:True]:=CameraRecognition[
 GetPatch[image_,coords_]:=image[[coords[[2]]-16;;coords[[2]]+15,coords[[1]]-16;;coords[[1]]+15]]
 
 
-(* Note, padding the image at beginning is not the same as padding arrays at each stage of neural net pipeline. Difference is biases of neurones.
+(*
+Works well on images of width 640
+
+Note, padding the image at beginning is not the same as padding arrays at each stage of neural net pipeline. Difference is biases of neurones.
 Secondly, just doing convolution on whole image is not equivelant to either of above. Because the patch is incorporating information from outside the filter field. This is neither the same as zero's nor biases.
 Could try learning with L1 neural activity. Have no idea if this is helpful or not.
 Manually reset bias?
@@ -73,8 +76,9 @@ Would also need to back out the 0 padding by subtracting the border.
 As it is algorithm is correct for a stride of 8*8, ie algorithm effectively operates on a subsampled grid,
 subsampling block 8*8. Not ridiculous as this is about the amount of translation invariance built into the
 training process.
+*)
 
-*)conv[old_]:=old/(300 - 299 * old)
+conv[old_]:=old/(300 - 299 * old) (*this is adjusting for the different prior, ie trained in dataset where 50% images were of face. This is not a valid statistic for looking at patches in natural images *)
 MyNew=Delete[wl,{{1},{5},{9}}];
 GraphicsFace[image_?MatrixQ]:=(
    proc1=ForwardPropogate[{image},MyNew[[1;;-4]]];
