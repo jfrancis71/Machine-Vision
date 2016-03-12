@@ -316,10 +316,11 @@ NNEntropyList[samples_/;Length[samples]>=100]:=
 
 SyntaxInformation[NNEntropy]={"ArgumentsPattern"->{_}};
 ForwardPropogateLayer[inputs_,NNEntropy[_]]:=(
+   AbortAssert[Length[inputs]>=20,"NNEntropy::ForwardPropogateLayer unimplemented for input lengths <20"];
    NNENT=Table[
       NNEntropyList[inputs[[All,f]]],
       {f,1,Length[inputs[[1]]]}];
-   inputs)
+   inputs);
 BackPropogateLayer[NNEntropy[\[Lambda]_],postLayerDeltaA_,inputs_,_]:=
    postLayerDeltaA + Table[
          nr=Nearest[inputs[[All,f]],inputs[[ex,f]],20][[20]];
@@ -342,6 +343,6 @@ ForwardPropogateLayer[inputs_,Sparse[_,_]]:=(
    inputs);
 BackPropogateLayer[Sparse[\[Beta]_,\[Rho]_],postLayerDeltaA_,inputs_,_]:=(
 (*   AbortAssert[Dimensions[tmp1=postLayerDeltaA]\[Equal]Dimensions[SparseCache],"BackPropogateLayer::Sparse delta and sparse cache inconsistent"];*)
-   w2=postLayerDeltaA + ConstantArray[\[Beta]*(-\[Rho]/SparseCache + (1-\[Rho])/(1-SparseCache)),{100}])
+   w2=postLayerDeltaA + ConstantArray[\[Beta]*(-\[Rho]/SparseCache + (1-\[Rho])/(1-SparseCache)),{Length[inputs]}])
 GradLayer[Sparse[_,_],_,_]:={};
 WeightDec[Sparse[\[Beta]_,\[Rho]_],grad_]:=Sparse[\[Beta],\[Rho]];
