@@ -98,3 +98,24 @@ symNetwork={
 SeedRandom[1234];
 samp=RandomSample[Transpose[{symInputs,symOutputs}]];
 symTrain:=NNGradientDescent[symNetwork,samp[[1;;200,1]],samp[[1;;200,2]],NNGrad,CrossEntropyLoss,{MaxEpoch->50000000,LearningRate->.5,Momentum->0.9,MomentumType->"Nesterov"}];
+
+
+(*
+   Attempt at density modelling
+   In 70,000 iterations moderate good approximation to prob density, albeit with some noisy features
+*)
+circInputs=Join[
+   Table[th=Random[];
+      {Sin[th*2*\[Pi]],Cos[th*2*\[Pi]]},{100}],
+   Table[{Random[]-.5,Random[]-.5}*3,{100}]];
+circOutputs=Join[Table[{1},{100}],Table[{0},{100}]];
+circNetwork={
+   FullyConnected1DTo1DInit[2,20],
+   Logistic,
+   FullyConnected1DTo1DInit[20,1],
+   Logistic};
+SeedRandom[1234];
+samp=RandomSample[Transpose[{circInputs,circOutputs}]];
+circTrain:=NNGradientDescent[circNetwork,samp[[1;;200,1]],samp[[1;;200,2]],NNGrad,CrossEntropyLoss,{MaxEpoch->50000000,LearningRate->.5,Momentum->0.9,MomentumType->"Nesterov"}];
+circPlot:=ListPlot3D[
+   Table[ForwardPropogate[{{x,y}},wl][[1,1]],{x,-2,+2,.1},{y,-2,+2,.1}]]
