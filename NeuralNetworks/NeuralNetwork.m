@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
-<<"C:/users/julian/documents/github/Machine-Vision/MVTools.m"
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralLayers.m"
+<<MVTools.m
+<<NeuralNetworks/NeuralLayers.m
 
 
 AbortAssert[bool_,message_]:=
@@ -178,19 +178,18 @@ MiniBatchGradientDescent[initialParameters_,inputs_,targets_,gradientF_,lossF_,o
 Checkpoint[f_,skip_:10]:=Function[{},If[Mod[epoch,skip]==1,f[],0]]
 
 
-NNBaseDir="C:\\Users\\Julian\\Documents\\GitHub\\Machine-Vision\\NeuralNetworks\\";
-NNBaseDir="C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\";
+$NNModelDir="C:\\Users\\Julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\";
 
 (* Note learning rate .01 reference: http://arxiv.org/pdf/1206.5533v2.pdf, page 9 *)
 NNInitialise[resourceName_,network_,learningRate_:0.01]:=
-   Export[NNBaseDir<>resourceName<>".wdx",{{},{},network,learningRate}]
+   Export[$NNModelDir<>resourceName<>".wdx",{{},{},network,learningRate}]
 
 NNRead[resourceName_String]:=
    (({TrainingHistory,ValidationHistory,wl,\[Lambda]}=
-      Import[NNBaseDir<>resourceName<>".wdx"]););
+      Import[$NNModelDir<>resourceName<>".wdx"]););
 
 NNWrite[resourceName_String]:=
-      Export[NNBaseDir<>resourceName<>".wdx",{TrainingHistory,ValidationHistory,wl,\[Lambda]}];
+      Export[$NNModelDir<>resourceName<>".wdx",{TrainingHistory,ValidationHistory,wl,\[Lambda]}];
 
 (* Note Following functions either take no args, or return a function that takes no args
    so they can be used as update functions for example *)
@@ -203,7 +202,7 @@ ScreenMonitor[]:=(grOutput=
       PlotRange->All,PlotStyle->{Blue,Green}]);
 
 WebMonitor[resourceName_]:=Function[{},
-   Export[StringJoin[NNBaseDir,resourceName,".jpg"],
+   Export[StringJoin[$NNModelDir,resourceName,".jpg"],
       Rasterize[{Text[trainingLoss],Text[validationLoss],ScreenMonitor[]},ImageSize->800,RasterSize->1000]];];
 
 NNCheckpoint[resourceName_]:=Function[{},(WebMonitor[resourceName][];Persist[resourceName][])];

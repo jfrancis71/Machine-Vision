@@ -1,6 +1,6 @@
 (* ::Package:: *)
 
-<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
+<<NeuralNetworks/NeuralNetwork.m
 
 
 PlotNNFaceRecognition[image_]:=( 
