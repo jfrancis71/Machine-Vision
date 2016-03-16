@@ -1,5 +1,14 @@
 (* ::Package:: *)
 
+(*
+   H.-W. Ng, S. Winkler.
+   A data-driven approach to cleaning large face datasets.
+   Proc. IEEE International Conference on Image Processing (ICIP), Paris, France, Oct. 27-30, 2014.
+
+   http://vintage.winklerbros.net/facescrub.html
+*)
+
+
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
