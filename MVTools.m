@@ -226,10 +226,13 @@ GradientDescent[initialState_,gradFunctions_List,plusF_,opts:OptionsPattern[]]:=
 
 (*
    Alexey Popkov - From Stackoverflow 17 Aug 2011
+   http://stackoverflow.com/questions/3418892/profiling-memory-usage-in-mathematica
+   http://stackoverflow.com/users/590388/alexey-popkov
 *)
 myByteCount[symbolName_String]:=Replace[ToHeldExpression[symbolName],Hold[x__]:>If[MemberQ[Attributes[x],Protected|ReadProtected],Sequence@@{},{ByteCount[Through[{OwnValues,DownValues,UpValues,SubValues,DefaultValues,FormatValues,NValues}[Unevaluated@x,Sort->False]]],symbolName}]];
 
 MemoryReport[]:=With[{listing=myByteCount/@Names[]},Labeled[Grid[Reverse@Take[Sort[listing],-100],Frame->True,Alignment->Left],Column[{Style["ByteCount for symbols without attributes Protected and ReadProtected in all contexts",16,FontFamily->"Times"],Style[Row@{"Total: ",Total[listing[[All,1]]]," bytes for ",Length[listing]," symbols"},Bold]},Center,1.5],Top]]
+(*End of attribution*)
 
 
 On[Assert];
