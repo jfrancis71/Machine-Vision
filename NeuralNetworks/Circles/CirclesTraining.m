@@ -3,8 +3,7 @@
 <<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
 
 
-(* ::Input:: *)
-(*randomSamples=Import["C:\\Users\\julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\Circles\\Circles.wdx"];*)
+randomSamples=Import["C:\\Users\\julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\Circles\\Circles.wdx"];
 
 
 SeedRandom[1234];

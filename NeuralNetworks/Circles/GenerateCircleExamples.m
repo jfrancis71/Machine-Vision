@@ -1,6 +1,9 @@
 (* ::Package:: *)
 
-images=ReadImagesFromDirectory["C:\\Users\\Julian\\Google Drive\\Personal\\Pictures\\Iphone Pictures\\15092014"];
+<<"C:/users/julian/documents/github/Machine-Vision/NeuralNetworks/NeuralNetwork.m"
+
+
+images=ReadImagesFromDirectory["C:\\Users\\julian\\ImageDataSetsPublic\\Distractors\\*"];
 
 
 patches=Flatten[Map[Partition[#,{32,32}]&,images],2];
@@ -26,7 +29,16 @@ randomPositive[bg_,fg_]:=(
    Table[If[Norm[{x,y}]<7+w /. x->ArcTan[x,y]/(2 \[Pi]),blankPatches[[fg,1+Round[y+15.5],1+Round[x+15.5]]],patches[[bg,1+Round[y+15.5],1+Round[x+15.5]]]],{y,-15.5,+15.5},{x,-15.5,+15.5}])
 
 
-randomSamples=Table[If[Random[]>.5,{randomPositive[1+RandomInteger[780-1],1+RandomInteger[60-1]],1},{patches[[1+RandomInteger[780-1]]],0}],{o,1,5000}];
+Length[patches]
 
 
-Export["C:\\Users\\Julian\\ImageDataSetsPublic\\Circles\\Circles.wdx",randomSamples]
+Length[blankPatches]
+
+
+Dynamic[o]
+
+
+randomSamples=Table[If[Random[]>.5,{randomPositive[1+RandomInteger[121484-1],1+RandomInteger[10526-1]],1},{patches[[1+RandomInteger[121484-1]]],0}],{o,1,200000}];
+
+
+Export["C:\\Users\\julian\\Google Drive\\Personal\\Computer Science\\WebMonitor\\Circles\\Circles.wdx",randomSamples]
