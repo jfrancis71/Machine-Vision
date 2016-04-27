@@ -1,6 +1,11 @@
 # Machine-Vision
 Machine Vision Mathematica Code
 
+#NOTE This codebase is migrating to CognitoNet where it is beiing tidied up (27/04/2016)
+[CognitoNet](https://github.com/jfrancis71/CognitoNet)
+
+
+
 This is a version 0.2 level codebase to support machine vision experiments. The codebase has an MIT open source license, and I am
 in the process of adding that to the files.
 
