@@ -1,7 +1,8 @@
 # Machine-Vision
 Machine Vision Mathematica Code
 
-#NOTE This codebase is migrating to CognitoNet where it is beiing tidied up (27/04/2016)
+#NOTE This codebase is migrating to CognitoNet where it is being tidied up (27/04/2016)
+# As of 16/05/2016 CognitoNet is now the main development branch. It is better documented and more consistent than the old Machine Vision codebase. Link below
 [CognitoNet](https://github.com/jfrancis71/CognitoNet)
 
 
