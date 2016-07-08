@@ -11,6 +11,7 @@ Author: Julian W Francis                  julian.w.francis@gmail.com
 
 << SerialIO`
 
+
 Pause[10]; (*Deal with race condition in one of the dependant libraries *)
 tmp = SerialOpen["COM3"];If[tmp===$Failed,,mybrick=tmp];
 
