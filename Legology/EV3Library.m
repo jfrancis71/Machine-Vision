@@ -14,6 +14,7 @@ Author: Julian W Francis                  julian.w.francis@gmail.com
 Pause[10]; (*Deal with race condition in one of the dependant libraries *)
 tmp = SerialOpen["COM3"];If[tmp===$Failed,,mybrick=tmp];
 
+
 EV3PortA = 1;
 EV3PortB = 2;
 EV3PortC = 4;
